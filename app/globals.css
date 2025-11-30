@@ -69,6 +69,8 @@
   --hero-circle-shadow: rgba(248, 250, 252, 0.6);
 }
 
+/* Tailwind CSS v4 @theme directive - valid syntax */
+/* stylelint-disable-next-line unknownAtRules */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

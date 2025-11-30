@@ -7,7 +7,24 @@ interface DashboardChartsProps {
   bots: BotData[];
 }
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+// Dashboard chart color palette - cyan/teal shades
+const CHART_COLORS = {
+  primary: '#06B6D4',      // Primary - bright cyan/teal
+  lighten1: '#39C8E0',     // Lighten 1 - softer, lighter version
+  lighten2: '#6EDBF0',     // Lighten 2 - very light teal
+  lighten3: '#A2EEFA',     // Lighten 3 - almost pastel
+  darken1: '#0592AB',      // Darken 1 - deeper teal
+  darken2: '#047187',      // Darken 2 - stronger contrast
+  darken3: '#034E5E',      // Darken 3 - very dark teal
+};
+
+const COLORS = [
+  CHART_COLORS.primary,
+  CHART_COLORS.lighten1,
+  CHART_COLORS.lighten2,
+  CHART_COLORS.darken1,
+  CHART_COLORS.darken2,
+];
 
 export function DashboardCharts({ bots }: DashboardChartsProps) {
   // Prepare data for histogram (usage by bot)
@@ -55,8 +72,8 @@ export function DashboardCharts({ bots }: DashboardChartsProps) {
               }}
             />
             <Legend />
-            <Bar dataKey="usage" fill="hsl(var(--chart-1))" name="Total Usage" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="sessions" fill="hsl(var(--chart-2))" name="Sessions" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="usage" fill={CHART_COLORS.primary} name="Total Usage" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="sessions" fill={CHART_COLORS.lighten1} name="Sessions" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -71,9 +88,9 @@ export function DashboardCharts({ bots }: DashboardChartsProps) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
               outerRadius={100}
-              fill="#8884d8"
+              fill={CHART_COLORS.primary}
               dataKey="value"
             >
               {channelData.map((entry, index) => (

@@ -35,21 +35,21 @@ export function SummaryCards({ bots }: SummaryCardsProps) {
       icon: <Bot className="h-5 w-5" />
     },
     {
-      title: 'Active',
+      title: 'Working bots',
       value: activeBots,
       helper: 'Currently responding',
       accent: 'bg-green-500/15 text-green-600 dark:text-green-400',
       icon: <Play className="h-5 w-5" />
     },
     {
-      title: 'Inactive',
+      title: 'Not working bots',
       value: inactiveBots,
       helper: 'Disabled or paused',
-      accent: 'bg-border text-secondary-foreground',
+      accent: 'bg-red-500/15 text-red-600 dark:text-red-400',
       icon: <Pause className="h-5 w-5" />
     },
     {
-      title: 'Most used',
+      title: 'Most used bot',
       value: mostUsedBot?.name ?? '—',
       helper:
         mostUsedBot && (mostUsedBot.usage_count ?? 0) > 0
