@@ -4,6 +4,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Check } from "lucide-react";
+import { PRICING_PLANS } from "../../constants/pricing";
 
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(true);
@@ -29,67 +30,7 @@ export function Pricing() {
     }
   };
 
-
-  const plans = [
-    {
-      name: "Free",
-      monthlyPrice: 0,
-      yearlyPrice: 0,
-      description: "Perfect for small teams and trial",
-      features: [
-        "Up to 5 team members",
-        "Productivity reports",
-        "3 months data retention"
-      ],
-      buttonText: "Get Started",
-      buttonVariant: "outline" as const,
-      popular: false
-    },
-    {
-      name: "Essential",
-      monthlyPrice: 5,
-      yearlyPrice: 60,
-      description: "Great for growing teams",
-      features: [
-        "Up to 50 member teams",
-        "Productivity reports",
-        "18 months data retention"
-      ],
-      buttonText: "Get Started",
-      buttonVariant: "default" as const,
-      popular: true
-    },
-    {
-      name: "Business",
-      monthlyPrice: 14,
-      yearlyPrice: 168,
-      description: "For larger organizations",
-      features: [
-        "Unlimited team members",
-        "Productivity reports",
-        "3 year data retention",
-        "SSO Login"
-      ],
-      buttonText: "Contact Sales",
-      buttonVariant: "outline" as const,
-      popular: false
-    },
-    {
-      name: "Enterprise",
-      monthlyPrice: null,
-      yearlyPrice: null,
-      description: "Custom solutions for large teams",
-      features: [
-        "All Business features",
-        "Custom branding",
-        "On-premises deployment",
-        "Custom integrations"
-      ],
-      buttonText: "Contact Sales",
-      buttonVariant: "outline" as const,
-      popular: false
-    }
-  ];
+  const plans = PRICING_PLANS;
 
   return (
     <section className="py-8 sm:py-12 md:py-16 lg:py-20 px-3 sm:px-4 md:px-6 lg:px-8 bg-gradient-to-br from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
@@ -137,7 +78,7 @@ export function Pricing() {
         {/* Pricing Cards */}
         <div 
           ref={cardsRef}
-          className="flex flex-nowrap justify-center gap-3 sm:gap-4 md:gap-6 overflow-x-auto py-6 sm:py-8 md:py-12"
+          className="flex flex-nowrap justify-center gap-3 sm:gap-4 md:gap-6 overflow-x-auto py-16"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {plans.map((plan, index) => (
@@ -153,9 +94,9 @@ export function Pricing() {
                   Popular
                 </Badge>
               )}
-              <Card className={`p-3 sm:p-4 md:p-5 w-full flex flex-col transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:-translate-y-2 bg-card/70 backdrop-blur-sm border-hero-circle/20 rounded-full ${
+              <Card className={`p-3 sm:p-4 md:p-5 w-full flex flex-col transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:-translate-y-2 bg-card/70 backdrop-blur-sm border-hero-circle/20 ${
                 plan.popular ? 'border-primary border-2 shadow-xl shadow-primary/30' : 'hover:border-primary/50 border-2'
-              }`}>
+              } !rounded-full`}>
                 {/* Circular Progress Indicator */}
                 <div className="flex justify-center mb-3 sm:mb-4">
                   <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
