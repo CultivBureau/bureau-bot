@@ -9,11 +9,6 @@ import { authService } from "../../services/auth";
 
 type ThemeOption = "light" | "dark";
 
-const getInitialTheme = (): ThemeOption => {
-  if (typeof document === "undefined") return "light";
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
-};
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -22,16 +17,26 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [theme, setTheme] = useState<ThemeOption>(() => getInitialTheme());
+  const [theme, setTheme] = useState<ThemeOption>("light");
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize theme from localStorage or system preference after mount
+  useEffect(() => {
+    setMounted(true);
+    const storedTheme = localStorage.getItem("bb-theme") as ThemeOption | null;
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialTheme = storedTheme || (systemPrefersDark ? "dark" : "light");
+    
+    setTheme(initialTheme);
+    document.documentElement.classList.toggle("dark", initialTheme === "dark");
+  }, []);
 
   useEffect(() => {
-    if (typeof document !== "undefined") {
+    if (mounted) {
       document.documentElement.classList.toggle("dark", theme === "dark");
+      localStorage.setItem("bb-theme", theme);
     }
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("bb-theme", theme);
-    }
-  }, [theme]);
+  }, [theme, mounted]);
 
   const toggleTheme = () =>
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
@@ -76,10 +81,12 @@ export default function LoginPage() {
           className="rounded-full border border-hero-circle/20 bg-hero-circle/10 p-3 shadow-lg backdrop-blur-sm transition hover:bg-hero-circle/20"
           aria-label="Toggle theme"
         >
-          {theme === "light" ? (
+          {mounted && theme === "light" ? (
             <Moon className="h-5 w-5 text-hero-text sm:h-6 sm:w-6" />
-          ) : (
+          ) : mounted && theme === "dark" ? (
             <Sun className="h-5 w-5 text-hero-text sm:h-6 sm:w-6" />
+          ) : (
+            <Moon className="h-5 w-5 text-hero-text sm:h-6 sm:w-6" />
           )}
         </button>
       </div>

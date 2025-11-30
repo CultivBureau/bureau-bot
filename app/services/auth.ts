@@ -1,21 +1,32 @@
 import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AuthError } from '../types/auth';
+import { store } from '../store/store';
+import { setTokens, clearTokens } from '../store/slices/authSlice';
 
 class AuthService {
-  private baseURL: string;
-
-  constructor() {
+  private getBaseURL(): string {
+    // In Next.js, NEXT_PUBLIC_ variables are embedded at build time
+    // They must be available when the server starts
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    
     if (!apiBaseUrl) {
-      throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined in environment variables');
+      console.error(
+        'NEXT_PUBLIC_API_BASE_URL is not defined. ' +
+        'Please ensure .env file exists with NEXT_PUBLIC_API_BASE_URL=http://207.154.226.165:8000 ' +
+        'and restart your Next.js development server.'
+      );
+      // Fallback to the backend URL if env var is not available
+      return 'http://207.154.226.165:8000';
     }
-    this.baseURL = apiBaseUrl;
+    
+    // Remove trailing slash if present (endpoints will include leading slash)
+    return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    const url = `${this.getBaseURL()}${endpoint}`;
     
     const config: RequestInit = {
       ...options,
@@ -50,56 +61,61 @@ class AuthService {
   }
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>('/authentication/login/', {
+    const response = await this.request<LoginResponse>('/api/authentication/login/', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
 
-    // Store tokens in localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('refreshToken', response.refresh_token);
-    }
+    // Store tokens in Redux store
+    store.dispatch(setTokens({
+      token: response.token,
+      refreshToken: response.refresh_token,
+    }));
 
     return response;
   }
 
   async register(userData: RegisterRequest): Promise<RegisterResponse> {
-    const response = await this.request<RegisterResponse>('/authentication/register/', {
+    const response = await this.request<RegisterResponse>('/api/authentication/register/', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
 
-    // Store tokens in localStorage
-    if (typeof window !== 'undefined' && response.tokens) {
-      localStorage.setItem('authToken', response.tokens.access);
-      localStorage.setItem('refreshToken', response.tokens.refresh);
+    // Store tokens in Redux store
+    if (response.tokens) {
+      store.dispatch(setTokens({
+        token: response.tokens.access,
+        refreshToken: response.tokens.refresh,
+      }));
     }
 
     return response;
   }
 
   logout(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('refreshToken');
-    }
+    // Clear tokens from Redux store
+    store.dispatch(clearTokens());
   }
 
   getToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('authToken');
+    const state = store.getState();
+    return state.auth.token;
   }
 
   getRefreshToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('refreshToken');
+    const state = store.getState();
+    return state.auth.refreshToken;
+  }
+
+  getDecodedToken(): Record<string, unknown> | null {
+    const state = store.getState();
+    return state.auth.decodedToken;
   }
 
   isAuthenticated(): boolean {
-    return this.getToken() !== null;
+    const state = store.getState();
+    return state.auth.isAuthenticated;
   }
 }
 
 export const authService = new AuthService();
-
