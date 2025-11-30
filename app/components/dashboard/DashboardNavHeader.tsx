@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore, useRef } from 'react';
 import { LayoutDashboard, CreditCard, Bot, User, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { authService } from '../../services/auth';
 import { useRouter } from 'next/navigation';
@@ -81,6 +81,8 @@ export function DashboardNavHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const decodedToken = useAppSelector((state) => state.auth.decodedToken);
   const theme = useSyncExternalStore(
     themeStore.subscribe,
@@ -101,6 +103,23 @@ export function DashboardNavHeader() {
     themeStore.init();
   }, []);
 
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileMenuOpen]);
+
   const toggleTheme = () => {
     themeStore.toggle();
   };
@@ -108,6 +127,13 @@ export function DashboardNavHeader() {
   const handleLogout = () => {
     authService.logout();
     router.push('/');
+    setProfileMenuOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    // TODO: Navigate to profile page
+    console.log('Navigate to profile');
+    setProfileMenuOpen(false);
   };
 
   const isActive = (href: string) => {
@@ -159,32 +185,62 @@ export function DashboardNavHeader() {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center gap-3">
-            {/* User Info */}
-            <div className="hidden items-center gap-3 lg:flex">
-              <div className="text-right">
-                <p className="text-sm font-medium text-foreground">{userName}</p>
-                <p className="text-xs text-muted-foreground">{userEmail}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <User className="h-5 w-5" />
-              </div>
-            </div>
-
             {/* Theme Toggle */}
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             </Button>
 
-            {/* Logout Button */}
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="rounded-full text-sm"
-              aria-label="Logout"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            {/* Profile Menu */}
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="hidden lg:flex items-center gap-3 rounded-full hover:bg-hero-circle/10 transition p-1"
+                aria-label="Profile menu"
+              >
+                <div className="text-right">
+                  <p className="text-sm font-medium text-foreground">{userName}</p>
+                  <p className="text-xs text-muted-foreground">{userEmail}</p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <User className="h-5 w-5" />
+                </div>
+              </button>
+              
+              {/* Mobile Profile Button */}
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="lg:hidden flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                aria-label="Profile menu"
+              >
+                <User className="h-5 w-5" />
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {profileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-card shadow-lg backdrop-blur-sm z-50">
+                  <div className="p-2">
+                    <div className="px-3 py-2 border-b border-border mb-1">
+                      <p className="text-sm font-medium text-foreground">{userName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                    </div>
+                    <button
+                      onClick={handleProfileClick}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground hover:bg-hero-circle/10 transition"
+                    >
+                      <User className="h-4 w-4" />
+                      Profile
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground hover:bg-hero-circle/10 transition"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -206,9 +262,9 @@ export function DashboardNavHeader() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border rounded-b-3xl px-6">
             {renderNav(true)}
-            <div className="pt-4 border-t border-border flex flex-col gap-3 mt-4">
+            <div className="pt-4 border-t border-border flex flex-col gap-2 mt-4">
               {/* User Info Mobile */}
-              <div className="flex items-center gap-3 pb-2">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-md">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                   <User className="h-5 w-5" />
                 </div>
@@ -217,13 +273,20 @@ export function DashboardNavHeader() {
                   <p className="text-xs text-muted-foreground">{userEmail}</p>
                 </div>
               </div>
-              <Button
-                onClick={handleLogout}
-                className="w-full rounded-full bg-primary text-primary-foreground"
+              <button
+                onClick={handleProfileClick}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground hover:bg-hero-circle/10 transition"
               >
-                <LogOut className="w-4 h-4 mr-2" />
+                <User className="h-4 w-4" />
+                Profile
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground hover:bg-hero-circle/10 transition"
+              >
+                <LogOut className="h-4 w-4" />
                 Logout
-              </Button>
+              </button>
             </div>
           </div>
         )}
