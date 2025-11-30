@@ -197,10 +197,6 @@ export function DashboardNavHeader() {
                 className="hidden lg:flex items-center gap-3 rounded-full hover:bg-hero-circle/10 transition p-1"
                 aria-label="Profile menu"
               >
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">{userName}</p>
-                  <p className="text-xs text-muted-foreground">{userEmail}</p>
-                </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                   <User className="h-5 w-5" />
                 </div>

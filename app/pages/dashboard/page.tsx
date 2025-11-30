@@ -90,11 +90,6 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
-        {/* Page Title */}
-        <div>
-          <h1 className="text-3xl font-bold text-hero-text">Dashboard</h1>
-          <p className="mt-1 text-sm text-hero-subtext">Overview of your bots and analytics</p>
-        </div>
 
         {/* Summary Cards */}
         <SummaryCards bots={bots} />
