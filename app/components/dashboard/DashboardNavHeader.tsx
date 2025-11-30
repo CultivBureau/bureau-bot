@@ -131,8 +131,7 @@ export function DashboardNavHeader() {
   };
 
   const handleProfileClick = () => {
-    // TODO: Navigate to profile page
-    console.log('Navigate to profile');
+    router.push('/pages/user/profile');
     setProfileMenuOpen(false);
   };
 
