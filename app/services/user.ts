@@ -8,20 +8,20 @@ interface UpdateUserRequest {
   email?: string;
 }
 
+interface UpdateUserResponse {
+  message: string;
+  user: User;
+}
+
 class UserService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
-    if (!apiBaseUrl) {
-      console.error(
-        'NEXT_PUBLIC_API_BASE_URL is not defined. ' +
-        'Please ensure .env file exists with NEXT_PUBLIC_API_BASE_URL=http://207.154.226.165:8000 ' +
-        'and restart your Next.js development server.'
-      );
-      return 'http://207.154.226.165:8000';
-    }
+    // Use environment variable or fallback to default backend URL
+    const baseUrl = apiBaseUrl || 'http://207.154.226.165:8000';
     
-    return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
+    // Remove trailing slash if present (endpoints will include leading slash)
+    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   }
 
   private getAuthToken(): string | null {
@@ -78,10 +78,11 @@ class UserService {
   }
 
   async updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
-    return this.request<User>(`/api/users/${userId}/`, {
+    const response = await this.request<UpdateUserResponse>(`/api/users/${userId}/update/`, {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
+    return response.user;
   }
 
   async getCurrentUser(): Promise<User> {

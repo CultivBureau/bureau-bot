@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Save, Loader2, Mail, Phone, UserCircle, Calendar, Shield } from 'lucide-react';
+import { User, Save, Loader2, Mail, Phone, UserCircle, Calendar, Shield, CreditCard, Clock } from 'lucide-react';
 import { DashboardLayout } from '../../../components/dashboard/DashboardLayout';
 import { userService } from '../../../services/user';
 import { User as UserType } from '../../../types/auth';
@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -83,9 +84,11 @@ export default function ProfilePage() {
 
       setUser(updatedUser);
       setIsEditing(false);
+      setSuccess('Profile updated successfully!');
+      setError(null);
       
-      // Optionally refresh the page or show success message
-      router.refresh();
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
       setError(errorMessage);
@@ -130,11 +133,13 @@ export default function ProfilePage() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-hero-text">Profile Settings</h1>
-          <p className="mt-1 text-sm text-hero-subtext">Manage your account information and preferences</p>
-        </div>
+
+        {/* Success Display */}
+        {success && (
+          <div className="mb-6 rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-green-600 dark:text-green-400">
+            {success}
+          </div>
+        )}
 
         {/* Error Display */}
         {error && (
@@ -302,6 +307,104 @@ export default function ProfilePage() {
                   </div>
                 )}
               </form>
+            </div>
+
+            {/* Plan Information */}
+            <div className="mt-6 rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-card-foreground flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Subscription Plan
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                {/* Plan Type */}
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-background">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-card-foreground">Plan Type</p>
+                      <p className="text-xs text-muted-foreground">Current subscription plan</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-card-foreground">
+                      {user.plan_type || 'No Plan'}
+                    </p>
+                    {!user.plan_type && (
+                      <p className="text-xs text-muted-foreground">Not subscribed</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Plan Start Date */}
+                {user.plan_start_date && (
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-background">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <Clock className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-card-foreground">Start Date</p>
+                        <p className="text-xs text-muted-foreground">When your plan started</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-card-foreground">
+                        {new Date(user.plan_start_date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Plan End Date */}
+                {user.plan_end_date && (
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-background">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <Calendar className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-card-foreground">End Date</p>
+                        <p className="text-xs text-muted-foreground">When your plan expires</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-card-foreground">
+                        {new Date(user.plan_end_date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
+                      {new Date(user.plan_end_date) > new Date() && (
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                          Active
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Plan Message */}
+                {!user.plan_type && !user.plan_start_date && !user.plan_end_date && (
+                  <div className="p-4 rounded-lg border border-border bg-muted/50 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      You don't have an active subscription plan.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Visit the Payment page to subscribe to a plan.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

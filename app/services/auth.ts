@@ -8,18 +8,11 @@ class AuthService {
     // They must be available when the server starts
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
-    if (!apiBaseUrl) {
-      console.error(
-        'NEXT_PUBLIC_API_BASE_URL is not defined. ' +
-        'Please ensure .env file exists with NEXT_PUBLIC_API_BASE_URL=http://207.154.226.165:8000 ' +
-        'and restart your Next.js development server.'
-      );
-      // Fallback to the backend URL if env var is not available
-      return 'http://207.154.226.165:8000';
-    }
+    // Use environment variable or fallback to default backend URL
+    const baseUrl = apiBaseUrl || 'http://207.154.226.165:8000';
     
     // Remove trailing slash if present (endpoints will include leading slash)
-    return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
+    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   }
 
   private async request<T>(
