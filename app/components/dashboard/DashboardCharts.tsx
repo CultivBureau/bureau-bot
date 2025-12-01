@@ -1,7 +1,7 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { BotData } from './BotCard';
+import type { BotData } from '../../types/bot';
 
 interface DashboardChartsProps {
   bots: BotData[];

@@ -1,0 +1,181 @@
+import { store } from '../store/store';
+import type {
+  GPTModel,
+  ChannelType,
+  GPTModelsResponse,
+  ChannelTypesResponse,
+  ValidateOpenAIKeyRequest,
+  ValidateOpenAIKeyResponse,
+  CreateBotRequest,
+  UpdateBotRequest,
+  RestoreBotRequest,
+  Bot,
+  BotsListResponse,
+  GetBotsParams,
+} from '../types/bot';
+
+class BotService {
+  private getBaseURL(): string {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    
+    // Use environment variable or fallback to default backend URL
+    const baseUrl = apiBaseUrl || 'http://207.154.226.165:8000';
+    
+    // Remove trailing slash if present (endpoints will include leading slash)
+    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  }
+
+  private getAuthToken(): string | null {
+    const state = store.getState();
+    return state.auth.token;
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.getBaseURL()}${endpoint}`;
+    const token = this.getAuthToken();
+    
+    if (!token) {
+      throw new Error('Authentication token not found. Please log in again.');
+    }
+
+    const config: RequestInit = {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...options.headers,
+      },
+    };
+
+    // Log request details in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Request:', { url, method: config.method || 'GET' });
+    }
+
+    try {
+      const response = await fetch(url, config);
+      
+      // Handle network errors or cases where response is not ok
+      if (!response.ok) {
+        let errorMessage = `Request failed with status ${response.status}`;
+        
+        try {
+          const errorData = await response.json();
+          const error = errorData as { detail?: string; error?: string; message?: string };
+          errorMessage = error.detail || error.error || error.message || errorMessage;
+        } catch {
+          // If response is not JSON, try to get text
+          try {
+            const text = await response.text();
+            errorMessage = text || errorMessage;
+          } catch {
+            // Use default error message
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      // Parse JSON response
+      try {
+        const data = await response.json();
+        return data as T;
+      } catch {
+        throw new Error('Invalid response format from server');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        // Handle specific network errors
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+          throw new Error(
+            'Unable to connect to the server. Please check your internet connection and try again.'
+          );
+        }
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
+    }
+  }
+
+  async getGPTModels(): Promise<GPTModel[]> {
+    const response = await this.request<GPTModelsResponse>('/api/bots/gpt-models/');
+    return response.gpt_models;
+  }
+
+  async getChannelTypes(): Promise<ChannelType[]> {
+    const response = await this.request<ChannelTypesResponse>('/api/bots/channel-types/');
+    return response.channel_types;
+  }
+
+  async validateOpenAIKey(key: string): Promise<ValidateOpenAIKeyResponse> {
+    const requestData: ValidateOpenAIKeyRequest = {
+      openaikey: key,
+    };
+    
+    return this.request<ValidateOpenAIKeyResponse>('/api/bots/validate-openai-key/', {
+      method: 'POST',
+      body: JSON.stringify(requestData),
+    });
+  }
+
+  async createBot(botData: CreateBotRequest): Promise<Bot> {
+    return this.request<Bot>('/api/bots/', {
+      method: 'POST',
+      body: JSON.stringify(botData),
+    });
+  }
+
+  async getBots(params?: GetBotsParams): Promise<BotsListResponse> {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.pageNumber) {
+      queryParams.append('pageNumber', params.pageNumber.toString());
+    }
+    if (params?.pageSize) {
+      queryParams.append('pageSize', params.pageSize.toString());
+    }
+    if (params?.status) {
+      queryParams.append('status', params.status);
+    }
+
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/api/bots/?${queryString}` : '/api/bots/';
+    
+    return this.request<BotsListResponse>(endpoint);
+  }
+
+  async getBotById(botId: string): Promise<Bot> {
+    return this.request<Bot>(`/api/bots/${botId}/`);
+  }
+
+  async updateBot(botId: string, botData: UpdateBotRequest): Promise<Bot> {
+    return this.request<Bot>(`/api/bots/${botId}/`, {
+      method: 'PUT',
+      body: JSON.stringify(botData),
+    });
+  }
+
+  async deleteBot(botId: string): Promise<void> {
+    await this.request<void>(`/api/bots/${botId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async restoreBot(botId: string): Promise<Bot> {
+    const requestData: RestoreBotRequest = {
+      id: botId,
+    };
+    
+    return this.request<Bot>('/api/bots/restore/', {
+      method: 'POST',
+      body: JSON.stringify(requestData),
+    });
+  }
+}
+
+export const botService = new BotService();
+

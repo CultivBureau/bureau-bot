@@ -1,103 +1,57 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BotCard, BotData } from '../../components/dashboard/BotCard';
+import { BotCard } from '../../components/dashboard/BotCard';
+import type { BotData, Bot, ChannelType } from '../../types/bot';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { EmptyState } from '../../components/dashboard/EmptyState';
 import { LoadingState } from '../../components/dashboard/LoadingState';
-import { NewBotModal, BotFormData } from '../../components/dashboard/NewBotModal';
+import { NewBotModal } from '../../components/dashboard/NewBotModal';
+import { botService } from '../../services/bot';
 import { Plus } from 'lucide-react';
 
-// Mock API - Replace with your actual API calls
-const mockBotsAPI = {
-  getBots: async (): Promise<{ data: BotData[] }> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return {
-      data: [
-        {
-          id: '1',
-          name: 'Customer Support Bot',
-          channel_type: 'whatsapp',
-          gpt_model: 'gpt-4',
-          is_active: true,
-          created_on: '2024-01-15',
-          updated_on: '2024-01-20',
-          usage_count: 1250,
-          total_sessions: 45,
-        },
-        {
-          id: '2',
-          name: 'Sales Assistant',
-          channel_type: 'telegram',
-          gpt_model: 'gpt-3.5-turbo',
-          is_active: true,
-          created_on: '2024-01-10',
-          updated_on: '2024-01-18',
-          usage_count: 890,
-          total_sessions: 32,
-        },
-        {
-          id: '3',
-          name: 'Help Desk Bot',
-          channel_type: 'web',
-          gpt_model: 'gpt-4',
-          is_active: false,
-          created_on: '2024-01-05',
-          updated_on: '2024-01-12',
-          usage_count: 450,
-        },
-        {
-          id: '4',
-          name: 'E-commerce Assistant',
-          channel_type: 'whatsapp',
-          gpt_model: 'gpt-4',
-          is_active: true,
-          created_on: '2024-01-20',
-          updated_on: '2024-01-25',
-          usage_count: 2100,
-          total_sessions: 78,
-        },
-        {
-          id: '5',
-          name: 'FAQ Bot',
-          channel_type: 'web',
-          gpt_model: 'gpt-3.5-turbo',
-          is_active: true,
-          created_on: '2024-01-12',
-          updated_on: '2024-01-22',
-          usage_count: 3200,
-          total_sessions: 120,
-        },
-      ],
-    };
-  },
-  toggleActive: async (botId: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    console.log('Toggle active for bot:', botId);
-  },
-  deleteBot: async (botId: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    console.log('Delete bot:', botId);
-  },
+// Helper function to map Bot from API to BotData for UI
+const mapBotToBotData = (bot: Bot): BotData => {
+  return {
+    id: bot.id,
+    name: bot.name,
+    channel_type: bot.channel_type,
+    gpt_model: bot.gpt_model,
+    is_active: bot.is_active,
+    created_on: bot.created_on,
+    updated_on: bot.updated_on,
+    assistant_name: bot.assistant_name,
+    working: bot.working,
+    // Note: usage_count and total_sessions are not in the API response
+    // They would need to come from a separate endpoint if needed
+  };
 };
 
 export default function BotsPage() {
   const [bots, setBots] = useState<BotData[]>([]);
+  const [fullBots, setFullBots] = useState<Bot[]>([]); // Store full bot objects for editing
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [botToDelete, setBotToDelete] = useState<BotData | null>(null);
   const [showNewBotModal, setShowNewBotModal] = useState(false);
+  const [botToEdit, setBotToEdit] = useState<Bot | null>(null);
+  const [channelTypes, setChannelTypes] = useState<ChannelType[]>([]);
 
   const fetchBots = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await mockBotsAPI.getBots();
-      const botsList = Array.isArray(response.data)
-        ? response.data
-        : response.data || [];
+      const response = await botService.getBots({
+        pageNumber: 1,
+        pageSize: 20, // Get up to 20 bots per page
+        status: 'all',
+      });
+      
+      // Store full bot objects for editing
+      setFullBots(response.results);
+      // Map Bot objects to BotData for UI
+      const botsList = response.results.map(mapBotToBotData);
       setBots(botsList);
     } catch (err: unknown) {
       const errorMessage =
@@ -111,30 +65,39 @@ export default function BotsPage() {
     }
   }, []);
 
+  // Fetch channel types for label mapping
+  useEffect(() => {
+    const fetchChannelTypes = async () => {
+      try {
+        const types = await botService.getChannelTypes();
+        setChannelTypes(types);
+      } catch (err) {
+        console.error('Failed to fetch channel types:', err);
+      }
+    };
+    fetchChannelTypes();
+  }, []);
+
   useEffect(() => {
     fetchBots();
   }, [fetchBots]);
 
-  const handleToggleActive = useCallback(
-    async (botId: string) => {
-      try {
-        await mockBotsAPI.toggleActive(botId);
-        setBots((prev) =>
-          prev.map((bot) =>
-            bot.id === botId ? { ...bot, is_active: !bot.is_active } : bot
-          )
-        );
-      } catch (err: unknown) {
-        const errorMessage =
-          (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.error ||
-          (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.detail ||
-          (err as { message?: string })?.message ||
-          'Failed to toggle bot status';
-        setError(errorMessage);
-      }
-    },
-    []
-  );
+  const handleEditBot = useCallback(async (botId: string) => {
+    try {
+      // Fetch the latest bot data to ensure we have all current information
+      const bot = await botService.getBotById(botId);
+      setBotToEdit(bot);
+      setShowNewBotModal(true);
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.error ||
+        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.detail ||
+        (err as { message?: string })?.message ||
+        'Failed to load bot data';
+      setError(errorMessage);
+      console.error('Error fetching bot:', err);
+    }
+  }, []);
 
   const handleDeleteBot = useCallback((botId: string) => {
     const bot = bots.find((b) => b.id === botId);
@@ -147,8 +110,9 @@ export default function BotsPage() {
   const confirmDeleteBot = useCallback(async () => {
     if (!botToDelete) return;
     try {
-      await mockBotsAPI.deleteBot(botToDelete.id);
-      setBots((prev) => prev.filter((b) => b.id !== botToDelete.id));
+      await botService.deleteBot(botToDelete.id);
+      // Refresh the bots list after deletion
+      await fetchBots();
       setShowDeleteConfirm(false);
       setBotToDelete(null);
     } catch (err: unknown) {
@@ -158,44 +122,46 @@ export default function BotsPage() {
         (err as { message?: string })?.message ||
         'Failed to delete bot';
       setError(errorMessage);
+      setShowDeleteConfirm(false);
+      setBotToDelete(null);
     }
-  }, [botToDelete]);
+  }, [botToDelete, fetchBots]);
 
   const handleCreateNewBot = useCallback(() => {
+    setBotToEdit(null);
     setShowNewBotModal(true);
   }, []);
 
-  const handleSubmitNewBot = useCallback(async (data: BotFormData) => {
+  const handleRestoreBot = useCallback(async (botId: string) => {
     try {
-      // TODO: Replace with actual API call
-      console.log('Creating bot with data:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Add the new bot to the list (mock implementation)
-      const newBot: BotData = {
-        id: String(bots.length + 1),
-        name: data.assistantName,
-        channel_type: data.channelType,
-        gpt_model: data.aiModel,
-        is_active: true,
-        created_on: new Date().toISOString().split('T')[0],
-        updated_on: new Date().toISOString().split('T')[0],
-        usage_count: 0,
-        total_sessions: 0,
-      };
-      
-      setBots((prev) => [newBot, ...prev]);
-      setShowNewBotModal(false);
+      await botService.restoreBot(botId);
+      // Refresh the bots list after restore
+      await fetchBots();
     } catch (err: unknown) {
       const errorMessage =
         (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.error ||
         (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.detail ||
         (err as { message?: string })?.message ||
-        'Failed to create bot';
+        'Failed to restore bot';
       setError(errorMessage);
-      throw err;
     }
-  }, [bots.length]);
+  }, [fetchBots]);
+
+  const handleSubmitNewBot = useCallback(async () => {
+    try {
+      // The bot creation/update is handled by the modal, just refresh the list
+      await fetchBots();
+      setShowNewBotModal(false);
+      setBotToEdit(null);
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.error ||
+        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.detail ||
+        (err as { message?: string })?.message ||
+        'Failed to refresh bots list';
+      setError(errorMessage);
+    }
+  }, [fetchBots]);
 
   if (loading) {
     return (
@@ -240,8 +206,10 @@ export default function BotsPage() {
                 <BotCard
                   key={bot.id}
                   bot={bot}
-                  onToggleActive={handleToggleActive}
+                  channelTypes={channelTypes}
+                  onEdit={handleEditBot}
                   onDelete={handleDeleteBot}
+                  onRestore={handleRestoreBot}
                 />
               ))}
             </div>
@@ -249,11 +217,15 @@ export default function BotsPage() {
         </section>
       </div>
 
-      {/* New Bot Modal */}
+      {/* New/Edit Bot Modal */}
       <NewBotModal
         isOpen={showNewBotModal}
-        onClose={() => setShowNewBotModal(false)}
+        onClose={() => {
+          setShowNewBotModal(false);
+          setBotToEdit(null);
+        }}
         onSubmit={handleSubmitNewBot}
+        bot={botToEdit || undefined}
       />
 
       {/* Delete Confirmation Modal */}
@@ -264,8 +236,8 @@ export default function BotsPage() {
               <h3 className="text-lg font-semibold">Delete bot</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              This will permanently remove <span className="font-semibold">{botToDelete.name}</span>{' '}
-              and any associated OpenAI assistant. This action cannot be undone.
+              This will deactivate <span className="font-semibold">{botToDelete.name}</span>{' '}
+              (soft delete - sets working=False and is_active=False). The bot can be restored later.
             </p>
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <button

@@ -1,7 +1,7 @@
 'use client';
 
 import { Bot, Play, Pause, Users } from "lucide-react";
-import { BotData } from "./BotCard";
+import type { BotData } from "../../types/bot";
 
 interface SummaryMetric {
   title: string;

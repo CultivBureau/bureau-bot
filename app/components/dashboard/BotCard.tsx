@@ -3,32 +3,29 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { MoreVertical, Play, Pause } from "lucide-react";
-
-export interface BotData {
-  id: string;
-  name: string;
-  channel_type: string;
-  gpt_model: string;
-  is_active: boolean;
-  created_on: string;
-  updated_on: string;
-  usage_count?: number;
-  total_sessions?: number;
-}
+import { MoreVertical, Play, Pause, Edit, Trash2, RotateCcw } from "lucide-react";
+import type { BotData, ChannelType } from "../../types/bot";
 
 interface BotCardProps {
   bot: BotData;
-  onToggleActive?: (botId: string) => void;
+  channelTypes?: ChannelType[];
+  onEdit?: (botId: string) => void;
   onDelete?: (botId: string) => void;
+  onRestore?: (botId: string) => void;
 }
 
-export function BotCard({ bot, onToggleActive, onDelete }: BotCardProps) {
+export function BotCard({ bot, channelTypes = [], onEdit, onDelete, onRestore }: BotCardProps) {
   const [openMenu, setOpenMenu] = useState(false);
   const isActive = bot.is_active;
   const statusClasses = isActive
     ? 'bg-green-500/10 text-green-600 dark:text-green-400'
     : 'bg-secondary text-secondary-foreground';
+
+  // Get channel label from channel types
+  const getChannelLabel = (channelValue: string): string => {
+    const channelType = channelTypes.find((ct) => ct.value === channelValue);
+    return channelType?.label || channelValue.toUpperCase();
+  };
 
   return (
     <div className="group relative overflow-hidden rounded-3xl border-2 border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-primary/50">
@@ -53,32 +50,33 @@ export function BotCard({ bot, onToggleActive, onDelete }: BotCardProps) {
 
       {/* Dropdown Menu */}
       {openMenu && (
-        <div className="absolute right-5 top-16 z-30 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
-          <Link
-            href={`/pages/dashboard/bots/overview?botId=${bot.id}`}
-            onClick={() => setOpenMenu(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-card-foreground transition hover:bg-secondary"
-          >
-            Overview
-          </Link>
-          <Link
-            href={`/pages/dashboard/bots/configure?botId=${bot.id}`}
-            onClick={() => setOpenMenu(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-card-foreground transition hover:bg-secondary"
-          >
-            Configure
-          </Link>
-          {onToggleActive && (
+        <div className="absolute right-5 top-16 z-30 w-40 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+          {onEdit && (
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                onToggleActive(bot.id);
+                onEdit(bot.id);
                 setOpenMenu(false);
               }}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-card-foreground transition hover:bg-secondary"
             >
-              {bot.is_active ? 'Pause bot' : 'Activate bot'}
+              <Edit className="h-4 w-4" />
+              Edit
+            </button>
+          )}
+          {!bot.is_active && onRestore && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRestore(bot.id);
+                setOpenMenu(false);
+              }}
+              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-card-foreground transition hover:bg-secondary"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Restore
             </button>
           )}
           {onDelete && (
@@ -91,6 +89,7 @@ export function BotCard({ bot, onToggleActive, onDelete }: BotCardProps) {
               }}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-destructive transition hover:bg-destructive/10"
             >
+              <Trash2 className="h-4 w-4" />
               Delete
             </button>
           )}
@@ -111,17 +110,37 @@ export function BotCard({ bot, onToggleActive, onDelete }: BotCardProps) {
         </div>
 
         {/* Bot Name */}
-        <h3 className="text-xl font-semibold text-card-foreground">
-          {bot.name}
-        </h3>
+        <div className="flex flex-col items-center gap-1">
+          <h3 className="text-xl font-semibold text-card-foreground">
+            {bot.name}
+          </h3>
+          {bot.assistant_name && bot.assistant_name !== bot.name && (
+            <p className="text-xs text-muted-foreground">
+              {bot.assistant_name}
+            </p>
+          )}
+        </div>
 
         {/* Status Badge */}
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusClasses}`}
-        >
-          {isActive ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
-          {isActive ? 'Active' : 'Inactive'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusClasses}`}
+          >
+            {isActive ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
+            {isActive ? 'Active' : 'Inactive'}
+          </span>
+          {bot.working !== undefined && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                bot.working
+                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                  : 'bg-gray-500/10 text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              {bot.working ? 'Working' : 'Idle'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Bot Details */}
@@ -129,7 +148,7 @@ export function BotCard({ bot, onToggleActive, onDelete }: BotCardProps) {
         <div className="flex flex-col items-center gap-1">
           <dt className="text-muted-foreground">Channel</dt>
           <dd className="font-medium text-card-foreground">
-            {bot.channel_type?.toUpperCase() ?? '—'}
+            {bot.channel_type ? getChannelLabel(bot.channel_type) : '—'}
           </dd>
         </div>
         <div className="flex flex-col items-center gap-1">
