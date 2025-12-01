@@ -5,6 +5,7 @@ import { BotCard, BotData } from '../../components/dashboard/BotCard';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { EmptyState } from '../../components/dashboard/EmptyState';
 import { LoadingState } from '../../components/dashboard/LoadingState';
+import { NewBotModal, BotFormData } from '../../components/dashboard/NewBotModal';
 import { Plus } from 'lucide-react';
 
 // Mock API - Replace with your actual API calls
@@ -87,6 +88,7 @@ export default function BotsPage() {
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [botToDelete, setBotToDelete] = useState<BotData | null>(null);
+  const [showNewBotModal, setShowNewBotModal] = useState(false);
 
   const fetchBots = useCallback(async () => {
     try {
@@ -160,9 +162,40 @@ export default function BotsPage() {
   }, [botToDelete]);
 
   const handleCreateNewBot = useCallback(() => {
-    // TODO: Open create bot modal or navigate to create page
-    console.log('Create new bot');
+    setShowNewBotModal(true);
   }, []);
+
+  const handleSubmitNewBot = useCallback(async (data: BotFormData) => {
+    try {
+      // TODO: Replace with actual API call
+      console.log('Creating bot with data:', data);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Add the new bot to the list (mock implementation)
+      const newBot: BotData = {
+        id: String(bots.length + 1),
+        name: data.assistantName,
+        channel_type: data.channelType,
+        gpt_model: data.aiModel,
+        is_active: true,
+        created_on: new Date().toISOString().split('T')[0],
+        updated_on: new Date().toISOString().split('T')[0],
+        usage_count: 0,
+        total_sessions: 0,
+      };
+      
+      setBots((prev) => [newBot, ...prev]);
+      setShowNewBotModal(false);
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.error ||
+        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.detail ||
+        (err as { message?: string })?.message ||
+        'Failed to create bot';
+      setError(errorMessage);
+      throw err;
+    }
+  }, [bots.length]);
 
   if (loading) {
     return (
@@ -215,6 +248,13 @@ export default function BotsPage() {
           )}
         </section>
       </div>
+
+      {/* New Bot Modal */}
+      <NewBotModal
+        isOpen={showNewBotModal}
+        onClose={() => setShowNewBotModal(false)}
+        onSubmit={handleSubmitNewBot}
+      />
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && botToDelete && (
