@@ -54,7 +54,7 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
     if (isOpen && bot) {
       setFormData({
         apiKey: '', // Don't show existing API key for security
-        assistantName: bot.assistant_name || bot.name || 'AI Assistant',
+        assistantName: bot.name || 'AI Assistant',
         channelType: bot.channel_type || '',
         aiModel: bot.gpt_model || '',
         instructions: bot.instructions || 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
@@ -167,7 +167,7 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
       }
     } else if (step === 2) {
       if (!formData.assistantName.trim()) {
-        newErrors.assistantName = 'Assistant name is required';
+        newErrors.assistantName = 'Bot name is required';
       }
       if (!formData.channelType) {
         newErrors.channelType = 'Channel type is required';
@@ -233,11 +233,9 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
         // Update bot using the API - only send fields that have changed
         const updateData: Record<string, string> = {};
         
-        // Check if name or assistant_name changed
-        const currentName = bot.assistant_name || bot.name;
-        if (formData.assistantName !== currentName) {
+        // Check if name changed
+        if (formData.assistantName !== bot.name) {
           updateData.name = formData.assistantName;
-          updateData.assistant_name = formData.assistantName;
         }
         
         // Check if channel type changed
@@ -272,7 +270,6 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
           gpt_model: formData.aiModel,
           openai_api_key: formData.apiKey,
           instructions: formData.instructions,
-          assistant_name: formData.assistantName,
         };
 
         await botService.createBot(botData);
@@ -476,11 +473,11 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="assistantName">
-                    Assistant Name <span className="text-destructive">*</span>
+                    Bot Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="assistantName"
-                    placeholder="AI Assistant"
+                    placeholder="My Bot"
                     value={formData.assistantName}
                     onChange={(e) => handleInputChange('assistantName', e.target.value)}
                     className={cn('text-foreground', errors.assistantName && 'border-destructive')}

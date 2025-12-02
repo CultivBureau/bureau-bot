@@ -8,6 +8,7 @@ import { EmptyState } from '../../components/dashboard/EmptyState';
 import { LoadingState } from '../../components/dashboard/LoadingState';
 import { NewBotModal } from '../../components/dashboard/NewBotModal';
 import { botService } from '../../services/bot';
+import { store } from '../../store/store';
 import { Plus } from 'lucide-react';
 
 // Helper function to map Bot from API to BotData for UI
@@ -32,8 +33,6 @@ export default function BotsPage() {
   const [fullBots, setFullBots] = useState<Bot[]>([]); // Store full bot objects for editing
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [botToDelete, setBotToDelete] = useState<BotData | null>(null);
   const [showNewBotModal, setShowNewBotModal] = useState(false);
   const [botToEdit, setBotToEdit] = useState<Bot | null>(null);
   const [channelTypes, setChannelTypes] = useState<ChannelType[]>([]);
@@ -68,6 +67,15 @@ export default function BotsPage() {
   // Fetch channel types for label mapping
   useEffect(() => {
     const fetchChannelTypes = async () => {
+      // Check if token exists before making the request
+      const state = store.getState();
+      const token = state.auth.token;
+      
+      if (!token) {
+        console.warn('No authentication token available. Skipping channel types fetch.');
+        return;
+      }
+      
       try {
         const types = await botService.getChannelTypes();
         setChannelTypes(types);
@@ -99,53 +107,35 @@ export default function BotsPage() {
     }
   }, []);
 
-  const handleDeleteBot = useCallback((botId: string) => {
+  const handleToggleActive = useCallback(async (botId: string) => {
     const bot = bots.find((b) => b.id === botId);
-    if (bot) {
-      setBotToDelete(bot);
-      setShowDeleteConfirm(true);
-    }
-  }, [bots]);
-
-  const confirmDeleteBot = useCallback(async () => {
-    if (!botToDelete) return;
+    if (!bot) return;
+    
     try {
-      await botService.deleteBot(botToDelete.id);
-      // Refresh the bots list after deletion
+      if (bot.is_active) {
+        // Deactivate the bot
+        await botService.deleteBot(botId);
+      } else {
+        // Activate the bot
+        await botService.restoreBot(botId);
+      }
+      // Refresh the bots list after toggle
       await fetchBots();
-      setShowDeleteConfirm(false);
-      setBotToDelete(null);
     } catch (err: unknown) {
       const errorMessage =
         (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.error ||
         (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.detail ||
         (err as { message?: string })?.message ||
-        'Failed to delete bot';
+        `Failed to ${bot.is_active ? 'deactivate' : 'activate'} bot`;
       setError(errorMessage);
-      setShowDeleteConfirm(false);
-      setBotToDelete(null);
     }
-  }, [botToDelete, fetchBots]);
+  }, [bots, fetchBots]);
 
   const handleCreateNewBot = useCallback(() => {
     setBotToEdit(null);
     setShowNewBotModal(true);
   }, []);
 
-  const handleRestoreBot = useCallback(async (botId: string) => {
-    try {
-      await botService.restoreBot(botId);
-      // Refresh the bots list after restore
-      await fetchBots();
-    } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.error ||
-        (err as { response?: { data?: { error?: string; detail?: string } }; message?: string })?.response?.data?.detail ||
-        (err as { message?: string })?.message ||
-        'Failed to restore bot';
-      setError(errorMessage);
-    }
-  }, [fetchBots]);
 
   const handleSubmitNewBot = useCallback(async () => {
     try {
@@ -208,8 +198,7 @@ export default function BotsPage() {
                   bot={bot}
                   channelTypes={channelTypes}
                   onEdit={handleEditBot}
-                  onDelete={handleDeleteBot}
-                  onRestore={handleRestoreBot}
+                  onToggleActive={handleToggleActive}
                 />
               ))}
             </div>
@@ -228,37 +217,6 @@ export default function BotsPage() {
         bot={botToEdit || undefined}
       />
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && botToDelete && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-destructive/20 bg-card p-6 shadow-2xl">
-            <div className="mb-5 flex items-center gap-3 text-destructive">
-              <h3 className="text-lg font-semibold">Delete bot</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              This will deactivate <span className="font-semibold">{botToDelete.name}</span>{' '}
-              (soft delete - sets working=False and is_active=False). The bot can be restored later.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setBotToDelete(null);
-                }}
-                className="rounded-full border border-border px-4 py-2 text-sm font-medium text-card-foreground transition hover:bg-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDeleteBot}
-                className="rounded-full bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/90"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </DashboardLayout>
   );
 }

@@ -3,18 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { MoreVertical, Play, Pause, Edit, Trash2, RotateCcw } from "lucide-react";
+import { MoreVertical, Play, Pause, Edit, Power } from "lucide-react";
 import type { BotData, ChannelType } from "../../types/bot";
 
 interface BotCardProps {
   bot: BotData;
   channelTypes?: ChannelType[];
   onEdit?: (botId: string) => void;
-  onDelete?: (botId: string) => void;
-  onRestore?: (botId: string) => void;
+  onToggleActive?: (botId: string) => void;
 }
 
-export function BotCard({ bot, channelTypes = [], onEdit, onDelete, onRestore }: BotCardProps) {
+export function BotCard({ bot, channelTypes = [], onEdit, onToggleActive }: BotCardProps) {
   const [openMenu, setOpenMenu] = useState(false);
   const isActive = bot.is_active;
   const statusClasses = isActive
@@ -30,7 +29,7 @@ export function BotCard({ bot, channelTypes = [], onEdit, onDelete, onRestore }:
   return (
     <div className="group relative overflow-hidden rounded-3xl border-2 border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-primary/50">
       <Link
-        href={`/pages/dashboard/bots/overview?botId=${bot.id}`}
+        href={`/pages/bot-details/overview?botId=${bot.id}`}
         className="absolute inset-0 z-10"
         aria-label={`Open ${bot.name}`}
       />
@@ -65,32 +64,22 @@ export function BotCard({ bot, channelTypes = [], onEdit, onDelete, onRestore }:
               Edit
             </button>
           )}
-          {!bot.is_active && onRestore && (
+          {onToggleActive && (
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                onRestore(bot.id);
+                onToggleActive(bot.id);
                 setOpenMenu(false);
               }}
-              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-card-foreground transition hover:bg-secondary"
+              className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition ${
+                isActive
+                  ? 'text-orange-600 hover:bg-orange-500/10'
+                  : 'text-green-600 hover:bg-green-500/10'
+              }`}
             >
-              <RotateCcw className="h-4 w-4" />
-              Restore
-            </button>
-          )}
-          {onDelete && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete(bot.id);
-                setOpenMenu(false);
-              }}
-              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-destructive transition hover:bg-destructive/10"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
+              <Power className="h-4 w-4" />
+              {isActive ? 'Deactivate' : 'Activate'}
             </button>
           )}
         </div>
@@ -114,11 +103,6 @@ export function BotCard({ bot, channelTypes = [], onEdit, onDelete, onRestore }:
           <h3 className="text-xl font-semibold text-card-foreground">
             {bot.name}
           </h3>
-          {bot.assistant_name && bot.assistant_name !== bot.name && (
-            <p className="text-xs text-muted-foreground">
-              {bot.assistant_name}
-            </p>
-          )}
         </div>
 
         {/* Status Badge */}

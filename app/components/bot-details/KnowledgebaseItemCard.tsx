@@ -1,0 +1,129 @@
+'use client';
+
+import { ReactNode } from 'react';
+import { File, FileText as FileTextIcon, Link, Trash2, Edit, Download, Eye, HardDrive } from 'lucide-react';
+
+interface KnowledgeBaseItem {
+  source_id: number;
+  bot_id: string;
+  source_type: 'file' | 'text' | 'url';
+  title: string;
+  content?: string;
+  openai_file_id?: string;
+  file_size?: number;
+  file_type?: string;
+  vector_store_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface KnowledgebaseItemCardProps {
+  item: KnowledgeBaseItem;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onDelete: () => void;
+  onEdit: () => void;
+  onDownload: () => void;
+  onView: () => void;
+  formatFileSize: (bytes: number) => string;
+  getFileIcon: (sourceType: string, fileType?: string) => JSX.Element;
+}
+
+export function KnowledgebaseItemCard({
+  item,
+  isExpanded,
+  onToggleExpand,
+  onDelete,
+  onEdit,
+  onDownload,
+  onView,
+  formatFileSize,
+  getFileIcon,
+}: KnowledgebaseItemCardProps) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl bg-secondary p-2 text-card-foreground">
+            {getFileIcon(item.source_type, item.file_type)}
+          </div>
+          <div>
+            <h4 className="font-semibold text-card-foreground">
+              {item.title}
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Added {new Date(item.created_at).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-1">
+          <button
+            onClick={onToggleExpand}
+            className="rounded-full border border-border p-1 text-xs text-muted-foreground hover:bg-secondary"
+          >
+            {isExpanded ? 'Hide' : 'Details'}
+          </button>
+          <button
+            onClick={onDelete}
+            className="rounded-full border border-red-200 p-1 text-red-600 hover:bg-red-50"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <span className="rounded-full bg-secondary px-2 py-1">
+          {item.source_type}
+        </span>
+        {item.file_type && (
+          <span className="rounded-full bg-secondary px-2 py-1">
+            {item.file_type}
+          </span>
+        )}
+        {item.file_size && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1">
+            <HardDrive className="h-3 w-3" />
+            {formatFileSize(item.file_size)}
+          </span>
+        )}
+      </div>
+
+      {isExpanded && (
+        <div className="mt-4 space-y-3 border-t border-border pt-4 text-sm">
+          {item.content && (
+            <div className="rounded-xl bg-secondary/50 p-3 text-card-foreground">
+              {item.content.length > 200
+                ? `${item.content.slice(0, 200)}…`
+                : item.content}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={onView}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
+            >
+              <Eye className="h-3 w-3" />
+              View
+            </button>
+            <button
+              onClick={onDownload}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
+            >
+              <Download className="h-3 w-3" />
+              Download
+            </button>
+            <button
+              onClick={onEdit}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
+            >
+              <Edit className="h-3 w-3" />
+              Edit
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
