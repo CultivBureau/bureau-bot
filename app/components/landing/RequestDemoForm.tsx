@@ -109,7 +109,7 @@ export default function RequestDemoForm() {
     }
 
     return (
-        <section id="contact" className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
+        <section id="contact" className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-bl from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-10 sm:mb-12">
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-hero-text mb-4 sm:mb-6">Request a Demo</h2>

@@ -1,16 +1,13 @@
 'use client';
 
-import { CreditCard, Check, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { CreditCard, Check, Calendar } from 'lucide-react';
 import { User } from '../../types/auth';
-import { Button } from '../landing/ui/button';
 
 interface CurrentPlanSectionProps {
   user: User;
-  showPlans: boolean;
-  onTogglePlans: () => void;
 }
 
-export function CurrentPlanSection({ user, showPlans, onTogglePlans }: CurrentPlanSectionProps) {
+export function CurrentPlanSection({ user }: CurrentPlanSectionProps) {
   const hasActivePlan = user.plan_type !== null;
 
   return (
@@ -61,13 +58,6 @@ export function CurrentPlanSection({ user, showPlans, onTogglePlans }: CurrentPl
               Active
             </div>
           )}
-          <Button
-            onClick={onTogglePlans}
-            className="rounded-full px-6 py-2.5 font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/40 hover:bg-primary/90 focus:ring-2 focus:ring-primary/40 focus:outline-none transition-all flex items-center gap-2"
-          >
-            {hasActivePlan ? 'Your Plan' : 'See Plans'}
-            {showPlans ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
         </div>
       </div>
     </div>

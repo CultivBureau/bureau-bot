@@ -132,7 +132,6 @@ export function Header() {
   const navigation = [
     { name: "Home", id: "home" },
     { name: "Features", id: "features" },
-    { name: "Pricing", id: "pricing" },
     { name: "About Us", id: "about" },
     { name: "Contact Us", id: "contact" },
   ];

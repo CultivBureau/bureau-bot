@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { CurrentPlanSection } from '../../components/Payment/CurrentPlanSection';
-import { PricingPlansList } from '../../components/Payment/PricingPlansList';
 import { PaymentTransactionsTable } from '../../components/Payment/PaymentTransactionsTable';
 import { userService } from '../../services/user';
 import { User } from '../../types/auth';
@@ -15,7 +14,6 @@ export default function PaymentPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showPlans, setShowPlans] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -42,11 +40,6 @@ export default function PaymentPage() {
       fetchUser();
     }
   }, [decodedToken]);
-
-  const handleSelectPlan = (planName: string) => {
-    // TODO: Implement payment processing
-    console.log('Selected plan:', planName);
-  };
 
   if (loading) {
     return (
@@ -82,21 +75,7 @@ export default function PaymentPage() {
         {/* Current Plan Section */}
         <CurrentPlanSection 
           user={user} 
-          showPlans={showPlans}
-          onTogglePlans={() => setShowPlans(!showPlans)}
         />
-
-        {/* Pricing Plans List - Collapsible */}
-        <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
-          showPlans 
-            ? 'max-h-[2000px] opacity-100 translate-y-0' 
-            : 'max-h-0 opacity-0 -translate-y-4'
-        }`}>
-          <PricingPlansList
-            currentPlanName={user.plan_type}
-            onSelectPlan={handleSelectPlan}
-          />
-        </div>
 
         {/* Payment Transactions Table */}
         <PaymentTransactionsTable />

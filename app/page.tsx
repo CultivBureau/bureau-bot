@@ -2,7 +2,6 @@ import { Header } from "./components/landing/Header";
 import { Hero } from "./components/landing/Hero";
 import { BenefitsCards } from "./components/landing/BenefitsCards";
 import { Bitrix24Integration } from "./components/landing/Bitrix24Integration";
-import { Pricing } from "./components/landing/Pricing";
 import { FAQs } from "./components/landing/FAQs";
 import { DemoRequestSection } from "./components/landing/DemoRequestSection";
 
@@ -20,9 +19,6 @@ export default function Home() {
         </section>
         <section id="faq">
           <FAQs />
-        </section>
-        <section id="pricing">
-          <Pricing />
         </section>
         <DemoRequestSection />
       </main>

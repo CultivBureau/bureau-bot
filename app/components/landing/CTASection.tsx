@@ -22,7 +22,7 @@ export function CTASection({ onShowDemo }: CTASectionProps) {
   };
 
   return (
-    <section className="relative py-8 sm:py-12 md:py-16 lg:py-20 px-3 sm:px-4 md:px-6 lg:px-8 bg-gradient-to-bl from-hero-bg-start via-hero-bg-mid to-hero-bg-end overflow-hidden">
+    <section className="relative py-8 sm:py-12 md:py-16 lg:py-20 px-3 sm:px-4 md:px-6 lg:px-8 bg-gradient-to-br from-hero-bg-start via-hero-bg-mid to-hero-bg-end overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -right-1/4 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-96 lg:h-96 bg-hero-circle/10 rounded-full blur-3xl animate-pulse" />
