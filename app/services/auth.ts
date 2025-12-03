@@ -90,6 +90,30 @@ class AuthService {
     store.dispatch(clearTokens());
   }
 
+  logoutAndRedirect(): void {
+    // Clear tokens from Redux store
+    this.logout();
+    // Redirect to login page
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
+  }
+
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+    
+    const decoded = this.getDecodedToken();
+    if (!decoded || !decoded.exp) return true;
+    
+    // exp is in seconds, Date.now() is in milliseconds
+    const expirationTime = (decoded.exp as number) * 1000;
+    const currentTime = Date.now();
+    
+    // Consider token expired if it expires within the next 5 seconds (buffer)
+    return currentTime >= (expirationTime - 5000);
+  }
+
   getToken(): string | null {
     const state = store.getState();
     return state.auth.token;

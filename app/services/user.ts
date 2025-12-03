@@ -1,5 +1,6 @@
 import { User } from '../types/auth';
 import { store } from '../store/store';
+import { authService } from './auth';
 
 interface UpdateUserRequest {
   first_name?: string;
@@ -36,8 +37,16 @@ class UserService {
     const url = `${this.getBaseURL()}${endpoint}`;
     const token = this.getAuthToken();
     
+    // Check if token exists
     if (!token) {
+      authService.logoutAndRedirect();
       throw new Error('Authentication token not found. Please log in again.');
+    }
+
+    // Check if token is expired before making the request
+    if (authService.isTokenExpired()) {
+      authService.logoutAndRedirect();
+      throw new Error('Your session has expired. Please log in again.');
     }
 
     const config: RequestInit = {
@@ -52,6 +61,13 @@ class UserService {
 
     try {
       const response = await fetch(url, config);
+      
+      // Handle 401 Unauthorized - token expired or invalid
+      if (response.status === 401) {
+        authService.logoutAndRedirect();
+        throw new Error('Your session has expired. Please log in again.');
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -67,6 +83,10 @@ class UserService {
       return data as T;
     } catch (error) {
       if (error instanceof Error) {
+        // Don't redirect again if we already handled 401
+        if (error.message.includes('session has expired')) {
+          throw error;
+        }
         throw error;
       }
       throw new Error('Network error occurred');

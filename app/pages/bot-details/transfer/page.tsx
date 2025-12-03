@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { BotDetailsPageShell } from '../../../components/bot-details/BotDetailsPageShell';
-import { TransferContent } from '../../../components/bot-details/TransferContent';
+import { BotDetailsPageShell } from '../../../components/bot-details/shared/BotDetailsPageShell';
+import { TransferContent } from '../../../components/bot-details/transfer/TransferContent';
 import { Loader2 } from 'lucide-react';
 
 function TransferPageContent() {

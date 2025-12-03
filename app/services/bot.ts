@@ -1,4 +1,5 @@
 import { store } from '../store/store';
+import { authService } from './auth';
 import type {
   GPTModel,
   ChannelType,
@@ -37,8 +38,16 @@ class BotService {
     const url = `${this.getBaseURL()}${endpoint}`;
     const token = this.getAuthToken();
     
+    // Check if token exists
     if (!token) {
+      authService.logoutAndRedirect();
       throw new Error('Authentication token not found. Please log in again.');
+    }
+
+    // Check if token is expired before making the request
+    if (authService.isTokenExpired()) {
+      authService.logoutAndRedirect();
+      throw new Error('Your session has expired. Please log in again.');
     }
 
     const config: RequestInit = {
@@ -58,6 +67,12 @@ class BotService {
 
     try {
       const response = await fetch(url, config);
+      
+      // Handle 401 Unauthorized - token expired or invalid
+      if (response.status === 401) {
+        authService.logoutAndRedirect();
+        throw new Error('Your session has expired. Please log in again.');
+      }
       
       // Handle network errors or cases where response is not ok
       if (!response.ok) {
@@ -89,6 +104,10 @@ class BotService {
       }
     } catch (error) {
       if (error instanceof Error) {
+        // Don't redirect again if we already handled 401
+        if (error.message.includes('session has expired')) {
+          throw error;
+        }
         // Handle specific network errors
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
           throw new Error(

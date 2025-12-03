@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { BotDetailsPageShell } from '../../../components/bot-details/BotDetailsPageShell';
-import { ConfigureContent } from '../../../components/bot-details/ConfigureContent';
+import { BotDetailsPageShell } from '../../../components/bot-details/shared/BotDetailsPageShell';
+import { ConfigureContent } from '../../../components/bot-details/configure/ConfigureContent';
 import { Loader2 } from 'lucide-react';
 
 function ConfigurePageContent() {

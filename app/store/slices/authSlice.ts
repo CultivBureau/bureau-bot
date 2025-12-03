@@ -44,6 +44,21 @@ const decodeToken = (token: string): DecodedToken | null => {
   }
 };
 
+// Helper function to check if token is expired
+export const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true;
+  
+  const decoded = decodeToken(token);
+  if (!decoded || !decoded.exp) return true;
+  
+  // exp is in seconds, Date.now() is in milliseconds
+  const expirationTime = decoded.exp * 1000;
+  const currentTime = Date.now();
+  
+  // Consider token expired if it expires within the next 5 seconds (buffer)
+  return currentTime >= (expirationTime - 5000);
+};
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -82,6 +97,14 @@ const authSlice = createSlice({
         const refreshToken = localStorage.getItem('refreshToken');
         
         if (token && refreshToken) {
+          // Check if token is expired
+          if (isTokenExpired(token)) {
+            // Clear expired tokens
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('refreshToken');
+            return;
+          }
+          
           state.token = token;
           state.refreshToken = refreshToken;
           state.decodedToken = decodeToken(token);
