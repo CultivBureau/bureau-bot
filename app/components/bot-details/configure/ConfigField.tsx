@@ -41,7 +41,7 @@ export function ConfigField({
       <label className="block text-sm font-medium text-card-foreground">
         {label}
       </label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         {icon && (
           <div className="text-muted-foreground flex-shrink-0">{icon}</div>
         )}
@@ -54,7 +54,7 @@ export function ConfigField({
                 onChange(type === 'number' ? Number(e.target.value) : e.target.value)
               }
               placeholder={placeholder}
-              className="flex-1"
+              className="flex-1 min-w-0"
               disabled={disabled || saving}
             />
             <Button
@@ -79,14 +79,16 @@ export function ConfigField({
           <>
             <div
               className={cn(
-                'flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground',
+                'flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground min-w-0 overflow-hidden',
                 !disabled && 'cursor-pointer hover:bg-card/70'
               )}
               onClick={!disabled ? onEdit : undefined}
             >
-              {type === 'password' && typeof value === 'string'
-                ? `${value.substring(0, 12)}...`
-                : value}
+              <div className="truncate">
+                {type === 'password' && typeof value === 'string'
+                  ? `${value.substring(0, 12)}...`
+                  : value}
+              </div>
             </div>
             {!disabled && (
               <Button

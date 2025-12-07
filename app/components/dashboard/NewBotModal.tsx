@@ -58,7 +58,7 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
         channelType: bot.channel_type || '',
         aiModel: bot.gpt_model || '',
         instructions: bot.instructions || 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
-        webhookUrl: '', // Not in bot data
+        webhookUrl: bot.webhook_url || '',
       });
     }
   }, [isOpen, bot]);
@@ -251,7 +251,7 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
     try {
       if (isEditMode && bot) {
         // Update bot using the API - only send fields that have changed
-        const updateData: Record<string, string> = {};
+        const updateData: Record<string, string | null> = {};
         
         // Check if name changed
         if (formData.assistantName !== bot.name) {
@@ -273,6 +273,12 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
           updateData.instructions = formData.instructions;
         }
         
+        // Check if webhook URL changed
+        const currentWebhookUrl = bot.webhook_url || '';
+        if (formData.webhookUrl.trim() !== currentWebhookUrl) {
+          updateData.webhook_url = formData.webhookUrl.trim() || null;
+        }
+        
         // Only include API key if a new one was provided
         if (formData.apiKey.trim()) {
           updateData.openai_api_key = formData.apiKey.trim();
@@ -290,6 +296,7 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
           gpt_model: formData.aiModel,
           openai_api_key: formData.apiKey.trim(), // Ensure trimmed and not empty
           instructions: formData.instructions.trim(),
+          webhook_url: formData.webhookUrl.trim() || null,
         };
 
         // Final validation before sending

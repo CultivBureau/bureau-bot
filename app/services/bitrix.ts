@@ -1,4 +1,5 @@
 import { store } from '../store/store';
+import { authService } from './auth';
 
 class BitrixService {
   private getBaseURL(): string {
@@ -16,9 +17,80 @@ class BitrixService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    // TODO: Replace with real API call
-    // For now, return dummy data based on endpoint
-    return this.getDummyData<T>(endpoint, options);
+    const url = `${this.getBaseURL()}${endpoint}`;
+    const token = this.getAuthToken();
+    
+    if (!token) {
+      authService.logoutAndRedirect();
+      throw new Error('Authentication token not found. Please log in again.');
+    }
+
+    if (authService.isTokenExpired()) {
+      authService.logoutAndRedirect();
+      throw new Error('Your session has expired. Please log in again.');
+    }
+
+    const config: RequestInit = {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...options.headers,
+      },
+    };
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Request:', { url, method: config.method || 'GET' });
+    }
+
+    try {
+      const response = await fetch(url, config);
+      
+      if (response.status === 401) {
+        authService.logoutAndRedirect();
+        throw new Error('Your session has expired. Please log in again.');
+      }
+      
+      if (!response.ok) {
+        let errorMessage = `Request failed with status ${response.status}`;
+        
+        try {
+          const errorData = await response.json();
+          const error = errorData as { detail?: string; error?: string; message?: string };
+          errorMessage = error.detail || error.error || error.message || errorMessage;
+        } catch {
+          try {
+            const text = await response.text();
+            errorMessage = text || errorMessage;
+          } catch {
+            // Use default error message
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      try {
+        const data = await response.json();
+        return data as T;
+      } catch {
+        throw new Error('Invalid response format from server');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('session has expired')) {
+          throw error;
+        }
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+          throw new Error(
+            'Unable to connect to the server. Please check your internet connection and try again.'
+          );
+        }
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
+    }
   }
 
   private getDummyData<T>(endpoint: string, options?: RequestInit): T {
@@ -187,20 +259,50 @@ class BitrixService {
 
   // CRM Fields
   async getCrmFields(params?: { bot_id?: string; entity_type?: string }): Promise<any> {
-    // TODO: GET /api/bitrix/crm-fields/?bot_id={bot_id}&entity_type={entity_type}
-    return this.request<any>('/api/bitrix/crm-fields/', { method: 'GET' });
+    const queryParams = new URLSearchParams();
+    if (params?.bot_id) {
+      queryParams.append('bot_id', params.bot_id);
+    }
+    if (params?.entity_type) {
+      queryParams.append('entity_type', params.entity_type);
+    }
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/api/bitrix/crm-fields/?${queryString}` : '/api/bitrix/crm-fields/';
+    const response = await this.request<any>(endpoint, { method: 'GET' });
+    return response.crm_fields || response;
   }
 
   // Pipelines
   async getPipelines(params?: { bot_id?: string; entity_type?: string }): Promise<any> {
-    // TODO: GET /api/bitrix/pipelines/?bot_id={bot_id}&entity_type={entity_type}
-    return this.request<any>('/api/bitrix/pipelines/', { method: 'GET' });
+    const queryParams = new URLSearchParams();
+    if (params?.bot_id) {
+      queryParams.append('bot_id', params.bot_id);
+    }
+    if (params?.entity_type) {
+      queryParams.append('entity_type', params.entity_type);
+    }
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/api/bitrix/pipelines/?${queryString}` : '/api/bitrix/pipelines/';
+    const response = await this.request<any>(endpoint, { method: 'GET' });
+    return response.pipelines || response;
   }
 
   // Stages
-  async getStages(params?: { bot_id?: string; pipeline_id?: string }): Promise<any> {
-    // TODO: GET /api/bitrix/stages/?bot_id={bot_id}&pipeline_id={pipeline_id}
-    return this.request<any>('/api/bitrix/stages/', { method: 'GET' });
+  async getStages(params?: { bot_id?: string; pipeline_id?: string; entity_type?: string }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (params?.bot_id) {
+      queryParams.append('bot_id', params.bot_id);
+    }
+    if (params?.pipeline_id) {
+      queryParams.append('pipeline_id', params.pipeline_id);
+    }
+    if (params?.entity_type) {
+      queryParams.append('entity_type', params.entity_type);
+    }
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/api/bitrix/stages/?${queryString}` : '/api/bitrix/stages/';
+    const response = await this.request<any>(endpoint, { method: 'GET' });
+    return response.stages || response;
   }
 
   // Integration Settings
@@ -245,13 +347,25 @@ class BitrixService {
 
   // Users and Channels
   async getBitrixUsers(params?: { bot_id?: string }): Promise<any> {
-    // TODO: GET /api/bitrix/users/?bot_id={bot_id}
-    return this.request<any>('/api/bitrix/users/', { method: 'GET' });
+    const queryParams = new URLSearchParams();
+    if (params?.bot_id) {
+      queryParams.append('bot_id', params.bot_id);
+    }
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/api/bitrix/users/?${queryString}` : '/api/bitrix/users/';
+    const response = await this.request<any>(endpoint, { method: 'GET' });
+    return response.users || response;
   }
 
   async getBitrixChannels(params?: { bot_id?: string }): Promise<any> {
-    // TODO: GET /api/bitrix/channels/?bot_id={bot_id}
-    return this.request<any>('/api/bitrix/channels/', { method: 'GET' });
+    const queryParams = new URLSearchParams();
+    if (params?.bot_id) {
+      queryParams.append('bot_id', params.bot_id);
+    }
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/api/bitrix/channels/?${queryString}` : '/api/bitrix/channels/';
+    const response = await this.request<any>(endpoint, { method: 'GET' });
+    return response.channels || response;
   }
 
   // Transfer Settings

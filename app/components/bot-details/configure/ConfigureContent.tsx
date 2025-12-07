@@ -134,7 +134,7 @@ export function ConfigureContent() {
   }
 
   return (
-    <div className="rounded-3xl border border-border bg-card/70 backdrop-blur-sm p-8 shadow-sm">
+    <div className="rounded-3xl border border-border bg-card/70 backdrop-blur-sm p-8 shadow-sm overflow-hidden">
       <div className="mb-6 flex items-center gap-3">
         <Settings className="h-6 w-6 text-primary" />
         <h2 className="text-2xl font-semibold text-card-foreground">
@@ -160,10 +160,12 @@ export function ConfigureContent() {
               <label className="block text-sm font-medium text-card-foreground">
                 Start Time
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground">
-                  {formatDateTime(bot.start_time)}
+                <div className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground min-w-0 overflow-hidden">
+                  <div className="truncate">
+                    {formatDateTime(bot.start_time)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -171,10 +173,12 @@ export function ConfigureContent() {
               <label className="block text-sm font-medium text-card-foreground">
                 End Time
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground">
-                  {formatDateTime(bot.end_time)}
+                <div className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground min-w-0 overflow-hidden">
+                  <div className="truncate">
+                    {formatDateTime(bot.end_time)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -198,7 +202,7 @@ export function ConfigureContent() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
         <ConfigField
           label="Bot Name"
           value={bot.name}

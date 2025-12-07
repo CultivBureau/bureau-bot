@@ -7,6 +7,7 @@ import {
   Save, RefreshCw
 } from 'lucide-react';
 import { bitrixService } from '../../../services/bitrix';
+import { functionsService, type Function, type IntegrationType } from '../../../services/functions';
 
 interface FunctionProperty {
   id: string;
@@ -26,6 +27,8 @@ interface FunctionData {
   phase: string;
   created_at: string;
   updated_at: string;
+  integration_type?: IntegrationType;
+  is_active?: boolean;
 }
 
 interface CRMField {
@@ -66,10 +69,11 @@ export function FunctionsContent() {
   const [success, setSuccess] = useState('');
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [functionToDelete, setFunctionToDelete] = useState<FunctionData | null>(null);
   const [functionToEdit, setFunctionToEdit] = useState<FunctionData | null>(null);
+  const [viewingFunction, setViewingFunction] = useState<FunctionData | null>(null);
+  const [viewMode, setViewMode] = useState<'view' | 'edit' | 'create'>('create');
   
   // CRM Data state
   const [crmFields, setCrmFields] = useState<CRMField[]>([]);
@@ -88,19 +92,61 @@ export function FunctionsContent() {
     
     try {
       setLoading(true);
-      const response = await bitrixService.getFunctions({ bot_id: botId });
-      const data = response;
-      const functionsList = Array.isArray(data) ? data : (data.results || data);
+      const response = await functionsService.getFunctions({ 
+        bot_id: botId,
+        integration_type: 'BITRIX' // Only BITRIX for now
+      });
       
-      const mappedFunctions = functionsList.map((func: any) => ({
-        id: func.id,
-        name: func.name,
-        instruction: func.description || func.trigger_instructions || '',
-        properties: func.field_mappings || func.properties || [],
-        phase: func.new_stage_code || func.phase || '',
-        created_at: func.created_on || func.created_at || '',
-        updated_at: func.updated_on || func.updated_at || func.created_on || '',
-      }));
+      const functionsList = response.results || [];
+      
+      const mappedFunctions = functionsList.map((func: Function) => {
+        // Parse properties and phase from result_format
+        let phase = '';
+        let properties: FunctionProperty[] = [];
+        
+        if (func.result_format) {
+          // Extract stage
+          const stageMatch = func.result_format.match(/Stage:\s*([^|]+)/);
+          if (stageMatch) {
+            phase = stageMatch[1].trim();
+          }
+          
+          // Extract properties
+          const propertiesMatch = func.result_format.match(/Properties:\s*(.+)/);
+          if (propertiesMatch) {
+            try {
+              const propertiesJson = propertiesMatch[1].trim();
+              const parsedProperties = JSON.parse(propertiesJson);
+              
+              if (Array.isArray(parsedProperties)) {
+                properties = parsedProperties.map((prop: any, index: number) => ({
+                  id: `${func.id}-prop-${index}`,
+                  name: prop.field_code || prop.field_name || '',
+                  field_code: prop.field_code || '',
+                  field_name: prop.field_name || '',
+                  type: 'string',
+                  description: prop.description || '',
+                  required: true,
+                }));
+              }
+            } catch (err) {
+              console.error('Failed to parse properties for function:', func.id, err);
+            }
+          }
+        }
+        
+        return {
+          id: func.id,
+          name: func.name,
+          instruction: func.trigger_instructions || '',
+          properties: properties,
+          phase: phase,
+          created_at: func.created_on || '',
+          updated_at: func.updated_on || func.created_on || '',
+          integration_type: func.integration_type,
+          is_active: func.is_active,
+        };
+      });
       
       setFunctions(mappedFunctions);
     } catch (err: any) {
@@ -118,13 +164,11 @@ export function FunctionsContent() {
     try {
       setLoadingCRMData(true);
       const fieldsResponse = await bitrixService.getCrmFields({ bot_id: botId });
-      const fieldsData = fieldsResponse;
-      const fields = Array.isArray(fieldsData) ? fieldsData : (fieldsData.results || fieldsData);
+      const fields = Array.isArray(fieldsResponse) ? fieldsResponse : (fieldsResponse.results || fieldsResponse);
       setCrmFields(fields);
       
       const pipelinesResponse = await bitrixService.getPipelines({ bot_id: botId, entity_type: 'DEAL' });
-      const pipelinesData = pipelinesResponse;
-      const pipelinesList = Array.isArray(pipelinesData) ? pipelinesData : (pipelinesData.results || pipelinesData);
+      const pipelinesList = Array.isArray(pipelinesResponse) ? pipelinesResponse : (pipelinesResponse.results || pipelinesResponse);
       setPipelines(pipelinesList);
     } catch (err) {
       console.error('Failed to fetch CRM data:', err);
@@ -138,9 +182,8 @@ export function FunctionsContent() {
     if (!botId || !pipelineId) return;
     
     try {
-      const response = await bitrixService.getStages({ bot_id: botId, pipeline_id: pipelineId });
-      const data = response;
-      const stagesList = Array.isArray(data) ? data : (data.results || data);
+      const response = await bitrixService.getStages({ bot_id: botId, pipeline_id: pipelineId, entity_type: 'DEAL' });
+      const stagesList = Array.isArray(response) ? response : (response.results || response);
       setStages(stagesList);
     } catch (err) {
       console.error('Failed to fetch stages:', err);
@@ -172,82 +215,70 @@ export function FunctionsContent() {
   const handleSave = async () => {
     if (!botId) return;
     
+    if (!functionName.trim()) {
+      setError('Function name is required');
+      return;
+    }
+    
     setSaving(true);
     setError('');
     
     try {
-      const normalizedFunctionName = functionName.replace(/[^a-zA-Z0-9_-]/g, '_');
-      
+      // Prepare properties data
       const validProperties = functionProperties.filter(prop => {
         const field_code = prop.field_code || prop.name || '';
         return field_code && field_code !== 'function' && field_code.trim() !== '';
       });
-      
-      const properties = validProperties.reduce((acc, prop) => {
-        const fieldKey = prop.field_code || prop.name;
-        acc[fieldKey] = {
-          type: 'string',
-          title: prop.field_name || prop.description || prop.name,
-          description: prop.description || prop.field_name || prop.name,
-        };
-        return acc;
-      }, {} as Record<string, any>);
-      
-      const required = validProperties.map(prop => prop.field_code || prop.name);
-      
-      const function_definition = {
-        name: normalizedFunctionName,
-        description: functionInstruction || functionName,
-        strict: false,
-        parameters: {
-          type: 'object',
-          required: required,
-          properties: properties,
-          additionalProperties: false,
-        },
-      };
-      
+
+      const propertiesData = validProperties.map(prop => ({
+        field_code: prop.field_code || prop.name,
+        field_name: prop.field_name || prop.description || prop.name,
+        description: prop.description || '',
+      }));
+
+      // Build result_format with stage and properties
+      let resultFormat = '';
+      if (selectedPhase) {
+        resultFormat = `Stage: ${selectedPhase}`;
+      }
+      if (propertiesData.length > 0) {
+        const propertiesJson = JSON.stringify(propertiesData);
+        resultFormat = resultFormat 
+          ? `${resultFormat}|Properties: ${propertiesJson}`
+          : `Properties: ${propertiesJson}`;
+      }
+
       if (editing && functionToEdit) {
-        await bitrixService.updateFunction(functionToEdit.id, {
-          name: functionName,
-          description: functionInstruction,
-          trigger_instructions: functionInstruction,
-          new_stage_code: selectedPhase,
-          function_definition: function_definition,
-          properties: validProperties.map(prop => ({
-            crm_field_code: prop.field_code,
-            crm_field_name: prop.field_name,
-            description: prop.description || '',
-            data_type: 'STRING',
-            required: true,
-          })),
+        await functionsService.updateFunction(functionToEdit.id, {
+          bot: botId,
+          name: functionName.trim(),
+          integration_type: 'BITRIX',
+          is_active: true, // Always set to true
+          trigger_instructions: functionInstruction.trim() || null,
+          result_format: resultFormat || null,
         });
         
         await fetchFunctions();
         setShowCreateForm(false);
+        setViewMode('create');
         setEditing(false);
         setFunctionToEdit(null);
+        setViewingFunction(null);
         setSuccess('Function updated successfully!');
       } else {
-        await bitrixService.createFunctionWithOpenAI({
-          bot_id: botId,
-          name: functionName,
-          description: functionInstruction,
-          trigger_instructions: functionInstruction,
-          result_format: '',
-          new_stage_code: selectedPhase,
-          function_definition: function_definition,
-          properties: validProperties.map(prop => ({
-            crm_field_code: prop.field_code,
-            crm_field_name: prop.field_name,
-            description: prop.description || '',
-            data_type: 'STRING',
-            required: true,
-          })),
+        await functionsService.createFunction({
+          bot: botId,
+          name: functionName.trim(),
+          integration_type: 'BITRIX',
+          is_active: true, // Always set to true
+          trigger_instructions: functionInstruction.trim() || null,
+          result_format: resultFormat || null,
         });
         
         await fetchFunctions();
         setShowCreateForm(false);
+        setViewMode('create');
+        setViewingFunction(null);
         setSuccess('Function created successfully!');
       }
       
@@ -255,6 +286,8 @@ export function FunctionsContent() {
       setFunctionInstruction('');
       setFunctionProperties([]);
       setSelectedPhase('');
+      setSelectedPipeline('');
+      setStages([]);
     } catch (err: any) {
       setError(err?.message || 'Failed to save function');
     } finally {
@@ -264,22 +297,135 @@ export function FunctionsContent() {
 
   const handleCreateFunction = () => {
     setShowCreateForm(true);
+    setViewMode('create');
     setFunctionName('');
     setFunctionInstruction('');
     setFunctionProperties([]);
     setSelectedPhase('');
+    setSelectedPipeline('');
+    setStages([]);
     setEditing(false);
     setFunctionToEdit(null);
+    setViewingFunction(null);
   };
 
   const handleCancelCreate = () => {
     setShowCreateForm(false);
+    setViewMode('create');
     setFunctionName('');
     setFunctionInstruction('');
     setFunctionProperties([]);
     setSelectedPhase('');
+    setSelectedPipeline('');
+    setStages([]);
     setEditing(false);
     setFunctionToEdit(null);
+    setViewingFunction(null);
+  };
+
+  const handleViewFunction = async (func: FunctionData) => {
+    try {
+      if (crmFields.length === 0 && !loadingCRMData) {
+        await fetchCRMData();
+      }
+      
+      const functionResponse = await functionsService.getFunctionById(func.id);
+      
+      setViewingFunction(func);
+      setFunctionName(functionResponse.name || func.name);
+      setFunctionInstruction(functionResponse.trigger_instructions || func.instruction || '');
+      
+      // Extract stage and properties from result_format if available
+      let phase = '';
+      let properties: FunctionProperty[] = [];
+      
+      if (functionResponse.result_format) {
+        // Extract stage
+        const stageMatch = functionResponse.result_format.match(/Stage:\s*([^|]+)/);
+        if (stageMatch) {
+          phase = stageMatch[1].trim();
+        }
+        
+        // Extract properties
+        const propertiesMatch = functionResponse.result_format.match(/Properties:\s*(.+)/);
+        if (propertiesMatch) {
+          try {
+            const propertiesJson = propertiesMatch[1].trim();
+            const parsedProperties = JSON.parse(propertiesJson);
+            
+            if (Array.isArray(parsedProperties)) {
+              properties = parsedProperties.map((prop: any, index: number) => {
+                const field_code = prop.field_code || '';
+                const field_name = prop.field_name || '';
+                
+                // Try to find the field in CRM fields to get full details
+                let fullField = null;
+                if (crmFields.length > 0 && field_code) {
+                  fullField = crmFields.find(f => f.field_code === field_code);
+                }
+                
+                return {
+                  id: `${Date.now()}-${index}`,
+                  name: field_code || field_name,
+                  field_code: field_code,
+                  field_name: fullField?.field_name || field_name,
+                  type: fullField?.field_type || 'string',
+                  description: prop.description || '',
+                  required: true,
+                };
+              });
+            }
+          } catch (err) {
+            console.error('Failed to parse properties from result_format:', err);
+          }
+        }
+      }
+      
+      setSelectedPhase(phase);
+      setFunctionProperties(properties);
+      
+      // Initialize field search terms for loaded properties
+      const initialSearchTerms: Record<string, string> = {};
+      properties.forEach((prop: FunctionProperty) => {
+        if (prop.field_name) {
+          initialSearchTerms[prop.id] = prop.field_name;
+        } else if (prop.field_code) {
+          initialSearchTerms[prop.id] = prop.field_code;
+        }
+      });
+      setFieldSearchTerms(initialSearchTerms);
+      
+      // Try to find the pipeline for this stage
+      if (phase && pipelines.length > 0) {
+        const findPipelineForStage = async () => {
+          for (const pipeline of pipelines) {
+            try {
+              const res = await bitrixService.getStages({ 
+                bot_id: botId ?? undefined, 
+                pipeline_id: pipeline.pipeline_id ?? undefined,
+                entity_type: 'DEAL'
+              });
+              const stagesArray = Array.isArray(res) ? res : (res.results || res);
+              const foundStage = stagesArray.find((s: any) => s.stage_code === phase);
+              if (foundStage && pipeline.pipeline_id) {
+                setSelectedPipeline(pipeline.pipeline_id);
+                await fetchStages(pipeline.pipeline_id);
+                break;
+              }
+            } catch (err) {
+              console.error('Error fetching stages:', err);
+            }
+          }
+        };
+        await findPipelineForStage();
+      }
+      
+      setViewMode('view');
+      setShowCreateForm(true);
+      setMenuOpen(null);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load function data');
+    }
   };
 
   const handleDeleteFunction = (func: FunctionData) => {
@@ -290,7 +436,7 @@ export function FunctionsContent() {
     if (!functionToDelete || !botId) return;
     
     try {
-      await bitrixService.deleteFunction(functionToDelete.id);
+      await functionsService.deleteFunction(functionToDelete.id);
       await fetchFunctions();
       setSuccess('Function deleted successfully!');
       setFunctionToDelete(null);
@@ -362,46 +508,62 @@ export function FunctionsContent() {
         await fetchCRMData();
       }
       
-      const functionResponse = await bitrixService.getFunction(func.id);
-      const functionData = functionResponse;
+      const functionResponse = await functionsService.getFunctionById(func.id);
       
       setFunctionToEdit(func);
-      setFunctionName(functionData.name || func.name);
-      setFunctionInstruction(functionData.description || functionData.trigger_instructions || func.instruction || '');
+      setFunctionName(functionResponse.name || func.name);
+      setFunctionInstruction(functionResponse.trigger_instructions || func.instruction || '');
       
-      const fieldMappings = functionData.field_mappings || [];
-      const properties: FunctionProperty[] = fieldMappings.map((prop: any, index: number) => {
-        let field_code = prop.crm_field_code || prop.field_code || prop.name || '';
-        if ((!field_code || field_code === 'function') && prop.crm_field_name && crmFields.length > 0) {
-          const foundByFieldName = crmFields.find(f => f.field_name === prop.crm_field_name);
-          if (foundByFieldName) {
-            field_code = foundByFieldName.field_code;
-          }
+      // Extract stage and properties from result_format if available
+      let phase = '';
+      let properties: FunctionProperty[] = [];
+      
+      if (functionResponse.result_format) {
+        // Extract stage
+        const stageMatch = functionResponse.result_format.match(/Stage:\s*([^|]+)/);
+        if (stageMatch) {
+          phase = stageMatch[1].trim();
         }
         
-        let field_name = prop.crm_field_name || '';
-        if (!field_name && field_code && field_code !== 'function' && crmFields.length > 0) {
-          const foundField = crmFields.find(f => f.field_code === field_code);
-          if (foundField) {
-            field_name = foundField.field_name;
+        // Extract properties
+        const propertiesMatch = functionResponse.result_format.match(/Properties:\s*(.+)/);
+        if (propertiesMatch) {
+          try {
+            const propertiesJson = propertiesMatch[1].trim();
+            const parsedProperties = JSON.parse(propertiesJson);
+            
+            if (Array.isArray(parsedProperties)) {
+              properties = parsedProperties.map((prop: any, index: number) => {
+                const field_code = prop.field_code || '';
+                const field_name = prop.field_name || '';
+                
+                // Try to find the field in CRM fields to get full details
+                let fullField = null;
+                if (crmFields.length > 0 && field_code) {
+                  fullField = crmFields.find(f => f.field_code === field_code);
+                }
+                
+                return {
+                  id: `${Date.now()}-${index}`,
+                  name: field_code || field_name,
+                  field_code: field_code,
+                  field_name: fullField?.field_name || field_name,
+                  type: fullField?.field_type || 'string',
+                  description: prop.description || '',
+                  required: true,
+                };
+              });
+            }
+          } catch (err) {
+            console.error('Failed to parse properties from result_format:', err);
           }
         }
-        
-        const description = prop.description || '';
-        
-        return {
-          id: `${Date.now()}-${index}`,
-          name: field_code || field_name || '',
-          field_code: field_code,
-          field_name: field_name,
-          type: 'string',
-          description: description,
-          required: true,
-        };
-      });
+      }
       
+      setSelectedPhase(phase);
       setFunctionProperties(properties);
       
+      // Initialize field search terms for loaded properties
       const initialSearchTerms: Record<string, string> = {};
       properties.forEach((prop: FunctionProperty) => {
         if (prop.field_name) {
@@ -410,21 +572,19 @@ export function FunctionsContent() {
           initialSearchTerms[prop.id] = prop.field_code;
         }
       });
+      setFieldSearchTerms(initialSearchTerms);
       
-      setTimeout(() => {
-        setFieldSearchTerms(prev => ({ ...prev, ...initialSearchTerms }));
-      }, 100);
-      
-      const phase = functionData.new_stage_code || functionData.phase || func.phase || '';
-      setSelectedPhase(phase);
-      
+      // Try to find the pipeline for this stage
       if (phase && pipelines.length > 0) {
         const findPipelineForStage = async () => {
           for (const pipeline of pipelines) {
             try {
-              const res = await bitrixService.getStages({ bot_id: botId ?? undefined, pipeline_id: pipeline.pipeline_id ?? undefined });
-              const stagesData = res;
-              const stagesArray = Array.isArray(stagesData) ? stagesData : (stagesData.results || stagesData);
+              const res = await bitrixService.getStages({ 
+                bot_id: botId ?? undefined, 
+                pipeline_id: pipeline.pipeline_id ?? undefined,
+                entity_type: 'DEAL'
+              });
+              const stagesArray = Array.isArray(res) ? res : (res.results || res);
               const foundStage = stagesArray.find((s: any) => s.stage_code === phase);
               if (foundStage && pipeline.pipeline_id) {
                 setSelectedPipeline(pipeline.pipeline_id);
@@ -440,8 +600,10 @@ export function FunctionsContent() {
       }
       
       setEditing(true);
+      setViewMode('edit');
       setShowCreateForm(true);
       setMenuOpen(null);
+      setViewingFunction(null);
     } catch (err: any) {
       setError(err?.message || 'Failed to load function data');
     }
@@ -514,56 +676,48 @@ export function FunctionsContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {functions.map((func) => (
-                <div key={func.id} className="p-4 rounded-xl border border-border bg-card/50 relative">
+                <div 
+                  key={func.id} 
+                  onClick={() => handleViewFunction(func)}
+                  className="p-4 rounded-xl border border-border bg-card/50 relative cursor-pointer hover:bg-card/70 transition-colors"
+                >
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-medium text-card-foreground">
                       {func.name}
                     </h3>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setExpandedCard(expandedCard === func.id ? null : func.id)}
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        onClick={() => setMenuOpen(menuOpen === func.id ? null : func.id)}
                         className="p-1 rounded-lg text-muted-foreground hover:bg-secondary"
                       >
-                        {expandedCard === func.id ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
+                        <Settings className="w-4 h-4" />
                       </button>
-                      <div className="relative">
-                        <button 
-                          onClick={() => setMenuOpen(menuOpen === func.id ? null : func.id)}
-                          className="p-1 rounded-lg text-muted-foreground hover:bg-secondary"
-                        >
-                          <Settings className="w-4 h-4" />
-                        </button>
-                        
-                        {menuOpen === func.id && (
-                          <div className="absolute right-0 top-8 w-48 rounded-lg border border-border bg-card z-10">
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await handleEditFunction(func);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-secondary flex items-center gap-2"
-                            >
-                              <Edit className="w-4 h-4" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteFunction(func);
-                                setMenuOpen(null);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 flex items-center gap-2"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      
+                      {menuOpen === func.id && (
+                        <div className="absolute right-0 top-8 w-48 rounded-lg border border-border bg-card z-10 shadow-lg">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await handleEditFunction(func);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-secondary flex items-center gap-2"
+                          >
+                            <Edit className="w-4 h-4" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteFunction(func);
+                              setMenuOpen(null);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 flex items-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <p className="text-sm mb-3 text-muted-foreground">
@@ -572,41 +726,6 @@ export function FunctionsContent() {
                   <div className="text-xs text-muted-foreground">
                     {func.properties.length} properties • {func.phase || 'No phase'}
                   </div>
-
-                  {expandedCard === func.id && (
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <div className="space-y-3">
-                        <div>
-                          <h5 className="text-sm font-medium mb-2 text-card-foreground">
-                            Full Description
-                          </h5>
-                          <p className="text-sm text-muted-foreground">
-                            {func.instruction || 'No description'}
-                          </p>
-                        </div>
-                        
-                        <div>
-                          <h5 className="text-sm font-medium mb-2 text-card-foreground">
-                            Properties ({func.properties.length})
-                          </h5>
-                          <div className="space-y-2">
-                            {func.properties.map((prop, index) => (
-                              <div key={index} className="p-2 rounded-lg bg-secondary/50">
-                                <span className="text-sm font-medium text-card-foreground">
-                                  {prop.name || prop.field_name || ''}
-                                </span>
-                                {prop.description && (
-                                  <p className="text-xs mt-1 text-muted-foreground">
-                                    {prop.description}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -617,27 +736,63 @@ export function FunctionsContent() {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-card-foreground">
-                {editing ? 'Edit Function' : 'Create New Function'}
+                {viewMode === 'view' ? 'View Function' : editing ? 'Edit Function' : 'Create New Function'}
               </h2>
-              <button
-                onClick={handleCancelCreate}
-                className="p-2 rounded-lg text-muted-foreground hover:bg-secondary"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {viewMode === 'view' && viewingFunction && (
+                  <button
+                    onClick={async () => {
+                      await handleEditFunction(viewingFunction);
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit
+                  </button>
+                )}
+                <button
+                  onClick={handleCancelCreate}
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-secondary"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-card-foreground">
-                Function Name
-              </label>
-              <input
-                type="text"
-                value={functionName}
-                onChange={(e) => setFunctionName(e.target.value)}
-                placeholder="Name Function"
-                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground"
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-card-foreground">
+                  Integration Type
+                </label>
+                <input
+                  type="text"
+                  value="Bitrix24"
+                  disabled
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-muted-foreground cursor-not-allowed"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Only Bitrix24 integration is currently supported
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-card-foreground">
+                  Function Name <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={functionName}
+                  onChange={(e) => setFunctionName(e.target.value)}
+                  placeholder="Name Function"
+                  disabled={viewMode === 'view'}
+                  className={`w-full px-4 py-3 rounded-xl border border-border ${
+                    viewMode === 'view' 
+                      ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
+                      : 'bg-background text-foreground'
+                  }`}
+                  required
+                />
+              </div>
             </div>
           
             <div className="space-y-2">
@@ -649,7 +804,12 @@ export function FunctionsContent() {
                 onChange={(e) => setFunctionInstruction(e.target.value)}
                 placeholder="Function instruction here..."
                 rows={6}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground resize-y"
+                disabled={viewMode === 'view'}
+                className={`w-full px-4 py-3 rounded-xl border border-border resize-y ${
+                  viewMode === 'view' 
+                    ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
+                    : 'bg-background text-foreground'
+                }`}
               />
             </div>
           
@@ -658,15 +818,19 @@ export function FunctionsContent() {
                 <label className="text-sm font-medium text-card-foreground">
                   Function properties for crm fields:
                 </label>
-                <button
-                  onClick={addProperty}
-                  className="p-2 rounded-lg bg-green-500/20 text-green-600 hover:bg-green-500/30"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-                <button className="p-2 rounded-lg bg-blue-500/20 text-blue-600 hover:bg-blue-500/30">
-                  <HelpCircle className="w-4 h-4" />
-                </button>
+                {viewMode !== 'view' && (
+                  <>
+                    <button
+                      onClick={addProperty}
+                      className="p-2 rounded-lg bg-green-500/20 text-green-600 hover:bg-green-500/30"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 rounded-lg bg-blue-500/20 text-blue-600 hover:bg-blue-500/30">
+                      <HelpCircle className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
             
               {functionProperties.map((property) => (
@@ -675,12 +839,14 @@ export function FunctionsContent() {
                     <h4 className="font-medium text-card-foreground">
                       {property.field_name || property.name || ''}
                     </h4>
-                    <button
-                      onClick={() => removeProperty(property.id)}
-                      className="p-1 rounded-lg text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {viewMode !== 'view' && (
+                      <button
+                        onClick={() => removeProperty(property.id)}
+                        className="p-1 rounded-lg text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-2 relative">
@@ -696,17 +862,20 @@ export function FunctionsContent() {
                               : (fieldSearchTerms[property.id] || property.field_name || property.field_code || property.name || '')
                           }
                           onChange={(e) => {
+                            if (viewMode === 'view') return;
                             const searchValue = e.target.value;
                             setFieldSearchTerms(prev => ({ ...prev, [property.id]: searchValue }));
                             setShowFieldDropdowns(prev => ({ ...prev, [property.id]: true }));
                           }}
                           onFocus={() => {
+                            if (viewMode === 'view') return;
                             if (property.field_name && !fieldSearchTerms[property.id]) {
                               setFieldSearchTerms(prev => ({ ...prev, [property.id]: property.field_name }));
                             }
                             setShowFieldDropdowns(prev => ({ ...prev, [property.id]: true }));
                           }}
                           onBlur={() => {
+                            if (viewMode === 'view') return;
                             setTimeout(() => {
                               setShowFieldDropdowns(prev => {
                                 const newState = { ...prev };
@@ -719,10 +888,15 @@ export function FunctionsContent() {
                             }, 200);
                           }}
                           placeholder={property.field_name ? property.field_name : "Search by field name or code..."}
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                          disabled={viewMode === 'view'}
+                          className={`w-full px-3 py-2 rounded-lg border border-border ${
+                            viewMode === 'view' 
+                              ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
+                              : 'bg-background text-foreground'
+                          }`}
                         />
                         
-                        {showFieldDropdowns[property.id] && (
+                        {showFieldDropdowns[property.id] && viewMode !== 'view' && (
                           <div className="absolute z-50 w-full mt-1 max-h-60 overflow-auto rounded-lg border border-border bg-card">
                             {(() => {
                               const filtered = getFilteredFields(fieldSearchTerms[property.id] || '');
@@ -733,13 +907,17 @@ export function FunctionsContent() {
                                   </div>
                                 );
                               }
-                              return filtered.map(field => {
+                              return filtered.map((field, fieldIndex) => {
                                 const entityTypeLabel = field.entity_type || 'DEAL';
                                 const isSelected = property.field_code === field.field_code && property.field_code !== '';
+                                // Use field_code + entity_type for unique key, fallback to index if field_code is missing
+                                const uniqueKey = field.field_code 
+                                  ? `${field.field_code}-${entityTypeLabel}` 
+                                  : `field-${fieldIndex}-${entityTypeLabel}`;
                                 
                                 return (
                                   <div
-                                    key={`${field.id}-${entityTypeLabel}`}
+                                    key={uniqueKey}
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
@@ -776,7 +954,12 @@ export function FunctionsContent() {
                         onChange={(e) => updateProperty(property.id, 'description', e.target.value)}
                         placeholder="Property description"
                         rows={1}
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground resize-none"
+                        disabled={viewMode === 'view'}
+                        className={`w-full px-3 py-2 rounded-lg border border-border resize-none ${
+                          viewMode === 'view' 
+                            ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
+                            : 'bg-background text-foreground'
+                        }`}
                       />
                     </div>
                   </div>
@@ -796,11 +979,16 @@ export function FunctionsContent() {
                 <select
                   value={selectedPipeline}
                   onChange={(e) => setSelectedPipeline(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground"
+                  disabled={viewMode === 'view'}
+                  className={`w-full px-4 py-3 rounded-xl border border-border ${
+                    viewMode === 'view' 
+                      ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
+                      : 'bg-background text-foreground'
+                  }`}
                 >
                   <option value="">Select pipeline</option>
-                  {pipelines.map(pipeline => (
-                    <option key={pipeline.id} value={pipeline.pipeline_id}>
+                  {pipelines.map((pipeline, index) => (
+                    <option key={pipeline.pipeline_id || index} value={pipeline.pipeline_id}>
                       {pipeline.pipeline_name}
                     </option>
                   ))}
@@ -814,11 +1002,16 @@ export function FunctionsContent() {
                 <select
                   value={selectedPhase}
                   onChange={(e) => setSelectedPhase(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground"
+                  disabled={viewMode === 'view'}
+                  className={`w-full px-4 py-3 rounded-xl border border-border ${
+                    viewMode === 'view' 
+                      ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
+                      : 'bg-background text-foreground'
+                  }`}
                 >
                   <option value="">Select stage</option>
-                  {stages.map(stage => (
-                    <option key={stage.id} value={stage.stage_code}>
+                  {stages.map((stage, index) => (
+                    <option key={stage.stage_code || stage.stage_id || index} value={stage.stage_code}>
                       {stage.stage_name}
                     </option>
                   ))}
@@ -826,25 +1019,33 @@ export function FunctionsContent() {
               </div>
             </div>
             
-            <div className="flex justify-end pt-6">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-8 py-3 rounded-xl font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
-              >
-                {saving ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    {editing ? 'Updating...' : 'Saving...'}
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    {editing ? 'Update Function' : 'Save Function'}
-                  </>
-                )}
-              </button>
-            </div>
+            {viewMode !== 'view' && (
+              <div className="flex justify-end pt-6 gap-3">
+                <button
+                  onClick={handleCancelCreate}
+                  className="px-6 py-3 rounded-xl font-medium border border-border hover:bg-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-8 py-3 rounded-xl font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      {editing ? 'Updating...' : 'Saving...'}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      {editing ? 'Update Function' : 'Save Function'}
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

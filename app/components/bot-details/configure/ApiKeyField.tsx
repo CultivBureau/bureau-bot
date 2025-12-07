@@ -36,17 +36,17 @@ export function ApiKeyField({
       <label className="block text-sm font-medium text-card-foreground">
         OpenAI API Key
       </label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <Key className="h-5 w-5 text-muted-foreground flex-shrink-0" />
         {editing ? (
           <>
-            <div className="flex-1 relative">
+            <div className="flex-1 relative min-w-0">
               <Input
                 type={showPassword ? 'text' : 'password'}
                 value={editValue}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="sk-..."
-                className="pr-10"
+                className="pr-10 min-w-0"
                 disabled={saving}
               />
               <button
@@ -81,19 +81,21 @@ export function ApiKeyField({
           </>
         ) : (
           <>
-            <div className="flex-1 relative">
+            <div className="flex-1 relative min-w-0">
               <div
                 className={cn(
-                  "px-4 py-2 rounded-xl bg-card/50 text-card-foreground font-mono text-sm",
+                  "px-4 py-2 rounded-xl bg-card/50 text-card-foreground font-mono text-sm overflow-hidden",
                   disabled ? "cursor-default" : "cursor-pointer hover:bg-card/70"
                 )}
                 onClick={disabled ? undefined : onEdit}
               >
-                {value ? (
-                  showPassword ? value : `${value.substring(0, 12)}...`
-                ) : (
-                  'Not set'
-                )}
+                <div className="truncate">
+                  {value ? (
+                    showPassword ? value : `${value.substring(0, 12)}...`
+                  ) : (
+                    'Not set'
+                  )}
+                </div>
               </div>
               {value && (
                 <button

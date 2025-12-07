@@ -30,7 +30,7 @@ export function WaitTimeField({
       <label className="block text-sm font-medium text-card-foreground">
         Wait Time (seconds)
       </label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
         {editing ? (
           <>
@@ -39,7 +39,7 @@ export function WaitTimeField({
               value={editValue}
               onChange={(e) => onChange(Number(e.target.value) || 0)}
               min="0"
-              className="flex-1"
+              className="flex-1 min-w-0"
               disabled={saving}
             />
             <Button
@@ -63,10 +63,12 @@ export function WaitTimeField({
         ) : (
           <>
             <div
-              className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground cursor-pointer hover:bg-card/70"
+              className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground cursor-pointer hover:bg-card/70 min-w-0 overflow-hidden"
               onClick={onEdit}
             >
-              {value || 0} seconds
+              <div className="truncate">
+                {value || 0} seconds
+              </div>
             </div>
             <Button
               onClick={onEdit}

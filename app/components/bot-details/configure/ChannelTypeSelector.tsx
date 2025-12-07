@@ -60,7 +60,7 @@ export function ChannelTypeSelector({
           </span>
         )}
       </label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
         {editing ? (
           <>
@@ -75,7 +75,7 @@ export function ChannelTypeSelector({
               <select
                 value={editValue}
                 onChange={(e) => onChange(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-xl border border-input bg-input-background text-card-foreground"
+                className="flex-1 px-4 py-2 rounded-xl border border-input bg-input-background text-card-foreground min-w-0"
                 disabled={saving}
               >
                 {channelTypes.length > 0 ? (
@@ -110,10 +110,12 @@ export function ChannelTypeSelector({
         ) : (
           <>
             <div
-              className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground cursor-pointer hover:bg-card/70"
+              className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground cursor-pointer hover:bg-card/70 min-w-0 overflow-hidden"
               onClick={onEdit}
             >
-              {selectedLabel || 'Not set'}
+              <div className="truncate">
+                {selectedLabel || 'Not set'}
+              </div>
             </div>
             <Button
               onClick={onEdit}
