@@ -33,6 +33,9 @@ export interface CreateBotRequest {
   instructions: string;
   wait_time?: number;
   assistant_name?: string;
+  webhook_url?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
 }
 
 export interface UpdateBotRequest {
@@ -43,6 +46,9 @@ export interface UpdateBotRequest {
   instructions?: string;
   wait_time?: number;
   assistant_name?: string;
+  webhook_url?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
 }
 
 export interface RestoreBotRequest {
@@ -60,6 +66,9 @@ export interface Bot {
   assistant_id?: string;
   instructions: string;
   wait_time: number;
+  webhook_url?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   is_active: boolean;
   working: boolean;
   created_by: string;

@@ -227,6 +227,26 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
   const handleSubmit = async () => {
     if (!validateStep(3)) return;
 
+    // Additional validation for API key when creating a bot
+    if (!isEditMode) {
+      if (!formData.apiKey.trim()) {
+        setErrors((prev) => ({
+          ...prev,
+          apiKey: 'API key is required to create a bot',
+        }));
+        setCurrentStep(1); // Go back to step 1 to show the error
+        return;
+      }
+      if (!formData.apiKey.startsWith('sk-')) {
+        setErrors((prev) => ({
+          ...prev,
+          apiKey: 'API key must start with "sk-"',
+        }));
+        setCurrentStep(1); // Go back to step 1 to show the error
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       if (isEditMode && bot) {
@@ -255,7 +275,7 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
         
         // Only include API key if a new one was provided
         if (formData.apiKey.trim()) {
-          updateData.openai_api_key = formData.apiKey;
+          updateData.openai_api_key = formData.apiKey.trim();
         }
 
         // Only make API call if there are changes
@@ -265,12 +285,23 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
       } else {
         // Create bot using the API
         const botData = {
-          name: formData.assistantName,
+          name: formData.assistantName.trim(),
           channel_type: formData.channelType,
           gpt_model: formData.aiModel,
-          openai_api_key: formData.apiKey,
-          instructions: formData.instructions,
+          openai_api_key: formData.apiKey.trim(), // Ensure trimmed and not empty
+          instructions: formData.instructions.trim(),
         };
+
+        // Final validation before sending
+        if (!botData.openai_api_key || botData.openai_api_key.length < 1) {
+          setErrors((prev) => ({
+            ...prev,
+            _general: 'OpenAI API key is required and must be at least 1 character long.',
+          }));
+          setCurrentStep(1);
+          setIsSubmitting(false);
+          return;
+        }
 
         await botService.createBot(botData);
       }

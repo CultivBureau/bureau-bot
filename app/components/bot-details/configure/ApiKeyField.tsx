@@ -15,6 +15,7 @@ interface ApiKeyFieldProps {
   onCancel: () => void;
   onChange: (value: string) => void;
   saving?: boolean;
+  disabled?: boolean;
 }
 
 export function ApiKeyField({
@@ -26,6 +27,7 @@ export function ApiKeyField({
   onCancel,
   onChange,
   saving = false,
+  disabled = false,
 }: ApiKeyFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -79,20 +81,44 @@ export function ApiKeyField({
           </>
         ) : (
           <>
-            <div
-              className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground font-mono text-sm cursor-pointer hover:bg-card/70"
-              onClick={onEdit}
-            >
-              {value ? `${value.substring(0, 12)}...` : 'Not set'}
+            <div className="flex-1 relative">
+              <div
+                className={cn(
+                  "px-4 py-2 rounded-xl bg-card/50 text-card-foreground font-mono text-sm",
+                  disabled ? "cursor-default" : "cursor-pointer hover:bg-card/70"
+                )}
+                onClick={disabled ? undefined : onEdit}
+              >
+                {value ? (
+                  showPassword ? value : `${value.substring(0, 12)}...`
+                ) : (
+                  'Not set'
+                )}
+              </div>
+              {value && (
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              )}
             </div>
-            <Button
-              onClick={onEdit}
-              variant="outline"
-              size="sm"
-              className="flex-shrink-0"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
+            {!disabled && (
+              <Button
+                onClick={onEdit}
+                variant="outline"
+                size="sm"
+                className="flex-shrink-0"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
           </>
         )}
       </div>
