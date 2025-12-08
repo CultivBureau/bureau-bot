@@ -112,9 +112,9 @@ export function Bitrix24Integration() {
                 sentiment analysis, and next-best-action recommendations.
               </p>
               <div className="flex flex-wrap gap-2 sm:gap-3 justify-center md:justify-start">
-                <Badge className="bg-secondary/50 text-hero-text border-hero-circle/30 text-xs sm:text-sm">Bi-directional sync</Badge>
-                <Badge className="bg-secondary/50 text-hero-text border-hero-circle/30 text-xs sm:text-sm">Sub-second latency</Badge>
-                <Badge className="bg-secondary/50 text-hero-text border-hero-circle/30 text-xs sm:text-sm">Conflict resolution</Badge>
+                <Badge variant="outline" className="bg-secondary/50 text-primary! border-hero-circle/30 text-xs sm:text-sm">Bi-directional sync</Badge>
+                <Badge variant="outline" className="bg-secondary/50 text-primary! border-hero-circle/30 text-xs sm:text-sm">Sub-second latency</Badge>
+                <Badge variant="outline" className="bg-secondary/50 text-primary! border-hero-circle/30 text-xs sm:text-sm">Conflict resolution</Badge>
               </div>
             </div>
             <div className="flex-1 max-w-sm p-4 sm:p-5">
