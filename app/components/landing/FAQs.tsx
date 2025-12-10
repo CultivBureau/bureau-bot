@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { ScrollReveal } from "./ScrollReveal";
 
 export function FAQs() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -37,45 +38,48 @@ export function FAQs() {
   return (
     <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-bl from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10 sm:mb-12 lg:mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-hero-text tracking-tight">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-hero-subtext max-w-3xl mx-auto leading-relaxed">
-            Everything you need to know about BureauBot and how it works with Bitrix24
-          </p>
-        </div>
+        <ScrollReveal width="100%">
+          <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-hero-text tracking-tight">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl text-hero-subtext max-w-3xl mx-auto leading-relaxed">
+              Everything you need to know about BureauBot and how it works with Bitrix24
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="space-y-4 sm:space-y-5">
           {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className={`group bg-card/70 backdrop-blur-sm border-2 border-hero-circle/20 hover:border-primary/50 transition-all duration-300 overflow-hidden hover:shadow-xl hover:shadow-primary/20 ${openIndex === index ? "rounded-4xl" : "rounded-full"
-                }`}
-            >
-              <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full text-left p-5 sm:p-6 lg:p-7 flex items-center justify-between gap-4 hover:bg-hero-circle/5 transition-colors duration-200"
-              >
-                <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-hero-text pr-4">
-                  {faq.question}
-                </h3>
-                <ChevronDown
-                  className={`w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0 transition-transform duration-300 ${openIndex === index ? "rotate-180" : ""
-                    }`}
-                />
-              </button>
+            <ScrollReveal key={index} delay={index * 0.1} width="100%">
               <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                className={`group bg-card/70 backdrop-blur-sm border-2 border-hero-circle/20 hover:border-primary/50 transition-all duration-300 overflow-hidden hover:shadow-xl hover:shadow-primary/20 ${openIndex === index ? "rounded-4xl" : "rounded-full"
                   }`}
               >
-                <div className="px-5 sm:px-6 lg:px-7 pb-5 sm:pb-6 lg:pb-7 pt-0">
-                  <p className="text-sm sm:text-base text-hero-subtext leading-relaxed">
-                    {faq.answer}
-                  </p>
+                <button
+                  onClick={() => toggleFAQ(index)}
+                  className="w-full text-left p-5 sm:p-6 lg:p-7 flex items-center justify-between gap-4 hover:bg-hero-circle/5 transition-colors duration-200"
+                >
+                  <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-hero-text pr-4">
+                    {faq.question}
+                  </h3>
+                  <ChevronDown
+                    className={`w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0 transition-transform duration-300 ${openIndex === index ? "rotate-180" : ""
+                      }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    }`}
+                >
+                  <div className="px-5 sm:px-6 lg:px-7 pb-5 sm:pb-6 lg:pb-7 pt-0">
+                    <p className="text-sm sm:text-base text-hero-subtext leading-relaxed">
+                      {faq.answer}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { Badge } from "./ui/badge";
 import { Check, MessageSquare, Database, GitBranch, Workflow, ArrowRight } from "lucide-react";
+import { ScrollReveal } from "./ScrollReveal";
 
 export function Bitrix24Integration() {
   const features = [
@@ -52,15 +53,17 @@ export function Bitrix24Integration() {
   return (
     <section className="py-2 sm:py-4 lg:py-6 bg-gradient-to-bl from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 sm:mb-12 lg:mb-16">
-          <Badge className="mb-3 sm:mb-4 bg-primary text-primary-foreground border-0 shadow-lg shadow-primary/30">Native Integration</Badge>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4 text-hero-text font-bold">
-            Deep Bitrix24 integration
-          </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-hero-subtext max-w-3xl mx-auto">
-            BureauBot is built specifically for Bitrix24, leveraging every capability of the platform for seamless automation
-          </p>
-        </div>
+        <ScrollReveal width="100%">
+          <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+            <Badge className="mb-3 sm:mb-4 bg-primary text-primary-foreground border-0 shadow-lg shadow-primary/30">Native Integration</Badge>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4 text-hero-text font-bold">
+              Deep Bitrix24 integration
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl text-hero-subtext max-w-3xl mx-auto">
+              BureauBot is built specifically for Bitrix24, leveraging every capability of the platform for seamless automation
+            </p>
+          </div>
+        </ScrollReveal>
       </div>
 
       {/* Horizontal Feature Cards - 2 per row */}
@@ -69,34 +72,35 @@ export function Bitrix24Integration() {
           const Icon = feature.icon;
           const isLeft = index % 2 === 0;
           return (
-            <div
-              key={feature.title}
-              className={`group relative overflow-hidden bg-card/70 backdrop-blur-sm border-2 border-hero-circle/30 hover:border-primary/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/20 ${isLeft ? 'rounded-r-full' : 'rounded-l-full'
-                }`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className={`relative flex items-center gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8  ${isLeft ? 'flex-row-reverse' : ''}`}>
-                {/* Icon Circle */}
-                <div className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br ${feature.color} backdrop-blur-md flex items-center justify-center shadow-lg border-2 border-hero-circle/30 group-hover:scale-110 group-hover:border-primary/50 transition-all duration-300`}>
-                  <Icon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                </div>
+            <ScrollReveal key={feature.title} delay={index * 0.1} width="100%" direction={isLeft ? 'left' : 'right'} className="h-full">
+              <div
+                className={`group relative overflow-hidden bg-card/70 backdrop-blur-sm border-2 border-hero-circle/30 hover:border-primary/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/20 h-full ${isLeft ? 'rounded-r-full' : 'rounded-l-full'
+                  }`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className={`relative flex items-center gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8 h-full ${isLeft ? 'flex-row-reverse' : ''}`}>
+                  {/* Icon Circle */}
+                  <div className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br ${feature.color} backdrop-blur-md flex items-center justify-center shadow-lg border-2 border-hero-circle/30 group-hover:scale-110 group-hover:border-primary/50 transition-all duration-300`}>
+                    <Icon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                  </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-hero-text mb-2 uppercase tracking-wide">
-                    {feature.title}
-                  </h3>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                    {feature.items.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
-                        <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-xs sm:text-sm text-hero-subtext">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-hero-text mb-2 uppercase tracking-wide">
+                      {feature.title}
+                    </h3>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                      {feature.items.map((item) => (
+                        <li key={item} className="flex items-start gap-2">
+                          <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="text-xs sm:text-sm text-hero-subtext">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           );
         })}
       </div>

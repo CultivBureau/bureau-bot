@@ -5,6 +5,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Check } from "lucide-react";
 import { PRICING_PLANS } from "../../constants/pricing";
+import { ScrollReveal } from "./ScrollReveal";
 
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(true);
@@ -36,43 +37,45 @@ export function Pricing() {
     <section className="py-8 sm:py-12 md:py-16 lg:py-20 px-3 sm:px-4 md:px-6 lg:px-8 bg-gradient-to-br from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className={`text-center transition-all duration-1000 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
-          <span className="text-primary text-[10px] sm:text-xs md:text-sm font-medium mb-2 sm:mb-3 md:mb-4 inline-block">Pricing</span>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 text-hero-text font-bold leading-tight">
-            Enterprise AI at startup prices
-          </h2>
-          
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center mb-2 sm:mb-3 md:mb-4">
-            <div className="relative inline-flex bg-hero-circle/10 backdrop-blur-sm border border-hero-circle/20 rounded-full p-0.5 sm:p-1">
-              <button
-                onClick={() => setIsYearly(false)}
-                className={`px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 ${
-                  !isYearly 
-                    ? 'bg-primary text-primary-foreground shadow-sm' 
-                    : 'text-hero-subtext hover:text-hero-text'
-                }`}
-              >
-                Billed monthly
-              </button>
-              <button
-                onClick={() => setIsYearly(true)}
-                className={`px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 ${
-                  isYearly 
-                    ? 'bg-primary text-primary-foreground shadow-sm' 
-                    : 'text-hero-subtext hover:text-hero-text'
-                }`}
-              >
-                Billed yearly
-              </button>
+        <ScrollReveal width="100%">
+          <div className={`text-center transition-all duration-1000 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
+            <span className="text-primary text-[10px] sm:text-xs md:text-sm font-medium mb-2 sm:mb-3 md:mb-4 inline-block">Pricing</span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-6 text-hero-text font-bold leading-tight">
+              Enterprise AI at startup prices
+            </h2>
+            
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center mb-2 sm:mb-3 md:mb-4">
+              <div className="relative inline-flex bg-hero-circle/10 backdrop-blur-sm border border-hero-circle/20 rounded-full p-0.5 sm:p-1">
+                <button
+                  onClick={() => setIsYearly(false)}
+                  className={`px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 ${
+                    !isYearly 
+                      ? 'bg-primary text-primary-foreground shadow-sm' 
+                      : 'text-hero-subtext hover:text-hero-text'
+                  }`}
+                >
+                  Billed monthly
+                </button>
+                <button
+                  onClick={() => setIsYearly(true)}
+                  className={`px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-[10px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 ${
+                    isYearly 
+                      ? 'bg-primary text-primary-foreground shadow-sm' 
+                      : 'text-hero-subtext hover:text-hero-text'
+                  }`}
+                >
+                  Billed yearly
+                </button>
+              </div>
             </div>
+            <p className="text-[10px] sm:text-xs md:text-sm text-primary animate-bounce">
+              Save up to 22% with yearly billing
+            </p>
           </div>
-          <p className="text-[10px] sm:text-xs md:text-sm text-primary animate-bounce">
-            Save up to 22% with yearly billing
-          </p>
-        </div>
+        </ScrollReveal>
 
 
         {/* Pricing Cards */}
@@ -82,22 +85,22 @@ export function Pricing() {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {plans.map((plan, index) => (
-            <div 
-              key={plan.name} 
-              onClick={() => scrollToCard(index)}
-              className={`relative transition-all duration-700 delay-${index * 100} cursor-pointer flex min-w-[180px] sm:min-w-[200px] md:min-w-[220px] max-w-[200px] sm:max-w-[220px] md:max-w-[240px] snap-center ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-              }`}
-            >
-              {plan.popular && (
-                <Badge className="absolute -top-2 sm:-top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground z-10 animate-pulse shadow-lg text-[9px] sm:text-[10px] px-2 sm:px-2.5 py-0.5">
-                  Popular
-                </Badge>
-              )}
-              <Card className={`p-3 sm:p-4 md:p-5 w-full flex flex-col transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:-translate-y-2 bg-card/70 backdrop-blur-sm border-hero-circle/20 ${
-                plan.popular ? 'border-primary border-2 shadow-xl shadow-primary/30' : 'hover:border-primary/50 border-2'
-              } !rounded-full`}>
-                {/* Circular Progress Indicator */}
+            <ScrollReveal key={plan.name} delay={index * 0.1} width="fit-content" direction="up" className="h-full">
+              <div 
+                onClick={() => scrollToCard(index)}
+                className={`relative transition-all duration-700 delay-${index * 100} cursor-pointer flex min-w-[180px] sm:min-w-[200px] md:min-w-[220px] max-w-[200px] sm:max-w-[220px] md:max-w-[240px] snap-center h-full ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+                }`}
+              >
+                {plan.popular && (
+                  <Badge className="absolute -top-2 sm:-top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground z-10 animate-pulse shadow-lg text-[9px] sm:text-[10px] px-2 sm:px-2.5 py-0.5">
+                    Popular
+                  </Badge>
+                )}
+                <Card className={`p-3 sm:p-4 md:p-5 w-full flex flex-col transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:-translate-y-2 bg-card/70 backdrop-blur-sm border-hero-circle/20 h-full ${
+                  plan.popular ? 'border-primary border-2 shadow-xl shadow-primary/30' : 'hover:border-primary/50 border-2'
+                } !rounded-full`}>
+                  {/* Circular Progress Indicator */}
                 <div className="flex justify-center mb-3 sm:mb-4">
                   <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     {/* Outer decorative circle */}
@@ -182,7 +185,7 @@ export function Pricing() {
                   </Button>
                 </div>
               </Card>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

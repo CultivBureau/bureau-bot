@@ -1,5 +1,6 @@
 import { Card } from "./ui/card";
 import { Zap, Shield, Globe, Clock, Users, TrendingUp } from "lucide-react";
+import { ScrollReveal } from "./ScrollReveal";
 
 export function BenefitsCards() {
   const benefits = [
@@ -58,36 +59,39 @@ export function BenefitsCards() {
       bgColor: "bg-orange-500/10 dark:bg-orange-500/20"
     }
   ];
-
   return (
-    <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
+    <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-hero-bg-start via-hero-bg-mid to-hero-bg-end">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-10 sm:mb-12 lg:mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-hero-text tracking-tight">
-            Why{" "}
-            <span className="text-primary">
-              BureauBot
-            </span>
-          </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-hero-subtext max-w-3xl mx-auto leading-relaxed">
-            Built for enterprise teams who need reliability, security, and measurable ROI
-          </p>
-        </div>
+        <ScrollReveal width="100%">
+          <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-hero-text tracking-tight">
+              Why{" "}
+              <span className="text-primary">
+                BureauBot
+              </span>
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl text-hero-subtext max-w-3xl mx-auto leading-relaxed">
+              Built for enterprise teams who need reliability, security, and measurable ROI
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {benefits.map((benefit) => {
+          {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (
-              <Card key={benefit.title} className="group p-5 sm:p-6 hover:shadow-xl hover:shadow-primary/20 transition-all duration-500 border-2 border-hero-circle/20 hover:border-primary/50 bg-card/70 backdrop-blur-sm hover:scale-105 rounded-full">
-                <div className="flex flex-col items-center">
-                  <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full ${benefit.bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                    <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${benefit.color}`} />
-                    <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${benefit.gradientFrom} ${benefit.gradientTo} opacity-0 group-hover:opacity-20 blur transition-opacity duration-300`} />
+              <ScrollReveal key={benefit.title} delay={index * 0.1} width="100%" className="h-full">
+                <Card className="group p-5 sm:p-6 hover:shadow-xl hover:shadow-primary/20 transition-all duration-500 border-2 border-hero-circle/20 hover:border-primary/50 bg-card/70 backdrop-blur-sm hover:scale-105 rounded-full h-full">
+                  <div className="flex flex-col items-center h-full">
+                    <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full ${benefit.bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                      <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${benefit.color}`} />
+                      <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${benefit.gradientFrom} ${benefit.gradientTo} opacity-0 group-hover:opacity-20 blur transition-opacity duration-300`} />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-3 text-hero-text text-center">{benefit.title}</h3>
+                    <p className="text-xs sm:text-sm text-hero-subtext leading-relaxed text-center flex-grow">{benefit.description}</p>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold mb-3 text-hero-text text-center">{benefit.title}</h3>
-                  <p className="text-xs sm:text-sm text-hero-subtext leading-relaxed text-center">{benefit.description}</p>
-                </div>
-              </Card>
+                </Card>
+              </ScrollReveal>
             );
           })}
         </div>
