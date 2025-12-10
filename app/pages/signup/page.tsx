@@ -37,16 +37,24 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [theme, setTheme] = useState<ThemeOption>(() => getInitialTheme());
+  const [theme, setTheme] = useState<ThemeOption>("light");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    const initialTheme = getInitialTheme();
+    setTheme(initialTheme);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle("dark", theme === "dark");
     }
     if (typeof window !== "undefined") {
       window.localStorage.setItem("bb-theme", theme);
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
   const toggleTheme = () =>
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
@@ -124,7 +132,9 @@ export default function SignupPage() {
           className="rounded-full border border-hero-circle/20 bg-hero-circle/10 p-3 shadow-lg backdrop-blur-sm transition hover:bg-hero-circle/20"
           aria-label="Toggle theme"
         >
-          {theme === "light" ? (
+          {!mounted ? (
+            <Moon className="h-5 w-5 text-hero-text sm:h-6 sm:w-6" />
+          ) : theme === "light" ? (
             <Moon className="h-5 w-5 text-hero-text sm:h-6 sm:w-6" />
           ) : (
             <Sun className="h-5 w-5 text-hero-text sm:h-6 sm:w-6" />
@@ -133,18 +143,17 @@ export default function SignupPage() {
       </div>
 
       <div className="relative w-full max-w-7xl flex-1 self-center">
-        <div className="px-4 pt-16 pb-8 text-center sm:px-6 sm:pt-20 sm:pb-12 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-hero-text sm:text-4xl md:text-5xl lg:text-6xl">
-            Create Account
-          </h1>
-          <p className="mt-3 text-base text-hero-subtext sm:text-lg lg:text-xl">
-            Create your AI chatbot and automate your CRM workflows
-          </p>
-        </div>
-
-        <div className="relative mx-auto flex w-full flex-1 items-center px-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex w-full flex-1 items-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
           <div className="grid w-full items-center gap-8 lg:grid-cols-2 lg:gap-12">
-            <div className="relative z-10 mx-auto w-full max-w-xl lg:mx-0">
+            <div className="relative z-10 mx-auto w-full max-w-xl lg:mx-0 space-y-6">
+              <div className="text-left">
+                <h1 className="text-3xl font-bold tracking-tight text-hero-text sm:text-4xl md:text-5xl">
+                  Create Account
+                </h1>
+                <p className="mt-3 text-base text-hero-subtext sm:text-lg">
+                  Create your AI chatbot and automate your CRM workflows
+                </p>
+              </div>
               <div className="rounded-[32px] border border-hero-circle/20 bg-card/80 p-6 shadow-2xl backdrop-blur-sm sm:p-8 lg:p-10">
                 <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -308,7 +317,7 @@ export default function SignupPage() {
                   <p className="text-sm text-hero-subtext">
                     Already have an account?{" "}
                     <Link
-                      href="/login"
+                      href="/pages/login"
                       className="font-semibold text-primary transition hover:text-primary/80"
                     >
                       Sign In

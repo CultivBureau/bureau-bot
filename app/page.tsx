@@ -1,3 +1,5 @@
+'use client';
+
 import { Header } from "./components/landing/Header";
 import { Hero } from "./components/landing/Hero";
 import { BenefitsCards } from "./components/landing/BenefitsCards";

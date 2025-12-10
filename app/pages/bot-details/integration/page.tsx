@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BotDetailsPageShell } from '../../../components/bot-details/shared/BotDetailsPageShell';
 import { IntegrationsContent } from '../../../components/bot-details/integration/IntegrationsContent';
-import { Loader2 } from 'lucide-react';
 
 function IntegrationPageContent() {
   const searchParams = useSearchParams();
@@ -26,9 +25,7 @@ export default function IntegrationPage() {
     <Suspense
       fallback={
         <BotDetailsPageShell botId={null} title="Integrations" loading={true}>
-          <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+          <div />
         </BotDetailsPageShell>
       }
     >

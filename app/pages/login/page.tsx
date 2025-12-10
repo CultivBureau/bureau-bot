@@ -92,18 +92,18 @@ export default function LoginPage() {
       </div>
 
       <div className="relative w-full max-w-7xl flex-1 self-center">
-        <div className="px-4 pt-16 pb-8 text-center sm:px-6 sm:pt-20 sm:pb-12 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-hero-text sm:text-4xl md:text-5xl lg:text-6xl">
-            Welcome Back
-          </h1>
-          <p className="mt-3 text-base text-hero-subtext sm:text-lg lg:text-xl">
-            Sign in to manage your AI chatbots and CRM integrations
-          </p>
-        </div>
-
-        <div className="relative mx-auto flex w-full flex-1 items-center px-4 sm:px-6 lg:px-8">
+        <div className="relative mx-auto flex w-full flex-1 items-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
           <div className="grid w-full items-center gap-8 lg:grid-cols-2 lg:gap-12">
-            <div className="relative z-10 mx-auto w-full max-w-md lg:mx-0">
+            <div className="relative z-10 mx-auto w-full max-w-md lg:mx-0 space-y-6">
+              <div className="text-left">
+                <h1 className="text-3xl font-bold tracking-tight text-hero-text sm:text-4xl md:text-5xl">
+                  Welcome Back
+                </h1>
+                <p className="mt-3 text-base text-hero-subtext sm:text-lg">
+                  Sign in to manage your AI chatbots and CRM integrations
+                </p>
+              </div>
+              
               <div className="rounded-[32px] border border-hero-circle/20 bg-card/80 p-6 shadow-2xl backdrop-blur-sm sm:p-8 lg:p-10">
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="space-y-2">

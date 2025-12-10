@@ -1,12 +1,12 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/dashboard/DashboardLayout';
 import { PersonalInfoCard } from '../../../components/profile/PersonalInfoCard';
 import { PlanInfoCard } from '../../../components/profile/PlanInfoCard';
 import { ProfilePageHeader } from '../../../components/profile/ProfilePageHeader';
 import { ProfileAlerts } from '../../../components/profile/ProfileAlerts';
 import { useProfile } from '../../../components/profile/hooks/useProfile';
+import { LoadingState } from '../../../components/dashboard/LoadingState';
 
 export default function ProfilePage() {
   const {
@@ -24,13 +24,7 @@ export default function ProfilePage() {
   } = useProfile();
 
   if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    );
+    return <LoadingState message="Loading profile..." />;
   }
 
   if (!user) {

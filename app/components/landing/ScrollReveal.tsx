@@ -21,7 +21,7 @@ export function ScrollReveal({
   className = '',
   direction = 'up',
   distance = 50,
-  duration = 0.5,
+  duration = 0.8,
   once = true
 }: ScrollRevealProps) {
   const ref = useRef(null);

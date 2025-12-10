@@ -7,7 +7,7 @@ import { PaymentTransactionsTable } from '../../components/Payment/PaymentTransa
 import { userService } from '../../services/user';
 import { User } from '../../types/auth';
 import { useAppSelector } from '../../store/hooks';
-import { Loader2 } from 'lucide-react';
+import { LoadingState } from '../../components/dashboard/LoadingState';
 
 export default function PaymentPage() {
   const decodedToken = useAppSelector((state) => state.auth.decodedToken);
@@ -42,13 +42,7 @@ export default function PaymentPage() {
   }, [decodedToken]);
 
   if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    );
+    return <LoadingState message="Loading payment information..." />;
   }
 
   if (!user) {

@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BotDetailsPageShell } from '../../../components/bot-details/shared/BotDetailsPageShell';
 import { OverviewContent } from '../../../components/bot-details/overview/OverviewContent';
-import { Loader2 } from 'lucide-react';
 
 function OverviewPageContent() {
   const searchParams = useSearchParams();
@@ -34,9 +33,7 @@ export default function OverviewPage() {
           title="Overview"
           loading={true}
         >
-          <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+          <div />
         </BotDetailsPageShell>
       }
     >

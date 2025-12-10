@@ -133,7 +133,6 @@ export function Header() {
     { name: "Home", id: "home" },
     { name: "Features", id: "features" },
     { name: "About Us", id: "about" },
-    { name: "Contact Us", id: "contact" },
   ];
 
   const renderNav = (isMobile = false) => (
