@@ -1,16 +1,19 @@
 'use client';
 
-import { useRef } from 'react';
-import { Upload, Loader2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Upload, Loader2, CheckCircle, File as FileIcon, Link } from 'lucide-react';
+import { KnowledgeBaseSourceType } from '../shared/hooks/useKnowledgebase';
 
 interface KnowledgebaseUploadFormProps {
-  uploadType: 'file' | 'text';
-  onUploadTypeChange: (type: 'file' | 'text') => void;
+  uploadType: KnowledgeBaseSourceType;
+  onUploadTypeChange: (type: KnowledgeBaseSourceType) => void;
   title: string;
   content: string;
+  url: string;
   file: File | null;
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
+  onUrlChange: (value: string) => void;
   onFileChange: (file: File | null) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -24,9 +27,11 @@ export function KnowledgebaseUploadForm({
   onUploadTypeChange,
   title,
   content,
+  url,
   file,
   onTitleChange,
   onContentChange,
+  onUrlChange,
   onFileChange,
   onSave,
   onCancel,
@@ -35,12 +40,33 @@ export function KnowledgebaseUploadForm({
   formatFileSize,
 }: KnowledgebaseUploadFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       onFileChange(selectedFile);
       onTitleChange(selectedFile.name);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      onFileChange(droppedFile);
+      onTitleChange(droppedFile.name);
     }
   };
 
@@ -76,6 +102,16 @@ export function KnowledgebaseUploadForm({
           >
             Text input
           </button>
+          <button
+            onClick={() => onUploadTypeChange('url')}
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              uploadType === 'url'
+                ? 'bg-primary text-primary-foreground'
+                : 'border border-border text-card-foreground'
+            }`}
+          >
+            URL
+          </button>
         </div>
       </div>
 
@@ -92,19 +128,50 @@ export function KnowledgebaseUploadForm({
         />
       </div>
 
-      {uploadType === 'file' ? (
+      {uploadType === 'file' && (
         <div className="space-y-3">
           <label className="text-sm font-medium text-card-foreground">
             Upload file
           </label>
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border text-center text-sm text-muted-foreground hover:border-primary"
-          >
-            <Upload className="mb-3 h-6 w-6 text-primary" />
-            <p>Drop a file here or click to browse</p>
-            <p className="text-xs">PDF, DOCX, or TXT</p>
-          </div>
+          {!file ? (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center text-sm text-muted-foreground transition-colors ${
+                isDragging 
+                  ? 'border-primary bg-primary/5' 
+                  : 'border-border hover:border-primary'
+              }`}
+            >
+              <Upload className="mb-3 h-6 w-6 text-primary" />
+              <p>Drop a file here or click to browse</p>
+              <p className="text-xs">PDF, DOCX, or TXT (max 512MB)</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 px-4 py-4">
+              <div className="rounded-xl bg-emerald-100 dark:bg-emerald-900 p-2">
+                <FileIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-card-foreground truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onFileChange(null);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                  }
+                }}
+                className="rounded-full px-3 py-1 text-xs text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
+              >
+                Remove
+              </button>
+            </div>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -112,13 +179,10 @@ export function KnowledgebaseUploadForm({
             onChange={handleFileUpload}
             className="hidden"
           />
-          {file && (
-            <div className="rounded-2xl border border-border bg-secondary/60 px-4 py-3 text-sm text-card-foreground">
-              {file.name} · {formatFileSize(file.size)}
-            </div>
-          )}
         </div>
-      ) : (
+      )}
+
+      {uploadType === 'text' && (
         <div className="space-y-3">
           <label className="text-sm font-medium text-card-foreground">
             Text content
@@ -130,6 +194,27 @@ export function KnowledgebaseUploadForm({
             className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
             placeholder="Paste the knowledge base article…"
           />
+        </div>
+      )}
+
+      {uploadType === 'url' && (
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-card-foreground">
+            URL
+          </label>
+          <div className="relative">
+            <Link className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => onUrlChange(e.target.value)}
+              className="w-full rounded-2xl border border-border bg-background pl-10 pr-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+              placeholder="https://example.com/knowledge-article"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Enter a URL to fetch and store content from a web page.
+          </p>
         </div>
       )}
 

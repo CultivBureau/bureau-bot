@@ -2,20 +2,7 @@
 
 import { ReactNode } from 'react';
 import { File, FileText as FileTextIcon, Link, Trash2, Edit, Download, Eye, HardDrive } from 'lucide-react';
-
-interface KnowledgeBaseItem {
-  source_id: number;
-  bot_id: string;
-  source_type: 'file' | 'text' | 'url';
-  title: string;
-  content?: string;
-  openai_file_id?: string;
-  file_size?: number;
-  file_type?: string;
-  vector_store_id?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { KnowledgeBaseItem } from '../shared/hooks/useKnowledgebase';
 
 interface KnowledgebaseItemCardProps {
   item: KnowledgeBaseItem;

@@ -63,10 +63,15 @@ export function KnowledgebaseContent() {
     );
   }
 
-  const uploadDisabled =
-    uploading ||
-    !newItem.title.trim() ||
-    (uploadType === 'file' ? !newItem.file : !newItem.content.trim());
+  const getUploadDisabled = () => {
+    if (uploading || !newItem.title.trim()) return true;
+    if (uploadType === 'file') return !newItem.file;
+    if (uploadType === 'text') return !newItem.content.trim();
+    if (uploadType === 'url') return !newItem.url.trim();
+    return true;
+  };
+
+  const uploadDisabled = getUploadDisabled();
 
   return (
     <div className="space-y-6">
@@ -119,14 +124,16 @@ export function KnowledgebaseContent() {
           onUploadTypeChange={setUploadType}
           title={newItem.title}
           content={newItem.content}
+          url={newItem.url}
           file={newItem.file}
           onTitleChange={(value) => setNewItem({ ...newItem, title: value })}
           onContentChange={(value) => setNewItem({ ...newItem, content: value })}
+          onUrlChange={(value) => setNewItem({ ...newItem, url: value })}
           onFileChange={(file) => setNewItem({ ...newItem, file, title: file ? file.name : newItem.title })}
           onSave={handleAddItem}
           onCancel={() => {
             setShowUploadForm(false);
-            setNewItem({ title: '', content: '', file: null });
+            setNewItem({ title: '', content: '', url: '', file: null });
           }}
           uploading={uploading}
           disabled={uploadDisabled}
@@ -153,11 +160,11 @@ export function KnowledgebaseContent() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {items.map((item) => (
               <KnowledgebaseItemCard
-                key={item.source_id}
+                key={item.openai_file_id}
                 item={item}
-                isExpanded={expandedCard === item.source_id}
-                onToggleExpand={() => setExpandedCard(expandedCard === item.source_id ? null : item.source_id)}
-                onDelete={() => handleDeleteItem(item.source_id)}
+                isExpanded={expandedCard === item.openai_file_id}
+                onToggleExpand={() => setExpandedCard(expandedCard === item.openai_file_id ? null : item.openai_file_id)}
+                onDelete={() => handleDeleteItem(item.openai_file_id)}
                 onEdit={() => handleEditItem(item)}
                 onDownload={() => handleDownloadItem(item)}
                 onView={() => handleViewItem(item)}

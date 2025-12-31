@@ -9,7 +9,7 @@ class AuthService {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
     // Use environment variable or fallback to default backend URL
-    const baseUrl = apiBaseUrl || 'http://207.154.226.165:8000';
+    const baseUrl = apiBaseUrl || 'https://test.staging.cultiv.llc';
     
     // Remove trailing slash if present (endpoints will include leading slash)
     return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
@@ -54,7 +54,7 @@ class AuthService {
   }
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>('/api/authentication/login/', {
+    const response = await this.request<LoginResponse>('/api/Authentication/login/', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -69,7 +69,7 @@ class AuthService {
   }
 
   async register(userData: RegisterRequest): Promise<RegisterResponse> {
-    const response = await this.request<RegisterResponse>('/api/authentication/register/', {
+    const response = await this.request<RegisterResponse>('/api/Authentication/register/', {
       method: 'POST',
       body: JSON.stringify(userData),
     });

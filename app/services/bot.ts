@@ -20,7 +20,7 @@ class BotService {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
     // Use environment variable or fallback to default backend URL
-    const baseUrl = apiBaseUrl || 'http://207.154.226.165:8000';
+    const baseUrl = apiBaseUrl || 'https://test.staging.cultiv.llc';
     
     // Remove trailing slash if present (endpoints will include leading slash)
     return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
@@ -121,12 +121,12 @@ class BotService {
   }
 
   async getGPTModels(): Promise<GPTModel[]> {
-    const response = await this.request<GPTModelsResponse>('/api/bots/gpt-models/');
+    const response = await this.request<GPTModelsResponse>('/api/Bots/gpt-models/');
     return response.gpt_models;
   }
 
   async getChannelTypes(): Promise<ChannelType[]> {
-    const response = await this.request<ChannelTypesResponse>('/api/bots/channel-types/');
+    const response = await this.request<ChannelTypesResponse>('/api/Bots/channel-types/');
     return response.channel_types;
   }
 
@@ -135,14 +135,14 @@ class BotService {
       openaikey: key,
     };
     
-    return this.request<ValidateOpenAIKeyResponse>('/api/bots/validate-openai-key/', {
+    return this.request<ValidateOpenAIKeyResponse>('/api/Bots/validate-openai-key/', {
       method: 'POST',
       body: JSON.stringify(requestData),
     });
   }
 
   async createBot(botData: CreateBotRequest): Promise<Bot> {
-    return this.request<Bot>('/api/bots/', {
+    return this.request<Bot>('/api/Bots/', {
       method: 'POST',
       body: JSON.stringify(botData),
     });
@@ -162,24 +162,24 @@ class BotService {
     }
 
     const queryString = queryParams.toString();
-    const endpoint = queryString ? `/api/bots/?${queryString}` : '/api/bots/';
+    const endpoint = queryString ? `/api/Bots/?${queryString}` : '/api/Bots/';
     
     return this.request<BotsListResponse>(endpoint);
   }
 
   async getBotById(botId: string): Promise<Bot> {
-    return this.request<Bot>(`/api/bots/${botId}/`);
+    return this.request<Bot>(`/api/Bots/${botId}/`);
   }
 
   async updateBot(botId: string, botData: UpdateBotRequest): Promise<Bot> {
-    return this.request<Bot>(`/api/bots/${botId}/`, {
+    return this.request<Bot>(`/api/Bots/${botId}/`, {
       method: 'PUT',
       body: JSON.stringify(botData),
     });
   }
 
   async deleteBot(botId: string): Promise<void> {
-    await this.request<void>(`/api/bots/${botId}/`, {
+    await this.request<void>(`/api/Bots/${botId}/`, {
       method: 'DELETE',
     });
   }
@@ -189,7 +189,7 @@ class BotService {
       id: botId,
     };
     
-    return this.request<Bot>('/api/bots/restore/', {
+    return this.request<Bot>('/api/Bots/restore/', {
       method: 'POST',
       body: JSON.stringify(requestData),
     });

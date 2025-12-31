@@ -1,19 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { knowledgeBaseService } from '../../../../services/knowledgebase';
+import { knowledgeBaseService, KnowledgeBaseItem, KnowledgeBaseSourceType } from '../../../../services/knowledgebase';
 
-interface KnowledgeBaseItem {
-  source_id: number;
-  bot_id: string;
-  source_type: 'file' | 'text' | 'url';
-  title: string;
-  content?: string;
-  openai_file_id?: string;
-  file_size?: number;
-  file_type?: string;
-  vector_store_id?: string;
-  created_at: string;
-  updated_at: string;
-}
+export type { KnowledgeBaseItem, KnowledgeBaseSourceType } from '../../../../services/knowledgebase';
 
 export function useKnowledgebase(botId: string | null) {
   const [items, setItems] = useState<KnowledgeBaseItem[]>([]);
@@ -21,14 +9,15 @@ export function useKnowledgebase(botId: string | null) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [uploadType, setUploadType] = useState<'file' | 'text'>('file');
+  const [uploadType, setUploadType] = useState<KnowledgeBaseSourceType>('file');
   const [uploading, setUploading] = useState(false);
   const [newItem, setNewItem] = useState({
     title: '',
     content: '',
+    url: '',
     file: null as File | null,
   });
-  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
   const fetchItems = useCallback(async () => {
     if (!botId) {
@@ -75,6 +64,11 @@ export function useKnowledgebase(botId: string | null) {
       return;
     }
 
+    if (uploadType === 'url' && !newItem.url.trim()) {
+      setError('Please enter a URL for your knowledge item.');
+      return;
+    }
+
     setUploading(true);
     setError('');
     setSuccess('');
@@ -82,14 +76,15 @@ export function useKnowledgebase(botId: string | null) {
     try {
       if (uploadType === 'file' && newItem.file) {
         const formData = new FormData();
-        formData.append('file', newItem.file);
-        formData.append('title', newItem.title);
         formData.append('bot_id', botId!);
+        formData.append('title', newItem.title);
+        formData.append('source_type', 'file');
+        formData.append('file', newItem.file);
 
         await knowledgeBaseService.uploadFile(formData);
         setSuccess('File uploaded successfully to OpenAI and knowledge base!');
         fetchItems();
-        setNewItem({ title: '', content: '', file: null });
+        setNewItem({ title: '', content: '', url: '', file: null });
         setShowUploadForm(false);
       } else if (uploadType === 'text' && newItem.content.trim()) {
         await knowledgeBaseService.uploadText({
@@ -99,7 +94,17 @@ export function useKnowledgebase(botId: string | null) {
         });
         setSuccess('Text content added to knowledge base successfully!');
         fetchItems();
-        setNewItem({ title: '', content: '', file: null });
+        setNewItem({ title: '', content: '', url: '', file: null });
+        setShowUploadForm(false);
+      } else if (uploadType === 'url' && newItem.url.trim()) {
+        await knowledgeBaseService.uploadUrl({
+          bot_id: botId!,
+          title: newItem.title,
+          url: newItem.url,
+        });
+        setSuccess('URL added to knowledge base successfully!');
+        fetchItems();
+        setNewItem({ title: '', content: '', url: '', file: null });
         setShowUploadForm(false);
       }
     } catch (err: any) {
@@ -109,9 +114,9 @@ export function useKnowledgebase(botId: string | null) {
     }
   };
 
-  const handleDeleteItem = async (sourceId: number) => {
+  const handleDeleteItem = async (openaiFileId: string) => {
     try {
-      await knowledgeBaseService.deleteKnowledgeBaseItem(sourceId.toString());
+      await knowledgeBaseService.deleteKnowledgeBaseItem(openaiFileId);
       setSuccess('Knowledge base item deleted successfully!');
       fetchItems();
     } catch (err: any) {
@@ -184,7 +189,7 @@ export function useKnowledgebase(botId: string | null) {
               <div class="meta">
                 <p><strong>Type:</strong> ${item.source_type.toUpperCase()}</p>
                 <p><strong>Created:</strong> ${new Date(item.created_at).toLocaleString()}</p>
-                <p><strong>Source ID:</strong> ${item.source_id}</p>
+                <p><strong>File ID:</strong> ${item.openai_file_id}</p>
               </div>
             </body>
           </html>
