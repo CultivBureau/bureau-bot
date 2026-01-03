@@ -20,6 +20,7 @@ interface KnowledgebaseUploadFormProps {
   uploading: boolean;
   disabled: boolean;
   formatFileSize: (bytes: number) => string;
+  isEditing?: boolean;
 }
 
 export function KnowledgebaseUploadForm({
@@ -38,6 +39,7 @@ export function KnowledgebaseUploadForm({
   uploading,
   disabled,
   formatFileSize,
+  isEditing = false,
 }: KnowledgebaseUploadFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -84,31 +86,28 @@ export function KnowledgebaseUploadForm({
         <div className="flex gap-2">
           <button
             onClick={() => onUploadTypeChange('file')}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              uploadType === 'file'
+            className={`rounded-full px-4 py-2 text-sm font-medium ${uploadType === 'file'
                 ? 'bg-primary text-primary-foreground'
                 : 'border border-border text-card-foreground'
-            }`}
+              }`}
           >
             File upload
           </button>
           <button
             onClick={() => onUploadTypeChange('text')}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              uploadType === 'text'
+            className={`rounded-full px-4 py-2 text-sm font-medium ${uploadType === 'text'
                 ? 'bg-primary text-primary-foreground'
                 : 'border border-border text-card-foreground'
-            }`}
+              }`}
           >
             Text input
           </button>
           <button
             onClick={() => onUploadTypeChange('url')}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              uploadType === 'url'
+            className={`rounded-full px-4 py-2 text-sm font-medium ${uploadType === 'url'
                 ? 'bg-primary text-primary-foreground'
                 : 'border border-border text-card-foreground'
-            }`}
+              }`}
           >
             URL
           </button>
@@ -139,11 +138,10 @@ export function KnowledgebaseUploadForm({
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center text-sm text-muted-foreground transition-colors ${
-                isDragging 
-                  ? 'border-primary bg-primary/5' 
+              className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center text-sm text-muted-foreground transition-colors ${isDragging
+                  ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary'
-              }`}
+                }`}
             >
               <Upload className="mb-3 h-6 w-6 text-primary" />
               <p>Drop a file here or click to browse</p>
@@ -233,10 +231,10 @@ export function KnowledgebaseUploadForm({
           {uploading ? (
             <span className="inline-flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Uploading…
+              {isEditing ? 'Updating…' : 'Uploading…'}
             </span>
           ) : (
-            'Add to knowledge base'
+            isEditing ? 'Update knowledge base' : 'Add to knowledge base'
           )}
         </button>
       </div>

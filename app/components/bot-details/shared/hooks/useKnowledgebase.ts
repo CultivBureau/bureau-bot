@@ -19,18 +19,22 @@ export function useKnowledgebase(botId: string | null) {
   });
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
+  // Edit and View states
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [viewingItem, setViewingItem] = useState<KnowledgeBaseItem | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
   const fetchItems = useCallback(async () => {
     if (!botId) {
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
       setError('');
       const response = await knowledgeBaseService.getKnowledgeBaseItems({ bot_id: botId });
-      const data = response;
-      const itemsList = Array.isArray(data) ? data : (data.results || data.data || []);
+      const itemsList = Array.isArray(response) ? response : [];
       setItems(itemsList);
     } catch (err: any) {
       setError(err?.message || 'Something went wrong while fetching knowledge base items.');
@@ -43,18 +47,18 @@ export function useKnowledgebase(botId: string | null) {
     fetchItems();
   }, [fetchItems]);
 
-  const handleAddItem = async () => {
+  const handleSaveItem = async () => {
     if (!botId) {
       setError('No bot ID provided. Please select a bot first.');
       return;
     }
-    
+
     if (!newItem.title.trim()) {
       setError('Please enter a title for your knowledge item.');
       return;
     }
 
-    if (uploadType === 'file' && !newItem.file) {
+    if (uploadType === 'file' && !newItem.file && !editingItemId) {
       setError('Please select a file to upload.');
       return;
     }
@@ -64,7 +68,7 @@ export function useKnowledgebase(botId: string | null) {
       return;
     }
 
-    if (uploadType === 'url' && !newItem.url.trim()) {
+    if (uploadType === 'url' && !newItem.url.trim() && !editingItemId) { // URL is only for creation, not update in this flow
       setError('Please enter a URL for your knowledge item.');
       return;
     }
@@ -74,41 +78,89 @@ export function useKnowledgebase(botId: string | null) {
     setSuccess('');
 
     try {
-      if (uploadType === 'file' && newItem.file) {
-        const formData = new FormData();
-        formData.append('bot_id', botId!);
-        formData.append('title', newItem.title);
-        formData.append('source_type', 'file');
-        formData.append('file', newItem.file);
+      // UPDATE existing item
+      if (editingItemId) {
+        if (uploadType === 'file' && newItem.file) {
+          // Update with new file
+          const formData = new FormData();
+          formData.append('title', newItem.title);
+          formData.append('file', newItem.file);
 
-        await knowledgeBaseService.uploadFile(formData);
-        setSuccess('File uploaded successfully to OpenAI and knowledge base!');
-        fetchItems();
-        setNewItem({ title: '', content: '', url: '', file: null });
-        setShowUploadForm(false);
-      } else if (uploadType === 'text' && newItem.content.trim()) {
-        await knowledgeBaseService.uploadText({
-          bot_id: botId!,
-          title: newItem.title,
-          content: newItem.content,
-        });
-        setSuccess('Text content added to knowledge base successfully!');
-        fetchItems();
-        setNewItem({ title: '', content: '', url: '', file: null });
-        setShowUploadForm(false);
-      } else if (uploadType === 'url' && newItem.url.trim()) {
-        await knowledgeBaseService.uploadUrl({
-          bot_id: botId!,
-          title: newItem.title,
-          url: newItem.url,
-        });
-        setSuccess('URL added to knowledge base successfully!');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📝 Updating item with file:', editingItemId);
+            console.log('  - title:', newItem.title);
+            console.log('  - file:', newItem.file.name);
+          }
+
+          await knowledgeBaseService.updateKnowledgeBaseItem(editingItemId, formData);
+          setSuccess('Knowledge base item updated with new file!');
+        } else if (uploadType === 'text' && newItem.content.trim()) {
+          // Update text content
+          await knowledgeBaseService.updateKnowledgeBaseItem(editingItemId, {
+            title: newItem.title,
+            content: newItem.content,
+          });
+          setSuccess('Knowledge base item updated!');
+        } else {
+          // Update title only (e.g., for existing files or if content wasn't changed)
+          await knowledgeBaseService.updateKnowledgeBaseItem(editingItemId, {
+            title: newItem.title,
+          });
+          setSuccess('Knowledge base item updated!');
+        }
+
+        setEditingItemId(null);
         fetchItems();
         setNewItem({ title: '', content: '', url: '', file: null });
         setShowUploadForm(false);
       }
+      // CREATE new item
+      else {
+        if (uploadType === 'file' && newItem.file) {
+          const formData = new FormData();
+          formData.append('bot_id', botId!);
+          formData.append('title', newItem.title);
+          formData.append('source_type', 'file');
+          formData.append('file', newItem.file);
+
+          // Log FormData contents for debugging
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📤 Uploading file with FormData:');
+            console.log('  - bot_id:', botId);
+            console.log('  - title:', newItem.title);
+            console.log('  - source_type: file');
+            console.log('  - file:', newItem.file.name, `(${newItem.file.size} bytes, type: ${newItem.file.type})`);
+          }
+
+          await knowledgeBaseService.uploadFile(formData);
+          setSuccess('File uploaded successfully to OpenAI and knowledge base!');
+          fetchItems();
+          setNewItem({ title: '', content: '', url: '', file: null });
+          setShowUploadForm(false);
+        } else if (uploadType === 'text' && newItem.content.trim()) {
+          await knowledgeBaseService.uploadText({
+            bot_id: botId!,
+            title: newItem.title,
+            content: newItem.content,
+          });
+          setSuccess('Text content added to knowledge base successfully!');
+          fetchItems();
+          setNewItem({ title: '', content: '', url: '', file: null });
+          setShowUploadForm(false);
+        } else if (uploadType === 'url' && newItem.url.trim()) {
+          await knowledgeBaseService.uploadUrl({
+            bot_id: botId!,
+            title: newItem.title,
+            url: newItem.url,
+          });
+          setSuccess('URL added to knowledge base successfully!');
+          fetchItems();
+          setNewItem({ title: '', content: '', url: '', file: null });
+          setShowUploadForm(false);
+        }
+      }
     } catch (err: any) {
-      setError(err?.message || 'Failed to upload knowledge base item');
+      setError(err?.message || 'Failed to save knowledge base item');
     } finally {
       setUploading(false);
     }
@@ -125,15 +177,17 @@ export function useKnowledgebase(botId: string | null) {
   };
 
   const handleEditItem = (item: KnowledgeBaseItem) => {
+    setEditingItemId(item.openai_file_id);
     setUploadType(item.source_type === 'file' ? 'file' : 'text');
     setNewItem({
       title: item.title,
       content: item.content || '',
+      url: '',
       file: null,
     });
     setShowUploadForm(true);
     setExpandedCard(null);
-    
+
     setTimeout(() => {
       const formElement = document.querySelector('[data-upload-form]');
       if (formElement) {
@@ -142,20 +196,25 @@ export function useKnowledgebase(botId: string | null) {
     }, 100);
   };
 
-  const handleDownloadItem = (item: KnowledgeBaseItem) => {
+  const handleDownloadItem = async (item: KnowledgeBaseItem) => {
     if (item.source_type === 'file') {
-      const blob = new Blob([`This is a simulated download of ${item.title}`], { 
-        type: 'application/octet-stream' 
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = item.title;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      try {
+        // Download actual file from API
+        const fileUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.staging.cultiv.llc'}/api/KnowledgeBase/knowledge-base/${item.openai_file_id}/download/`;
+
+        // Create temporary link to trigger download
+        const a = document.createElement('a');
+        a.href = fileUrl;
+        a.download = item.title;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (err: any) {
+        setError(err?.message || 'Failed to download file');
+      }
     } else if (item.content) {
+      // Download text content as file
       const blob = new Blob([item.content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -168,36 +227,24 @@ export function useKnowledgebase(botId: string | null) {
     }
   };
 
-  const handleViewItem = (item: KnowledgeBaseItem) => {
-    if (item.content) {
-      const newWindow = window.open('', '_blank', 'width=800,height=600');
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>${item.title}</title>
-              <style>
-                body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-                h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-                .content { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px; }
-                .meta { color: #666; font-size: 14px; margin-top: 20px; }
-              </style>
-            </head>
-            <body>
-              <h1>${item.title}</h1>
-              <div class="content">${item.content.replace(/\n/g, '<br>')}</div>
-              <div class="meta">
-                <p><strong>Type:</strong> ${item.source_type.toUpperCase()}</p>
-                <p><strong>Created:</strong> ${new Date(item.created_at).toLocaleString()}</p>
-                <p><strong>File ID:</strong> ${item.openai_file_id}</p>
-              </div>
-            </body>
-          </html>
-        `);
-        newWindow.document.close();
-      }
-    } else {
-      alert(`Viewing file: ${item.title}\n\nThis would open the file viewer for uploaded files.`);
+  const handleViewItem = async (item: KnowledgeBaseItem) => {
+    // For files, open in new tab
+    if (item.source_type === 'file') {
+      // Construct file URL - adjust based on your API structure
+      const fileUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.staging.cultiv.llc'}/api/KnowledgeBase/knowledge-base/${item.openai_file_id}/file/`;
+      window.open(fileUrl, '_blank');
+      return;
+    }
+
+    // For text/url, show in modal
+    try {
+      setLoadingDetails(true);
+      const fullItem = await knowledgeBaseService.getKnowledgeBaseItem(item.openai_file_id);
+      setViewingItem(fullItem);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load item details');
+    } finally {
+      setLoadingDetails(false);
     }
   };
 
@@ -219,13 +266,18 @@ export function useKnowledgebase(botId: string | null) {
     uploading,
     newItem,
     expandedCard,
+    editingItemId,
+    viewingItem,
+    loadingDetails,
     setShowUploadForm,
     setUploadType,
     setNewItem,
     setExpandedCard,
+    setEditingItemId,
+    setViewingItem,
     setError,
     setSuccess,
-    handleAddItem,
+    handleSaveItem,
     handleDeleteItem,
     handleEditItem,
     handleDownloadItem,

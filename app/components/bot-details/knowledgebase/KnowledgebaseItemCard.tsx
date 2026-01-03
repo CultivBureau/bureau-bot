@@ -13,7 +13,7 @@ interface KnowledgebaseItemCardProps {
   onDownload: () => void;
   onView: () => void;
   formatFileSize: (bytes: number) => string;
-  getFileIcon: (sourceType: string, fileType?: string) => JSX.Element;
+  getFileIcon: (sourceType: string, fileType?: string) => ReactNode;
 }
 
 export function KnowledgebaseItemCard({
@@ -93,13 +93,15 @@ export function KnowledgebaseItemCard({
               <Eye className="h-3 w-3" />
               View
             </button>
-            <button
-              onClick={onDownload}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
-            >
-              <Download className="h-3 w-3" />
-              Download
-            </button>
+            {item.source_type === 'file' && (
+              <button
+                onClick={onDownload}
+                className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
+              >
+                <Download className="h-3 w-3" />
+                Download
+              </button>
+            )}
             <button
               onClick={onEdit}
               className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"

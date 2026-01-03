@@ -87,8 +87,8 @@ class KnowledgeBaseService {
 
     // Log request details in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('KnowledgeBase API Request:', { 
-        url, 
+      console.log('KnowledgeBase API Request:', {
+        url,
         method: config.method || 'GET',
         isFormData,
         headers: config.headers
@@ -197,14 +197,16 @@ class KnowledgeBaseService {
   async uploadFile(formData: FormData): Promise<KnowledgeBaseItem> {
     // Log FormData contents in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('Uploading file with FormData:');
+      console.log('📁 KnowledgeBase Service - Uploading file with FormData:');
+      const entries: string[] = [];
       formData.forEach((value, key) => {
         if (value instanceof File) {
-          console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          entries.push(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
         } else {
-          console.log(`  ${key}: ${value}`);
+          entries.push(`  ${key}: ${value}`);
         }
       });
+      console.log(entries.join('\n'));
     }
 
     return this.request<KnowledgeBaseItem>(

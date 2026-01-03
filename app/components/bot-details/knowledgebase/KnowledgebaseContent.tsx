@@ -5,6 +5,7 @@ import { Plus, Database, Loader2, AlertCircle, CheckCircle, File, FileText as Fi
 import { useKnowledgebase } from '../shared/hooks/useKnowledgebase';
 import { KnowledgebaseUploadForm } from './KnowledgebaseUploadForm';
 import { KnowledgebaseItemCard } from './KnowledgebaseItemCard';
+import { ViewDetailsModal } from './ViewDetailsModal';
 
 export function KnowledgebaseContent() {
   const searchParams = useSearchParams();
@@ -20,13 +21,18 @@ export function KnowledgebaseContent() {
     uploading,
     newItem,
     expandedCard,
+    editingItemId,
+    viewingItem,
+    loadingDetails,
     setShowUploadForm,
     setUploadType,
     setNewItem,
     setExpandedCard,
+    setEditingItemId,
+    setViewingItem,
     setError,
     setSuccess,
-    handleAddItem,
+    handleSaveItem,
     handleDeleteItem,
     handleEditItem,
     handleDownloadItem,
@@ -119,26 +125,45 @@ export function KnowledgebaseContent() {
       </div>
 
       {showUploadForm && (
-        <KnowledgebaseUploadForm
-          uploadType={uploadType}
-          onUploadTypeChange={setUploadType}
-          title={newItem.title}
-          content={newItem.content}
-          url={newItem.url}
-          file={newItem.file}
-          onTitleChange={(value) => setNewItem({ ...newItem, title: value })}
-          onContentChange={(value) => setNewItem({ ...newItem, content: value })}
-          onUrlChange={(value) => setNewItem({ ...newItem, url: value })}
-          onFileChange={(file) => setNewItem({ ...newItem, file, title: file ? file.name : newItem.title })}
-          onSave={handleAddItem}
-          onCancel={() => {
-            setShowUploadForm(false);
-            setNewItem({ title: '', content: '', url: '', file: null });
-          }}
-          uploading={uploading}
-          disabled={uploadDisabled}
-          formatFileSize={formatFileSize}
-        />
+        <>
+          {editingItemId && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3 text-sm text-amber-700 dark:text-amber-400 mb-4 flex items-center justify-between">
+              <span>✏️ Editing knowledge base item</span>
+              <button
+                onClick={() => {
+                  setEditingItemId(null);
+                  setNewItem({ title: '', content: '', url: '', file: null });
+                  setShowUploadForm(false);
+                }}
+                className="text-xs underline hover:no-underline"
+              >
+                Cancel Edit
+              </button>
+            </div>
+          )}
+          <KnowledgebaseUploadForm
+            uploadType={uploadType}
+            onUploadTypeChange={setUploadType}
+            title={newItem.title}
+            content={newItem.content}
+            url={newItem.url}
+            file={newItem.file}
+            onTitleChange={(value) => setNewItem(prev => ({ ...prev, title: value }))}
+            onContentChange={(value) => setNewItem(prev => ({ ...prev, content: value }))}
+            onUrlChange={(value) => setNewItem(prev => ({ ...prev, url: value }))}
+            onFileChange={(file) => setNewItem(prev => ({ ...prev, file, title: file ? file.name : prev.title }))}
+            onSave={handleSaveItem}
+            onCancel={() => {
+              setShowUploadForm(false);
+              setNewItem({ title: '', content: '', url: '', file: null });
+              setEditingItemId(null);
+            }}
+            uploading={uploading}
+            disabled={uploadDisabled}
+            formatFileSize={formatFileSize}
+            isEditing={!!editingItemId}
+          />
+        </>
       )}
 
       <section className="rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-6 space-y-6">
@@ -175,6 +200,14 @@ export function KnowledgebaseContent() {
           </div>
         )}
       </section>
+
+      {/* View Details Modal */}
+      <ViewDetailsModal
+        item={viewingItem}
+        isOpen={!!viewingItem}
+        onClose={() => setViewingItem(null)}
+        loading={loadingDetails}
+      />
     </div>
   );
 }
