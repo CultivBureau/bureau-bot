@@ -66,7 +66,7 @@ export function WebhookSection({
                 value={localUrl}
                 onChange={(e) => setLocalUrl(e.target.value)}
                 placeholder="https://your-domain.bitrix24.com/rest/1/webhook_code/"
-                className="flex-1 rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="flex-1 rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
               />
               <div className="flex gap-2">
                 <button

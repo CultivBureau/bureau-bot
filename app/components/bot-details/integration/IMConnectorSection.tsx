@@ -54,7 +54,7 @@ export function IMConnectorSection({
             value={connectorCode}
             onChange={(e) => onConnectorCodeChange(e.target.value)}
             placeholder="your_connector_code"
-            className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+            className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div>
@@ -65,7 +65,7 @@ export function IMConnectorSection({
             value={lineId}
             onChange={(e) => onLineIdChange(e.target.value)}
             placeholder="1"
-            className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+            className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div className="flex items-end">
@@ -94,7 +94,7 @@ export function IMConnectorSection({
               value={clientId}
               onChange={(e) => onClientIdChange(e.target.value)}
               placeholder="local.xxxxxx"
-              className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div>
@@ -104,7 +104,7 @@ export function IMConnectorSection({
               value={clientSecret}
               onChange={(e) => onClientSecretChange(e.target.value)}
               placeholder="••••••••"
-              className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="mt-2 w-full rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>

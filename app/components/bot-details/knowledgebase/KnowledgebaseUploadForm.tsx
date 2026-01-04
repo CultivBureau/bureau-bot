@@ -109,7 +109,7 @@ export function KnowledgebaseUploadForm({
           type="text"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
           placeholder="e.g. Onboarding handbook"
         />
       </div>
@@ -176,7 +176,7 @@ export function KnowledgebaseUploadForm({
             value={content}
             onChange={(e) => onContentChange(e.target.value)}
             rows={6}
-            className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+            className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
             placeholder="Paste the knowledge base article…"
           />
         </div>

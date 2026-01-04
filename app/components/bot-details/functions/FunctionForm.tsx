@@ -182,7 +182,7 @@ export const FunctionForm = memo(function FunctionForm({
         <div className="flex justify-end pt-6 gap-3">
           <button
             onClick={onCancel}
-            className="px-6 py-3 rounded-xl font-medium border border-border hover:bg-secondary"
+            className="px-6 py-3 rounded-xl font-medium border border-border text-foreground hover:bg-secondary"
           >
             Cancel
           </button>

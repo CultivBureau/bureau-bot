@@ -43,7 +43,7 @@ export function DeleteConfirmationModal({
           <button
             onClick={onCancel}
             disabled={deleting}
-            className="px-4 py-2 rounded-lg border border-border hover:bg-secondary disabled:opacity-50"
+            className="px-4 py-2 rounded-lg border border-border text-foreground hover:bg-secondary disabled:opacity-50"
           >
             Cancel
           </button>

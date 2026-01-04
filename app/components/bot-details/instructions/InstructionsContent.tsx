@@ -175,7 +175,7 @@ export function InstructionsContent() {
                 </span>
                 <button
                   onClick={handleCopy}
-                  className="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-border hover:bg-secondary"
+                  className="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-border text-foreground hover:bg-secondary"
                 >
                   {copied ? (
                     <>
@@ -295,7 +295,7 @@ export function InstructionsContent() {
           <DialogFooter>
             <button
               onClick={handleCancelTemplate}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-secondary"
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-secondary"
             >
               Cancel
             </button>
