@@ -1,5 +1,27 @@
 import { store } from '../store/store';
 import { authService } from './auth';
+import type {
+  BitrixFunction,
+  BitrixCRMField,
+  BitrixPipeline,
+  BitrixStage,
+  BitrixIntegrationSetting,
+  BitrixIntegrationSettingsResponse,
+  BitrixTransferSettings,
+  BitrixUser,
+  BitrixChannel,
+  BitrixSyncCrmDataResponse,
+  BitrixIMConnectorRegisterResponse,
+  GetFunctionsParams,
+  GetCRMFieldsParams,
+  GetPipelinesParams,
+  GetStagesParams,
+  GetIntegrationSettingsParams,
+  GetBitrixUsersParams,
+  GetBitrixChannelsParams,
+  BitrixSyncCrmDataRequest,
+  BitrixIMConnectorRegisterData,
+} from '../types/bitrix';
 
 class BitrixService {
   private getBaseURL(): string {
@@ -216,27 +238,27 @@ class BitrixService {
   }
 
   // Functions
-  async getFunctions(params?: { bot_id?: string }): Promise<any> {
+  async getFunctions(params?: GetFunctionsParams): Promise<BitrixFunction[]> {
     // TODO: GET /api/bitrix/functions/?bot_id={bot_id}
-    return this.request<any>('/api/bitrix/functions/', { method: 'GET' });
+    return this.request<BitrixFunction[]>('/api/bitrix/functions/', { method: 'GET' });
   }
 
-  async getFunction(id: string): Promise<any> {
+  async getFunction(id: string): Promise<BitrixFunction> {
     // TODO: GET /api/bitrix/functions/{id}/
-    return this.request<any>(`/api/bitrix/functions/${id}/`, { method: 'GET' });
+    return this.request<BitrixFunction>(`/api/bitrix/functions/${id}/`, { method: 'GET' });
   }
 
-  async createFunction(functionData: any): Promise<any> {
+  async createFunction(functionData: Partial<BitrixFunction>): Promise<BitrixFunction> {
     // TODO: POST /api/bitrix/functions/
-    return this.request<any>('/api/bitrix/functions/', {
+    return this.request<BitrixFunction>('/api/bitrix/functions/', {
       method: 'POST',
       body: JSON.stringify(functionData),
     });
   }
 
-  async updateFunction(id: string, functionData: any): Promise<any> {
+  async updateFunction(id: string, functionData: Partial<BitrixFunction>): Promise<BitrixFunction> {
     // TODO: PUT /api/bitrix/functions/{id}/
-    return this.request<any>(`/api/bitrix/functions/${id}/`, {
+    return this.request<BitrixFunction>(`/api/bitrix/functions/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(functionData),
     });
@@ -249,16 +271,16 @@ class BitrixService {
     });
   }
 
-  async createFunctionWithOpenAI(functionData: any): Promise<any> {
+  async createFunctionWithOpenAI(functionData: Partial<BitrixFunction>): Promise<BitrixFunction> {
     // TODO: POST /api/bitrix/create-function/
-    return this.request<any>('/api/bitrix/create-function/', {
+    return this.request<BitrixFunction>('/api/bitrix/create-function/', {
       method: 'POST',
       body: JSON.stringify(functionData),
     });
   }
 
   // CRM Fields
-  async getCrmFields(params?: { bot_id?: string; entity_type?: string }): Promise<any> {
+  async getCrmFields(params?: GetCRMFieldsParams): Promise<BitrixCRMField[]> {
     const queryParams = new URLSearchParams();
     if (params?.bot_id) {
       queryParams.append('bot_id', params.bot_id);
@@ -268,12 +290,12 @@ class BitrixService {
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/bitrix/crm-fields/?${queryString}` : '/api/bitrix/crm-fields/';
-    const response = await this.request<any>(endpoint, { method: 'GET' });
-    return response.crm_fields || response;
+    const response = await this.request<BitrixCRMField[] | { crm_fields: BitrixCRMField[] }>(endpoint, { method: 'GET' });
+    return Array.isArray(response) ? response : response.crm_fields;
   }
 
   // Pipelines
-  async getPipelines(params?: { bot_id?: string; entity_type?: string }): Promise<any> {
+  async getPipelines(params?: GetPipelinesParams): Promise<BitrixPipeline[]> {
     const queryParams = new URLSearchParams();
     if (params?.bot_id) {
       queryParams.append('bot_id', params.bot_id);
@@ -283,12 +305,12 @@ class BitrixService {
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/bitrix/pipelines/?${queryString}` : '/api/bitrix/pipelines/';
-    const response = await this.request<any>(endpoint, { method: 'GET' });
-    return response.pipelines || response;
+    const response = await this.request<BitrixPipeline[] | { pipelines: BitrixPipeline[] }>(endpoint, { method: 'GET' });
+    return Array.isArray(response) ? response : response.pipelines;
   }
 
   // Stages
-  async getStages(params?: { bot_id?: string; pipeline_id?: string; entity_type?: string }): Promise<any> {
+  async getStages(params?: GetStagesParams): Promise<BitrixStage[]> {
     const queryParams = new URLSearchParams();
     if (params?.bot_id) {
       queryParams.append('bot_id', params.bot_id);
@@ -301,82 +323,82 @@ class BitrixService {
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/bitrix/stages/?${queryString}` : '/api/bitrix/stages/';
-    const response = await this.request<any>(endpoint, { method: 'GET' });
-    return response.stages || response;
+    const response = await this.request<BitrixStage[] | { stages: BitrixStage[] }>(endpoint, { method: 'GET' });
+    return Array.isArray(response) ? response : response.stages;
   }
 
   // Integration Settings
-  async getIntegrationSettings(params?: { bot_id?: string }): Promise<any> {
+  async getIntegrationSettings(params?: GetIntegrationSettingsParams): Promise<BitrixIntegrationSettingsResponse> {
     // TODO: GET /api/bitrix/integration-settings/?bot_id={bot_id}
-    return this.request<any>('/api/bitrix/integration-settings/', { method: 'GET' });
+    return this.request<BitrixIntegrationSettingsResponse>('/api/bitrix/integration-settings/', { method: 'GET' });
   }
 
-  async createIntegrationSetting(settingData: any): Promise<any> {
+  async createIntegrationSetting(settingData: Partial<BitrixIntegrationSetting>): Promise<BitrixIntegrationSetting> {
     // TODO: POST /api/bitrix/integration-settings/
-    return this.request<any>('/api/bitrix/integration-settings/', {
+    return this.request<BitrixIntegrationSetting>('/api/bitrix/integration-settings/', {
       method: 'POST',
       body: JSON.stringify(settingData),
     });
   }
 
-  async updateIntegrationSetting(id: string, settingData: any): Promise<any> {
+  async updateIntegrationSetting(id: string, settingData: Partial<BitrixIntegrationSetting>): Promise<BitrixIntegrationSetting> {
     // TODO: PUT /api/bitrix/integration-settings/{id}/
-    return this.request<any>(`/api/bitrix/integration-settings/${id}/`, {
+    return this.request<BitrixIntegrationSetting>(`/api/bitrix/integration-settings/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(settingData),
     });
   }
 
   // Data Sync
-  async syncCrmData(botId: string, webhookUrl: string): Promise<any> {
+  async syncCrmData(botId: string, webhookUrl: string): Promise<BitrixSyncCrmDataResponse> {
     // TODO: POST /api/bitrix/sync-crm-data/
-    return this.request<any>('/api/bitrix/sync-crm-data/', {
+    return this.request<BitrixSyncCrmDataResponse>('/api/bitrix/sync-crm-data/', {
       method: 'POST',
       body: JSON.stringify({ bot_id: botId, webhook_url: webhookUrl }),
     });
   }
 
   // IM Connector
-  async imConnectorRegister(registerData: any): Promise<any> {
+  async imConnectorRegister(registerData: BitrixIMConnectorRegisterData): Promise<BitrixIMConnectorRegisterResponse> {
     // TODO: POST /api/bitrix/imconnector/register/
-    return this.request<any>('/api/bitrix/imconnector/register/', {
+    return this.request<BitrixIMConnectorRegisterResponse>('/api/bitrix/imconnector/register/', {
       method: 'POST',
       body: JSON.stringify(registerData),
     });
   }
 
   // Users and Channels
-  async getBitrixUsers(params?: { bot_id?: string }): Promise<any> {
+  async getBitrixUsers(params?: GetBitrixUsersParams): Promise<BitrixUser[]> {
     const queryParams = new URLSearchParams();
     if (params?.bot_id) {
       queryParams.append('bot_id', params.bot_id);
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/bitrix/users/?${queryString}` : '/api/bitrix/users/';
-    const response = await this.request<any>(endpoint, { method: 'GET' });
-    return response.users || response;
+    const response = await this.request<BitrixUser[] | { users: BitrixUser[] }>(endpoint, { method: 'GET' });
+    return Array.isArray(response) ? response : response.users;
   }
 
-  async getBitrixChannels(params?: { bot_id?: string }): Promise<any> {
+  async getBitrixChannels(params?: GetBitrixChannelsParams): Promise<BitrixChannel[]> {
     const queryParams = new URLSearchParams();
     if (params?.bot_id) {
       queryParams.append('bot_id', params.bot_id);
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/bitrix/channels/?${queryString}` : '/api/bitrix/channels/';
-    const response = await this.request<any>(endpoint, { method: 'GET' });
-    return response.channels || response;
+    const response = await this.request<BitrixChannel[] | { channels: BitrixChannel[] }>(endpoint, { method: 'GET' });
+    return Array.isArray(response) ? response : response.channels;
   }
 
   // Transfer Settings
-  async getTransferSettings(botId: string): Promise<any> {
+  async getTransferSettings(botId: string): Promise<BitrixTransferSettings> {
     // TODO: GET /api/bitrix/bots/{botId}/transfer-settings/
-    return this.request<any>(`/api/bitrix/bots/${botId}/transfer-settings/`, { method: 'GET' });
+    return this.request<BitrixTransferSettings>(`/api/bitrix/bots/${botId}/transfer-settings/`, { method: 'GET' });
   }
 
-  async updateTransferSettings(botId: string, settingsData: any): Promise<any> {
+  async updateTransferSettings(botId: string, settingsData: Partial<BitrixTransferSettings>): Promise<BitrixTransferSettings> {
     // TODO: PUT /api/bitrix/bots/{botId}/transfer-settings/
-    return this.request<any>(`/api/bitrix/bots/${botId}/transfer-settings/`, {
+    return this.request<BitrixTransferSettings>(`/api/bitrix/bots/${botId}/transfer-settings/`, {
       method: 'PUT',
       body: JSON.stringify(settingsData),
     });
