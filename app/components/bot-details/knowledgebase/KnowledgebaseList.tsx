@@ -15,14 +15,12 @@ interface KnowledgebaseListProps {
   items: KnowledgebaseItem[];
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onDownload: (id: string) => void;
 }
 
 export function KnowledgebaseList({
   items,
   onEdit,
   onDelete,
-  onDownload,
 }: KnowledgebaseListProps) {
   if (items.length === 0) {
     return (
@@ -40,7 +38,6 @@ export function KnowledgebaseList({
           item={item}
           onEdit={onEdit}
           onDelete={onDelete}
-          onDownload={onDownload}
         />
       ))}
     </div>

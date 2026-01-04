@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, Edit, Trash2, Download } from 'lucide-react';
+import { FileText, Edit, Trash2 } from 'lucide-react';
 import { Button } from '../../landing/ui/button';
 
 interface KnowledgebaseItem {
@@ -16,14 +16,12 @@ interface KnowledgebaseItemProps {
   item: KnowledgebaseItem;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onDownload: (id: string) => void;
 }
 
 export function KnowledgebaseItem({
   item,
   onEdit,
   onDelete,
-  onDownload,
 }: KnowledgebaseItemProps) {
   const formatSize = (bytes?: number) => {
     if (!bytes) return 'Unknown size';
@@ -56,13 +54,6 @@ export function KnowledgebaseItem({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={() => onDownload(item.id)}
-            variant="outline"
-            size="sm"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
           <Button
             onClick={() => onEdit(item.id)}
             variant="outline"

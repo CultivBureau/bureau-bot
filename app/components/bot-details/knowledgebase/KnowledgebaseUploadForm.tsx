@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Upload, Loader2, CheckCircle, File as FileIcon, Link } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, File as FileIcon } from 'lucide-react';
 import { KnowledgeBaseSourceType } from '../shared/hooks/useKnowledgebase';
 
 interface KnowledgebaseUploadFormProps {
@@ -9,11 +9,9 @@ interface KnowledgebaseUploadFormProps {
   onUploadTypeChange: (type: KnowledgeBaseSourceType) => void;
   title: string;
   content: string;
-  url: string;
   file: File | null;
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
-  onUrlChange: (value: string) => void;
   onFileChange: (file: File | null) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -28,11 +26,9 @@ export function KnowledgebaseUploadForm({
   onUploadTypeChange,
   title,
   content,
-  url,
   file,
   onTitleChange,
   onContentChange,
-  onUrlChange,
   onFileChange,
   onSave,
   onCancel,
@@ -101,15 +97,6 @@ export function KnowledgebaseUploadForm({
               }`}
           >
             Text input
-          </button>
-          <button
-            onClick={() => onUploadTypeChange('url')}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${uploadType === 'url'
-                ? 'bg-primary text-primary-foreground'
-                : 'border border-border text-card-foreground'
-              }`}
-          >
-            URL
           </button>
         </div>
       </div>
@@ -192,27 +179,6 @@ export function KnowledgebaseUploadForm({
             className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
             placeholder="Paste the knowledge base article…"
           />
-        </div>
-      )}
-
-      {uploadType === 'url' && (
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-card-foreground">
-            URL
-          </label>
-          <div className="relative">
-            <Link className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => onUrlChange(e.target.value)}
-              className="w-full rounded-2xl border border-border bg-background pl-10 pr-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-              placeholder="https://example.com/knowledge-article"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Enter a URL to fetch and store content from a web page.
-          </p>
         </div>
       )}
 

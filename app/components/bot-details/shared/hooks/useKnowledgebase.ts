@@ -14,7 +14,6 @@ export function useKnowledgebase(botId: string | null) {
   const [newItem, setNewItem] = useState({
     title: '',
     content: '',
-    url: '',
     file: null as File | null,
   });
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -23,6 +22,12 @@ export function useKnowledgebase(botId: string | null) {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [viewingItem, setViewingItem] = useState<KnowledgeBaseItem | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+
+  // Confirmation state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    itemId: string | null;
+  }>({ isOpen: false, itemId: null });
 
   const fetchItems = useCallback(async () => {
     if (!botId) {
@@ -68,11 +73,6 @@ export function useKnowledgebase(botId: string | null) {
       return;
     }
 
-    if (uploadType === 'url' && !newItem.url.trim() && !editingItemId) { // URL is only for creation, not update in this flow
-      setError('Please enter a URL for your knowledge item.');
-      return;
-    }
-
     setUploading(true);
     setError('');
     setSuccess('');
@@ -111,7 +111,7 @@ export function useKnowledgebase(botId: string | null) {
 
         setEditingItemId(null);
         fetchItems();
-        setNewItem({ title: '', content: '', url: '', file: null });
+        setNewItem({ title: '', content: '', file: null });
         setShowUploadForm(false);
       }
       // CREATE new item
@@ -135,7 +135,7 @@ export function useKnowledgebase(botId: string | null) {
           await knowledgeBaseService.uploadFile(formData);
           setSuccess('File uploaded successfully to OpenAI and knowledge base!');
           fetchItems();
-          setNewItem({ title: '', content: '', url: '', file: null });
+          setNewItem({ title: '', content: '', file: null });
           setShowUploadForm(false);
         } else if (uploadType === 'text' && newItem.content.trim()) {
           await knowledgeBaseService.uploadText({
@@ -145,17 +145,7 @@ export function useKnowledgebase(botId: string | null) {
           });
           setSuccess('Text content added to knowledge base successfully!');
           fetchItems();
-          setNewItem({ title: '', content: '', url: '', file: null });
-          setShowUploadForm(false);
-        } else if (uploadType === 'url' && newItem.url.trim()) {
-          await knowledgeBaseService.uploadUrl({
-            bot_id: botId!,
-            title: newItem.title,
-            url: newItem.url,
-          });
-          setSuccess('URL added to knowledge base successfully!');
-          fetchItems();
-          setNewItem({ title: '', content: '', url: '', file: null });
+          setNewItem({ title: '', content: '', file: null });
           setShowUploadForm(false);
         }
       }
@@ -167,13 +157,26 @@ export function useKnowledgebase(botId: string | null) {
   };
 
   const handleDeleteItem = async (openaiFileId: string) => {
+    // Show confirmation toast
+    setDeleteConfirmation({ isOpen: true, itemId: openaiFileId });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmation.itemId) return;
+
     try {
-      await knowledgeBaseService.deleteKnowledgeBaseItem(openaiFileId);
+      await knowledgeBaseService.deleteKnowledgeBaseItem(deleteConfirmation.itemId);
       setSuccess('Knowledge base item deleted successfully!');
       fetchItems();
     } catch (err: any) {
       setError(err?.message || 'Failed to delete item');
+    } finally {
+      setDeleteConfirmation({ isOpen: false, itemId: null });
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmation({ isOpen: false, itemId: null });
   };
 
   const handleEditItem = (item: KnowledgeBaseItem) => {
@@ -182,7 +185,6 @@ export function useKnowledgebase(botId: string | null) {
     setNewItem({
       title: item.title,
       content: item.content || '',
-      url: '',
       file: null,
     });
     setShowUploadForm(true);
@@ -196,37 +198,6 @@ export function useKnowledgebase(botId: string | null) {
     }, 100);
   };
 
-  const handleDownloadItem = async (item: KnowledgeBaseItem) => {
-    if (item.source_type === 'file') {
-      try {
-        // Download actual file from API
-        const fileUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.staging.cultiv.llc'}/api/KnowledgeBase/knowledge-base/${item.openai_file_id}/download/`;
-
-        // Create temporary link to trigger download
-        const a = document.createElement('a');
-        a.href = fileUrl;
-        a.download = item.title;
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } catch (err: any) {
-        setError(err?.message || 'Failed to download file');
-      }
-    } else if (item.content) {
-      // Download text content as file
-      const blob = new Blob([item.content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${item.title}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
   const handleViewItem = async (item: KnowledgeBaseItem) => {
     // For files, open in new tab
     if (item.source_type === 'file') {
@@ -236,7 +207,7 @@ export function useKnowledgebase(botId: string | null) {
       return;
     }
 
-    // For text/url, show in modal
+    // For text, show in modal
     try {
       setLoadingDetails(true);
       const fullItem = await knowledgeBaseService.getKnowledgeBaseItem(item.openai_file_id);
@@ -269,6 +240,7 @@ export function useKnowledgebase(botId: string | null) {
     editingItemId,
     viewingItem,
     loadingDetails,
+    deleteConfirmation,
     setShowUploadForm,
     setUploadType,
     setNewItem,
@@ -279,8 +251,9 @@ export function useKnowledgebase(botId: string | null) {
     setSuccess,
     handleSaveItem,
     handleDeleteItem,
+    confirmDelete,
+    cancelDelete,
     handleEditItem,
-    handleDownloadItem,
     handleViewItem,
     formatFileSize,
   };

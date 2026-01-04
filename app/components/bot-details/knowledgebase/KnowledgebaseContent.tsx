@@ -6,6 +6,7 @@ import { useKnowledgebase } from '../shared/hooks/useKnowledgebase';
 import { KnowledgebaseUploadForm } from './KnowledgebaseUploadForm';
 import { KnowledgebaseItemCard } from './KnowledgebaseItemCard';
 import { ViewDetailsModal } from './ViewDetailsModal';
+import { ConfirmationToast } from '../../shared/ConfirmationToast';
 
 export function KnowledgebaseContent() {
   const searchParams = useSearchParams();
@@ -24,6 +25,7 @@ export function KnowledgebaseContent() {
     editingItemId,
     viewingItem,
     loadingDetails,
+    deleteConfirmation,
     setShowUploadForm,
     setUploadType,
     setNewItem,
@@ -34,8 +36,9 @@ export function KnowledgebaseContent() {
     setSuccess,
     handleSaveItem,
     handleDeleteItem,
+    confirmDelete,
+    cancelDelete,
     handleEditItem,
-    handleDownloadItem,
     handleViewItem,
     formatFileSize,
   } = useKnowledgebase(botId);
@@ -48,7 +51,6 @@ export function KnowledgebaseContent() {
       return <File className="w-5 h-5" />;
     }
     if (sourceType === 'text') return <FileTextIcon className="w-5 h-5" />;
-    if (sourceType === 'url') return <Link className="w-5 h-5" />;
     return <File className="w-5 h-5" />;
   };
 
@@ -73,7 +75,6 @@ export function KnowledgebaseContent() {
     if (uploading || !newItem.title.trim()) return true;
     if (uploadType === 'file') return !newItem.file;
     if (uploadType === 'text') return !newItem.content.trim();
-    if (uploadType === 'url') return !newItem.url.trim();
     return true;
   };
 
@@ -146,16 +147,14 @@ export function KnowledgebaseContent() {
             onUploadTypeChange={setUploadType}
             title={newItem.title}
             content={newItem.content}
-            url={newItem.url}
             file={newItem.file}
             onTitleChange={(value) => setNewItem(prev => ({ ...prev, title: value }))}
             onContentChange={(value) => setNewItem(prev => ({ ...prev, content: value }))}
-            onUrlChange={(value) => setNewItem(prev => ({ ...prev, url: value }))}
             onFileChange={(file) => setNewItem(prev => ({ ...prev, file, title: file ? file.name : prev.title }))}
             onSave={handleSaveItem}
             onCancel={() => {
               setShowUploadForm(false);
-              setNewItem({ title: '', content: '', url: '', file: null });
+              setNewItem({ title: '', content: '', file: null });
               setEditingItemId(null);
             }}
             uploading={uploading}
@@ -191,7 +190,6 @@ export function KnowledgebaseContent() {
                 onToggleExpand={() => setExpandedCard(expandedCard === item.openai_file_id ? null : item.openai_file_id)}
                 onDelete={() => handleDeleteItem(item.openai_file_id)}
                 onEdit={() => handleEditItem(item)}
-                onDownload={() => handleDownloadItem(item)}
                 onView={() => handleViewItem(item)}
                 formatFileSize={formatFileSize}
                 getFileIcon={getFileIcon}
@@ -207,6 +205,14 @@ export function KnowledgebaseContent() {
         isOpen={!!viewingItem}
         onClose={() => setViewingItem(null)}
         loading={loadingDetails}
+      />
+
+      {/* Confirmation Toast */}
+      <ConfirmationToast
+        message="Are you sure you want to delete this knowledge base item? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        isOpen={deleteConfirmation.isOpen}
       />
     </div>
   );

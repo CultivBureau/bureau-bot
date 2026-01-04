@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { File, FileText as FileTextIcon, Link, Trash2, Edit, Download, Eye, HardDrive } from 'lucide-react';
+import { File, FileText as FileTextIcon, Link, Trash2, Edit, Eye, HardDrive } from 'lucide-react';
 import { KnowledgeBaseItem } from '../shared/hooks/useKnowledgebase';
 
 interface KnowledgebaseItemCardProps {
@@ -10,7 +10,6 @@ interface KnowledgebaseItemCardProps {
   onToggleExpand: () => void;
   onDelete: () => void;
   onEdit: () => void;
-  onDownload: () => void;
   onView: () => void;
   formatFileSize: (bytes: number) => string;
   getFileIcon: (sourceType: string, fileType?: string) => ReactNode;
@@ -22,7 +21,6 @@ export function KnowledgebaseItemCard({
   onToggleExpand,
   onDelete,
   onEdit,
-  onDownload,
   onView,
   formatFileSize,
   getFileIcon,
@@ -85,31 +83,24 @@ export function KnowledgebaseItemCard({
                 : item.content}
             </div>
           )}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={onView}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
-            >
-              <Eye className="h-3 w-3" />
-              View
-            </button>
-            {item.source_type === 'file' && (
+          {item.source_type !== 'file' && (
+            <div className="flex flex-wrap gap-2">
               <button
-                onClick={onDownload}
+                onClick={onView}
                 className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
               >
-                <Download className="h-3 w-3" />
-                Download
+                <Eye className="h-3 w-3" />
+                View
               </button>
-            )}
-            <button
-              onClick={onEdit}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
-            >
-              <Edit className="h-3 w-3" />
-              Edit
-            </button>
-          </div>
+              <button
+                onClick={onEdit}
+                className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
+              >
+                <Edit className="h-3 w-3" />
+                Edit
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

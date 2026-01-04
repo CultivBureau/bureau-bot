@@ -30,8 +30,6 @@ export function ViewDetailsModal({ item, isOpen, onClose, loading }: ViewDetails
                 return <File className="h-5 w-5 text-blue-500" />;
             case 'text':
                 return <FileText className="h-5 w-5 text-green-500" />;
-            case 'url':
-                return <LinkIcon className="h-5 w-5 text-purple-500" />;
             default:
                 return <File className="h-5 w-5" />;
         }

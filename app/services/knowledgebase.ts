@@ -2,7 +2,7 @@ import { store } from '../store/store';
 import { authService } from './auth';
 
 // Source type options for knowledge base items
-export type KnowledgeBaseSourceType = 'file' | 'text' | 'url';
+export type KnowledgeBaseSourceType = 'file' | 'text';
 
 // Types for Knowledge Base
 export interface KnowledgeBaseItem {
@@ -229,24 +229,6 @@ class KnowledgeBaseService {
       title: textData.title,
       source_type: 'text',
       content: textData.content,
-    };
-
-    return this.request<KnowledgeBaseItem>('/api/KnowledgeBase/knowledge-base/', {
-      method: 'POST',
-      body: JSON.stringify(requestData),
-    });
-  }
-
-  /**
-   * Create a new knowledge base item from a URL
-   * POST /api/KnowledgeBase/knowledge-base/ (application/json)
-   */
-  async uploadUrl(urlData: { bot_id: string; title: string; url: string }): Promise<KnowledgeBaseItem> {
-    const requestData = {
-      bot_id: urlData.bot_id,
-      title: urlData.title,
-      source_type: 'url' as KnowledgeBaseSourceType,
-      content: urlData.url,
     };
 
     return this.request<KnowledgeBaseItem>('/api/KnowledgeBase/knowledge-base/', {
