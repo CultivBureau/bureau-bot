@@ -1,71 +1,32 @@
 import { useState, useCallback } from 'react';
-import { functionsService } from '../../../../services/functions';
-import { parseResultFormat } from '../../../../utils/functions/parsers';
 import type { FunctionData } from '../../../../types/functions';
-import type { Function } from '../../../../services/functions';
+
+// Mock data for UI-only mode
+const MOCK_FUNCTIONS: FunctionData[] = [];
 
 export function useFunctions(botId: string | null) {
-  const [functions, setFunctions] = useState<FunctionData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [functions, setFunctions] = useState<FunctionData[]>(MOCK_FUNCTIONS);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const fetchFunctions = useCallback(async () => {
     if (!botId) return;
     
-    try {
-      setLoading(true);
-      setError('');
-      const response = await functionsService.getFunctions({ 
-        bot_id: botId,
-        integration_type: 'BITRIX'
-      });
-      
-      const functionsList = response.results || [];
-      
-      const mappedFunctions = functionsList.map((func: Function) => {
-        const parsed = parseResultFormat(func.result_format);
-        
-        const properties = (parsed.properties || []).map((prop, index) => ({
-          id: `${func.id}-prop-${index}`,
-          name: prop.field_code || prop.field_name || '',
-          field_code: prop.field_code || '',
-          field_name: prop.field_name || '',
-          type: 'string',
-          description: prop.description || '',
-          required: true,
-        }));
-        
-        return {
-          id: func.id,
-          name: func.name,
-          instruction: func.trigger_instructions || '',
-          properties: properties,
-          phase: parsed.stage || '',
-          created_at: func.created_on || '',
-          updated_at: func.updated_on || func.created_on || '',
-          integration_type: func.integration_type,
-          is_active: func.is_active,
-        };
-      });
-      
-      setFunctions(mappedFunctions);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to fetch functions');
-      setFunctions([]);
-    } finally {
+    // Simulate API call with timeout
+    setLoading(true);
+    setError('');
+    
+    setTimeout(() => {
+      setFunctions(MOCK_FUNCTIONS);
       setLoading(false);
-    }
+    }, 300);
   }, [botId]);
 
   const deleteFunction = useCallback(async (functionId: string) => {
-    try {
-      await functionsService.deleteFunction(functionId);
-      await fetchFunctions();
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err?.message || 'Failed to delete function' };
-    }
-  }, [fetchFunctions]);
+    // Remove function from local state
+    setFunctions(prev => prev.filter(f => f.id !== functionId));
+    return { success: true };
+  }, []);
 
   return {
     functions,

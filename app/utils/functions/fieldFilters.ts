@@ -22,11 +22,11 @@ export function filterCRMFields(
       return false;
     }
     
-    // Search in field name and code
-    const matchesName = field.field_name?.toLowerCase().includes(lowerSearchTerm);
-    const matchesCode = field.field_code?.toLowerCase().includes(lowerSearchTerm);
+    // Search in title and id (new API format)
+    const matchesTitle = field.title?.toLowerCase().includes(lowerSearchTerm);
+    const matchesId = field.id?.toLowerCase().includes(lowerSearchTerm);
     
-    return matchesName || matchesCode;
+    return matchesTitle || matchesId;
   });
 }
 

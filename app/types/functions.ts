@@ -1,4 +1,4 @@
-import { type IntegrationType } from '../services/functions';
+export type IntegrationType = 'BITRIX' | 'ODOO' | 'SALESFORCE' | 'HUBSPOT';
 
 export interface FunctionProperty {
   id: string;
@@ -22,17 +22,17 @@ export interface FunctionData {
   is_active?: boolean;
 }
 
+// New API response format from /api/bitrix/crm-fields/
 export interface CRMField {
   id: string;
-  field_code: string;
-  field_name: string;
-  field_type: string;
-  is_required: boolean;
-  is_readonly: boolean;
-  is_multiple: boolean;
-  entity_type: string;
-  enum_values?: any;
-  is_custom?: boolean;
+  type: string;
+  isRequired: boolean;
+  isReadOnly: boolean;
+  isImmutable: boolean;
+  isMultiple: boolean;
+  isDynamic: boolean;
+  title: string;
+  entity_type?: string;
 }
 
 export type ViewMode = 'view' | 'edit' | 'create';
@@ -51,4 +51,3 @@ export interface FormattedProperties {
   field_name: string;
   description: string;
 }
-

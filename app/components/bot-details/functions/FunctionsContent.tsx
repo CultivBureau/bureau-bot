@@ -95,8 +95,9 @@ export function FunctionsContent() {
   useEffect(() => {
     if (botId) {
       fetchFunctions();
+      fetchCRMData();
     }
-  }, [botId, fetchFunctions]);
+  }, [botId, fetchFunctions, fetchCRMData]);
 
   // Handle errors from functions hook
   useEffect(() => {

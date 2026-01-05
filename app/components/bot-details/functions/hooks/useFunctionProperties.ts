@@ -42,18 +42,22 @@ export function useFunctionProperties() {
   }, []);
 
   const handleFieldSelect = useCallback((propertyId: string, field: CRMField) => {
+    // Use the new API format: id as field_code, title as field_name
+    const fieldCode = field.id || '';
+    const fieldName = field.title || '';
+    
     setProperties(prev => prev.map(prop => 
       prop.id === propertyId 
         ? { 
             ...prop, 
-            field_code: field.field_code,
-            field_name: field.field_name,
-            name: field.field_code,
+            field_code: fieldCode,
+            field_name: fieldName,
+            name: fieldCode,
           } 
         : prop
     ));
     
-    setFieldSearchTerms(prev => ({ ...prev, [propertyId]: field.field_name }));
+    setFieldSearchTerms(prev => ({ ...prev, [propertyId]: fieldName }));
     setShowFieldDropdowns(prev => ({ ...prev, [propertyId]: false }));
   }, []);
 

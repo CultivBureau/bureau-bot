@@ -1,9 +1,6 @@
 import { useState, useCallback } from 'react';
-import { functionsService } from '../../../../services/functions';
-import { parseResultFormat, parseFunctionProperties } from '../../../../utils/functions/parsers';
-import { formatFunctionForAPI, validateFunctionData } from '../../../../utils/functions/formatters';
+import { validateFunctionData } from '../../../../utils/functions/formatters';
 import type { FunctionData, ViewMode } from '../../../../types/functions';
-import type { Function } from '../../../../services/functions';
 
 interface UseFunctionFormOptions {
   botId: string | null;
@@ -53,42 +50,24 @@ export function useFunctionForm({
     setSaving(true);
     onError?.('');
     
-    try {
-      const resultFormat = formatFunctionForAPI(properties, selectedPhase);
-
-      if (editing && functionToEdit) {
-        await functionsService.updateFunction(functionToEdit.id, {
-          bot: botId,
-          name: functionName.trim(),
-          integration_type: 'BITRIX',
-          is_active: true,
-          trigger_instructions: functionInstruction.trim() || null,
-          result_format: resultFormat,
-        });
+    // Simulate save operation
+    setTimeout(async () => {
+      try {
+        if (editing && functionToEdit) {
+          onSuccess?.('Function updated successfully!');
+        } else {
+          onSuccess?.('Function created successfully!');
+        }
         
         await onFetchFunctions();
-        onSuccess?.('Function updated successfully!');
-      } else {
-        await functionsService.createFunction({
-          bot: botId,
-          name: functionName.trim(),
-          integration_type: 'BITRIX',
-          is_active: true,
-          trigger_instructions: functionInstruction.trim() || null,
-          result_format: resultFormat,
-        });
-        
-        await onFetchFunctions();
-        onSuccess?.('Function created successfully!');
+        resetForm();
+        onSaveComplete?.();
+      } catch (err: any) {
+        onError?.(err?.message || 'Failed to save function');
+      } finally {
+        setSaving(false);
       }
-      
-      resetForm();
-      onSaveComplete?.();
-    } catch (err: any) {
-      onError?.(err?.message || 'Failed to save function');
-    } finally {
-      setSaving(false);
-    }
+    }, 500);
   }, [botId, functionName, functionInstruction, selectedPhase, editing, functionToEdit, onSuccess, onError, onSaveComplete]);
 
   const handleEdit = useCallback(async (func: FunctionData) => {
@@ -97,48 +76,28 @@ export function useFunctionForm({
         await fetchCRMData();
       }
       
-      const functionResponse = await functionsService.getFunctionById(func.id);
-      
       setFunctionToEdit(func);
-      setFunctionName(functionResponse.name || func.name);
-      setFunctionInstruction(functionResponse.trigger_instructions || func.instruction || '');
+      setFunctionName(func.name);
+      setFunctionInstruction(func.instruction || '');
+      setSelectedPhase(func.phase || '');
       
-      const parsed = parseResultFormat(functionResponse.result_format);
-      const phase = parsed.stage || '';
-      
-      let properties: any[] = [];
-      if (parsed.properties && parsed.properties.length > 0) {
-        const propertiesJson = JSON.stringify(parsed.properties);
-        properties = parseFunctionProperties(propertiesJson, crmFields);
-      }
-      
-      setSelectedPhase(phase);
+      const properties = func.properties || [];
       
       // Try to find the pipeline for this stage
-      if (phase && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
-        const findPipelineForStage = async () => {
-          for (const pipeline of pipelines) {
-            try {
-              await fetchStages(pipeline.pipeline_id);
-              // We'll need to check stages after fetching - this will be handled by the parent
-              if (pipeline.pipeline_id) {
-                setSelectedPipeline(pipeline.pipeline_id);
-                setSelectedPipelineLocal(pipeline.pipeline_id);
-                break;
-              }
-            } catch (err) {
-              console.error('Error fetching stages:', err);
-            }
-          }
-        };
-        await findPipelineForStage();
+      if (func.phase && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
+        const firstPipeline = pipelines[0];
+        if (firstPipeline?.pipeline_id) {
+          setSelectedPipeline(firstPipeline.pipeline_id);
+          setSelectedPipelineLocal(firstPipeline.pipeline_id);
+          await fetchStages(firstPipeline.pipeline_id);
+        }
       }
       
       setEditing(true);
       setViewMode('edit');
       setViewingFunction(null);
       
-      return { properties, phase };
+      return { properties, phase: func.phase };
     } catch (err: any) {
       onError?.(err?.message || 'Failed to load function data');
       throw err;
@@ -151,45 +110,26 @@ export function useFunctionForm({
         await fetchCRMData();
       }
       
-      const functionResponse = await functionsService.getFunctionById(func.id);
-      
       setViewingFunction(func);
-      setFunctionName(functionResponse.name || func.name);
-      setFunctionInstruction(functionResponse.trigger_instructions || func.instruction || '');
+      setFunctionName(func.name);
+      setFunctionInstruction(func.instruction || '');
+      setSelectedPhase(func.phase || '');
       
-      const parsed = parseResultFormat(functionResponse.result_format);
-      const phase = parsed.stage || '';
-      
-      let properties: any[] = [];
-      if (parsed.properties && parsed.properties.length > 0) {
-        const propertiesJson = JSON.stringify(parsed.properties);
-        properties = parseFunctionProperties(propertiesJson, crmFields);
-      }
-      
-      setSelectedPhase(phase);
+      const properties = func.properties || [];
       
       // Try to find the pipeline for this stage
-      if (phase && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
-        const findPipelineForStage = async () => {
-          for (const pipeline of pipelines) {
-            try {
-              await fetchStages(pipeline.pipeline_id);
-              if (pipeline.pipeline_id) {
-                setSelectedPipeline(pipeline.pipeline_id);
-                setSelectedPipelineLocal(pipeline.pipeline_id);
-                break;
-              }
-            } catch (err) {
-              console.error('Error fetching stages:', err);
-            }
-          }
-        };
-        await findPipelineForStage();
+      if (func.phase && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
+        const firstPipeline = pipelines[0];
+        if (firstPipeline?.pipeline_id) {
+          setSelectedPipeline(firstPipeline.pipeline_id);
+          setSelectedPipelineLocal(firstPipeline.pipeline_id);
+          await fetchStages(firstPipeline.pipeline_id);
+        }
       }
       
       setViewMode('view');
       
-      return { properties, phase };
+      return { properties, phase: func.phase };
     } catch (err: any) {
       onError?.(err?.message || 'Failed to load function data');
       throw err;

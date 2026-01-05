@@ -15,11 +15,27 @@ export function useCRMData(botId: string | null) {
     
     try {
       setLoading(true);
-      const fieldsResponse = await bitrixService.getCrmFields({ bot_id: botId });
-      const fields = Array.isArray(fieldsResponse) 
-        ? fieldsResponse 
-        : (fieldsResponse.results || fieldsResponse);
-      setCrmFields(fields);
+      
+      // Fetch fields for each entity type separately to tag them properly
+      const [dealResponse, leadResponse, contactResponse] = await Promise.all([
+        bitrixService.getCrmFields({ bot_id: botId, entity_type: 'DEAL' }),
+        bitrixService.getCrmFields({ bot_id: botId, entity_type: 'LEAD' }),
+        bitrixService.getCrmFields({ bot_id: botId, entity_type: 'CONTACT' }),
+      ]);
+      
+      // Process and tag each field with its entity type
+      const dealFields = (Array.isArray(dealResponse) ? dealResponse : (dealResponse.crm_fields || dealResponse.results || []))
+        .map((field: any) => ({ ...field, entity_type: 'DEAL' }));
+      
+      const leadFields = (Array.isArray(leadResponse) ? leadResponse : (leadResponse.crm_fields || leadResponse.results || []))
+        .map((field: any) => ({ ...field, entity_type: 'LEAD' }));
+      
+      const contactFields = (Array.isArray(contactResponse) ? contactResponse : (contactResponse.crm_fields || contactResponse.results || []))
+        .map((field: any) => ({ ...field, entity_type: 'CONTACT' }));
+      
+      // Combine all fields
+      const allFields = [...dealFields, ...leadFields, ...contactFields];
+      setCrmFields(allFields);
       
       const pipelinesResponse = await bitrixService.getPipelines({ 
         bot_id: botId, 
