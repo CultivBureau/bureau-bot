@@ -185,6 +185,7 @@ export function Pricing() {
                   </Button>
                 </div>
               </Card>
+              </div>
             </ScrollReveal>
           ))}
         </div>

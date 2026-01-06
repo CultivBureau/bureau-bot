@@ -25,7 +25,7 @@ export function useFunctions(botId: string | null) {
   const deleteFunction = useCallback(async (functionId: string) => {
     // Remove function from local state
     setFunctions(prev => prev.filter(f => f.id !== functionId));
-    return { success: true };
+    return { success: true, error: undefined };
   }, []);
 
   return {

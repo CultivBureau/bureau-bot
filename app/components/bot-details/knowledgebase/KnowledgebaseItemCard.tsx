@@ -30,7 +30,7 @@ export function KnowledgebaseItemCard({
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-secondary p-2 text-card-foreground">
-            {getFileIcon(item.source_type, item.file_type)}
+            {getFileIcon(item.source_type)}
           </div>
           <div>
             <h4 className="font-semibold text-card-foreground">
@@ -61,17 +61,6 @@ export function KnowledgebaseItemCard({
         <span className="rounded-full bg-secondary px-2 py-1">
           {item.source_type}
         </span>
-        {item.file_type && (
-          <span className="rounded-full bg-secondary px-2 py-1">
-            {item.file_type}
-          </span>
-        )}
-        {item.file_size && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1">
-            <HardDrive className="h-3 w-3" />
-            {formatFileSize(item.file_size)}
-          </span>
-        )}
       </div>
 
       {isExpanded && (

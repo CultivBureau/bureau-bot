@@ -16,8 +16,8 @@ interface Step2ConfigurationProps {
   loadingOptions: boolean;
   showChannelDropdown: boolean;
   showModelDropdown: boolean;
-  channelDropdownRef: React.RefObject<HTMLDivElement>;
-  modelDropdownRef: React.RefObject<HTMLDivElement>;
+  channelDropdownRef: React.RefObject<HTMLDivElement | null>;
+  modelDropdownRef: React.RefObject<HTMLDivElement | null>;
   onInputChange: (field: keyof BotFormData, value: string) => void;
   onToggleChannelDropdown: () => void;
   onToggleModelDropdown: () => void;

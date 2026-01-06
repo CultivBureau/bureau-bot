@@ -74,14 +74,15 @@ export function parseFunctionProperties(
       const field_name = prop.field_name || '';
       
       // Try to find the field in CRM fields to get full details
-      const fullField = crmFields.find(f => f.field_code === field_code);
+      // CRMField uses 'id' (maps to field_code) and 'title' (maps to field_name)
+      const fullField = crmFields.find(f => f.id === field_code);
       
       return {
         id: `${Date.now()}-${index}`,
         name: field_code || field_name,
         field_code: field_code,
-        field_name: fullField?.field_name || field_name,
-        type: fullField?.field_type || 'string',
+        field_name: fullField?.title || field_name,
+        type: fullField?.type || 'string',
         description: prop.description || '',
         required: true,
       };

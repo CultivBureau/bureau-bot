@@ -32,7 +32,7 @@ export function validateField(
  */
 export function prepareFieldValue(
   field: string,
-  value: string | number | null | undefined
+  value: string | number | boolean | null | undefined
 ): string | number | null {
   if (field === 'wait_time') {
     return typeof value === 'number' ? value : Number(value) || 0;

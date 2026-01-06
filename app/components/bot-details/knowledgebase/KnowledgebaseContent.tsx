@@ -133,7 +133,7 @@ export function KnowledgebaseContent() {
               <button
                 onClick={() => {
                   setEditingItemId(null);
-                  setNewItem({ title: '', content: '', url: '', file: null });
+                  setNewItem({ title: '', content: '', file: null });
                   setShowUploadForm(false);
                 }}
                 className="text-xs underline hover:no-underline"

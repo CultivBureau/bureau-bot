@@ -12,7 +12,7 @@ interface FunctionFormData {
 interface FunctionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: FunctionFormData) => void;
+  onSave: () => void;
   initialData?: FunctionFormData;
   saving?: boolean;
 }
@@ -25,10 +25,6 @@ export function FunctionModal({
   saving = false,
 }: FunctionModalProps) {
   if (!isOpen) return null;
-
-  const handleSave = (data: FunctionFormData) => {
-    onSave(data);
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
@@ -48,7 +44,7 @@ export function FunctionModal({
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <FunctionForm
             initialData={initialData}
-            onSave={handleSave}
+            onSave={onSave}
             onCancel={onClose}
             saving={saving}
           />

@@ -22,6 +22,10 @@ interface GetStagesParams {
   entity_type?: string;
 }
 
+interface GetIntegrationSettingsParams {
+  bot_id: string;
+}
+
 class BitrixService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -170,6 +174,76 @@ class BitrixService {
     const endpoint = queryString ? `/api/Bitrix/stages/?${queryString}` : '/api/Bitrix/stages/';
     const response = await this.request<BitrixStage[] | { stages: BitrixStage[] }>(endpoint, { method: 'GET' });
     return Array.isArray(response) ? response : response.stages;
+  }
+
+  // Integration Settings
+  async getIntegrationSettings(params: GetIntegrationSettingsParams): Promise<any> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('bot_id', params.bot_id);
+    const endpoint = `/api/Bitrix/integration-settings/?${queryParams.toString()}`;
+    return await this.request<any>(endpoint, { method: 'GET' });
+  }
+
+  async createIntegrationSetting(data: any): Promise<any> {
+    return await this.request<any>('/api/Bitrix/integration-settings/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateIntegrationSetting(id: string, data: any): Promise<any> {
+    return await this.request<any>(`/api/Bitrix/integration-settings/${id}/`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async syncCrmData(botId: string, webhookUrl: string): Promise<any> {
+    return await this.request<any>('/api/Bitrix/sync-crm-data/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bot_id: botId, webhook_url: webhookUrl }),
+    });
+  }
+
+  async imConnectorRegister(data: any): Promise<any> {
+    return await this.request<any>('/api/Bitrix/im-connector-register/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getTransferSettings(botId: string): Promise<any> {
+    return await this.request<any>(`/api/Bitrix/transfer-settings/${botId}/`, {
+      method: 'GET',
+    });
+  }
+
+  async updateTransferSettings(botId: string, data: any): Promise<any> {
+    return await this.request<any>(`/api/Bitrix/transfer-settings/${botId}/`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getBitrixUsers(params: { bot_id: string }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('bot_id', params.bot_id);
+    return await this.request<any>(`/api/Bitrix/bitrix-users/?${queryParams.toString()}`, {
+      method: 'GET',
+    });
+  }
+
+  async getBitrixChannels(params: { bot_id: string }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('bot_id', params.bot_id);
+    return await this.request<any>(`/api/Bitrix/bitrix-channels/?${queryParams.toString()}`, {
+      method: 'GET',
+    });
   }
 }
 

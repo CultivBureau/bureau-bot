@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BotData } from '../../components/dashboard/BotCard';
+import type { BotData } from '../../types/bot';
 import { SummaryCards } from '../../components/dashboard/SummaryCards';
 import { DashboardCharts } from '../../components/dashboard/DashboardCharts';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';

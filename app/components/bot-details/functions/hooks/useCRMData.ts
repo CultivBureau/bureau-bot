@@ -24,13 +24,13 @@ export function useCRMData(botId: string | null) {
       ]);
       
       // Process and tag each field with its entity type
-      const dealFields = (Array.isArray(dealResponse) ? dealResponse : (dealResponse.crm_fields || dealResponse.results || []))
+      const dealFields = (Array.isArray(dealResponse) ? dealResponse : [])
         .map((field: any) => ({ ...field, entity_type: 'DEAL' }));
       
-      const leadFields = (Array.isArray(leadResponse) ? leadResponse : (leadResponse.crm_fields || leadResponse.results || []))
+      const leadFields = (Array.isArray(leadResponse) ? leadResponse : [])
         .map((field: any) => ({ ...field, entity_type: 'LEAD' }));
       
-      const contactFields = (Array.isArray(contactResponse) ? contactResponse : (contactResponse.crm_fields || contactResponse.results || []))
+      const contactFields = (Array.isArray(contactResponse) ? contactResponse : [])
         .map((field: any) => ({ ...field, entity_type: 'CONTACT' }));
       
       // Combine all fields
@@ -43,7 +43,7 @@ export function useCRMData(botId: string | null) {
       });
       const pipelinesList = Array.isArray(pipelinesResponse) 
         ? pipelinesResponse 
-        : (pipelinesResponse.results || pipelinesResponse);
+        : [];
       setPipelines(pipelinesList);
     } catch (err) {
       console.error('Failed to fetch CRM data:', err);
@@ -62,7 +62,7 @@ export function useCRMData(botId: string | null) {
       });
       const pipelinesList = Array.isArray(response) 
         ? response 
-        : (response.results || response);
+        : [];
       setPipelines(pipelinesList);
     } catch (err) {
       console.error('Failed to fetch pipelines:', err);
@@ -80,7 +80,7 @@ export function useCRMData(botId: string | null) {
       });
       const stagesList = Array.isArray(response) 
         ? response 
-        : (response.results || response);
+        : [];
       setStages(stagesList);
     } catch (err) {
       console.error('Failed to fetch stages:', err);
