@@ -11,19 +11,41 @@ export interface BitrixCRMField {
 }
 
 export interface BitrixPipeline {
-  id: string;
-  pipeline_id: string;
-  pipeline_name: string;
+  id: number | string;
+  name: string;
+  sort: number;
+  entityTypeId: number;
+  isDefault: string;
+  originId?: string;
+  originatorId?: string;
+}
+
+export interface BitrixPipelinesResponse {
+  status: string;
   entity_type: string;
-  is_default: boolean;
+  pipelines: BitrixPipeline[];
+  total_retrieved: number;
+  total_in_bitrix: number;
+  bot_id: string;
+  bot_name: string;
 }
 
 export interface BitrixStage {
-  id: string;
-  stage_id: string;
-  stage_name: string;
-  stage_code: string;
-  sort_order: number;
-  is_final: boolean;
-  pipeline_name: string;
+  STATUS_ID: string;
+  NAME: string;
+  SORT: number;
+  COLOR?: string;
+  SYSTEM?: string;
+  ENTITY_ID?: string;
+}
+
+export interface BitrixStagesResponse {
+  status: string;
+  bot_id: string;
+  bot_name: string;
+  pipeline_id: string;
+  entity_type: string;
+  stages: BitrixStage[];
+  total_retrieved: number;
+  total_in_bitrix: number;
 }

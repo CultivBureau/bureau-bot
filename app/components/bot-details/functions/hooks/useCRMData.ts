@@ -41,9 +41,13 @@ export function useCRMData(botId: string | null) {
         bot_id: botId, 
         entity_type: 'DEAL' 
       });
-      const pipelinesList = Array.isArray(pipelinesResponse) 
-        ? pipelinesResponse 
-        : [];
+      // Map API response to expected format
+      const pipelinesList = pipelinesResponse.map((p: any) => ({
+        pipeline_id: String(p.id),
+        pipeline_name: p.name,
+        sort: p.sort,
+        is_default: p.isDefault === 'Y',
+      }));
       setPipelines(pipelinesList);
     } catch (err) {
       console.error('Failed to fetch CRM data:', err);
@@ -60,9 +64,13 @@ export function useCRMData(botId: string | null) {
         bot_id: botId, 
         entity_type: 'DEAL' 
       });
-      const pipelinesList = Array.isArray(response) 
-        ? response 
-        : [];
+      // Map API response to expected format
+      const pipelinesList = response.map((p: any) => ({
+        pipeline_id: String(p.id),
+        pipeline_name: p.name,
+        sort: p.sort,
+        is_default: p.isDefault === 'Y',
+      }));
       setPipelines(pipelinesList);
     } catch (err) {
       console.error('Failed to fetch pipelines:', err);
@@ -78,9 +86,14 @@ export function useCRMData(botId: string | null) {
         pipeline_id: pipelineId, 
         entity_type: 'DEAL' 
       });
-      const stagesList = Array.isArray(response) 
-        ? response 
-        : [];
+      // Map API response to expected format
+      const stagesList = response.map((s: any) => ({
+        stage_id: s.STATUS_ID,
+        stage_code: s.STATUS_ID,
+        stage_name: s.NAME,
+        sort_order: s.SORT || 0,
+        color: s.COLOR,
+      }));
       setStages(stagesList);
     } catch (err) {
       console.error('Failed to fetch stages:', err);
