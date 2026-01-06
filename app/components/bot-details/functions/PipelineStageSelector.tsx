@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useState, useMemo } from 'react';
 import type { ViewMode } from '../../../types/functions';
 
 interface PipelineStageSelectorProps {
@@ -25,6 +25,17 @@ export const PipelineStageSelector = memo(function PipelineStageSelector({
   loading = false,
 }: PipelineStageSelectorProps) {
   const isDisabled = viewMode === 'view';
+  const [pipelineFilter, setPipelineFilter] = useState<string>('ALL');
+
+  // Filter pipelines by entity type (currently all pipelines are DEAL type)
+  const filteredPipelines = useMemo(() => {
+    if (pipelineFilter === 'ALL') {
+      return pipelines;
+    }
+    // Since pipelines only exist for DEAL in Bitrix24, 
+    // filtering by LEAD or CONTACT will return empty
+    return pipelineFilter === 'DEAL' ? pipelines : [];
+  }, [pipelines, pipelineFilter]);
 
   return (
     <div className="space-y-2">
@@ -33,9 +44,23 @@ export const PipelineStageSelector = memo(function PipelineStageSelector({
       </label>
       
       <div className="space-y-2">
-        <label className="text-sm font-medium text-card-foreground">
-          Pipeline:
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-card-foreground">
+            Pipeline:
+          </label>
+          {!isDisabled && (
+            <select
+              value={pipelineFilter}
+              onChange={(e) => setPipelineFilter(e.target.value)}
+              className="text-xs px-2 py-1 rounded-lg border border-border bg-background text-foreground hover:bg-secondary cursor-pointer"
+            >
+              <option value="ALL">ALL</option>
+              <option value="DEAL">DEAL</option>
+              <option value="LEAD">LEAD</option>
+              <option value="CONTACT">CONTACT</option>
+            </select>
+          )}
+        </div>
         <select
           value={selectedPipeline}
           onChange={(e) => onPipelineChange(e.target.value)}
@@ -47,12 +72,17 @@ export const PipelineStageSelector = memo(function PipelineStageSelector({
           }`}
         >
           <option value="">Select pipeline</option>
-          {pipelines.map((pipeline, index) => (
+          {filteredPipelines.map((pipeline, index) => (
             <option key={pipeline.pipeline_id || index} value={pipeline.pipeline_id}>
               {pipeline.pipeline_name}
             </option>
           ))}
         </select>
+        {pipelineFilter !== 'ALL' && pipelineFilter !== 'DEAL' && filteredPipelines.length === 0 && (
+          <div className="text-xs text-muted-foreground px-2">
+            No pipelines available for {pipelineFilter} entity type. Pipelines only exist for DEAL.
+          </div>
+        )}
       </div>
       
       <div className="space-y-2">
