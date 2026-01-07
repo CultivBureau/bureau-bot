@@ -20,7 +20,7 @@ class BotService {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
     // Use environment variable or fallback to default backend URL
-    const baseUrl = apiBaseUrl || 'https://test.staging.cultiv.llc';
+    const baseUrl = apiBaseUrl || 'https://bot-linker-backend.cultivbureau.com';
     
     // Remove trailing slash if present (endpoints will include leading slash)
     return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
