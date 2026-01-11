@@ -44,7 +44,7 @@ class BitrixService {
   ): Promise<T> {
     const url = `${this.getBaseURL()}${endpoint}`;
     const token = this.getAuthToken();
-    
+
     if (!token) {
       authService.logoutAndRedirect();
       throw new Error('Authentication token not found. Please log in again.');
@@ -71,15 +71,15 @@ class BitrixService {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (response.status === 401) {
         authService.logoutAndRedirect();
         throw new Error('Your session has expired. Please log in again.');
       }
-      
+
       if (!response.ok) {
         let errorMessage = `Request failed with status ${response.status}`;
-        
+
         try {
           const errorData = await response.json();
           const error = errorData as { detail?: string; error?: string; message?: string };
@@ -92,7 +92,7 @@ class BitrixService {
             // Use default error message
           }
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -244,6 +244,131 @@ class BitrixService {
     return await this.request<any>(`/api/Bitrix/bitrix-channels/?${queryParams.toString()}`, {
       method: 'GET',
     });
+  }
+
+  // Get integration by bot ID
+  async getIntegrationByBotId(botId: string): Promise<{
+    id: string;
+    bot: string;
+    bitrix_bot_id: number;
+    client_id: string;
+    portal_domain: string;
+    type: string;
+    is_registered: boolean;
+    created_at: string;
+    updated_at: string;
+  } | null> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('bot_id', botId);
+      const response = await this.request<{
+        id: string;
+        bot: string;
+        bitrix_bot_id: number;
+        client_id: string;
+        portal_domain: string;
+        type: string;
+        is_registered: boolean;
+        created_at: string;
+        updated_at: string;
+      }>(`/api/Integrations/get_integration_by_bot_id/?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+      return response;
+    } catch (error) {
+      // Return null if no integration found
+      return null;
+    }
+  }
+
+  // Integration Wizard APIs
+  async generateIntegrationLink(data: {
+    client_id: string;
+    client_secret: string;
+    portal_domain: string;
+    bot_id: string;
+    type: string;
+  }): Promise<{
+    status: string;
+    message: string;
+    integration_id: string;
+    webhook_url: string;
+    portal_domain: string;
+    type: string;
+  }> {
+    const response = await this.request<{
+      status: string;
+      message: string;
+      integration_id: string;
+      webhook_url: string;
+      portal_domain: string;
+      type: string;
+    }>('/api/Integrations/generate-link/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    // Store integration_id in cookies
+    if (response.integration_id) {
+      document.cookie = `bitrix_integration_id=${response.integration_id}; path=/; max-age=86400`; // 24 hours
+    }
+
+    return response;
+  }
+
+  async saveTokens(data: {
+    integration_id: string;
+    access_token: string;
+    refresh_token: string;
+  }): Promise<{
+    status: string;
+    message: string;
+    integration_id: string;
+  }> {
+    return await this.request<{
+      status: string;
+      message: string;
+      integration_id: string;
+    }>('/api/Integrations/save-tokens/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async registerBot(data: { bot_id: string }): Promise<{
+    status: string;
+    message: string;
+    bitrix_bot_id: number;
+    bot_code: string;
+    bot_name: string;
+    portal_domain: string;
+  }> {
+    return await this.request<{
+      status: string;
+      message: string;
+      bitrix_bot_id: number;
+      bot_code: string;
+      bot_name: string;
+      portal_domain: string;
+    }>('/api/Bitrix/register-bot/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Helper to get integration_id from cookies
+  getIntegrationIdFromCookie(): string | null {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'bitrix_integration_id') {
+        return value;
+      }
+    }
+    return null;
   }
 }
 
