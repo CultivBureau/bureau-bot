@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
-import { validateFunctionData } from '../../../../utils/functions/formatters';
-import type { FunctionData, ViewMode } from '../../../../types/functions';
+import { validateFunctionData, formatFunctionForAPI, formatPropertiesForAPI } from '../../../../utils/functions/formatters';
+import { functionsService, type Function } from '../../../../services/functions';
+import { parseResultFormat } from '../../../../utils/functions/parsers';
+import type { FunctionData, ViewMode, FunctionProperty } from '../../../../types/functions';
 
 interface UseFunctionFormOptions {
   botId: string | null;
@@ -36,10 +38,13 @@ export function useFunctionForm({
   const [viewMode, setViewMode] = useState<ViewMode>('create');
 
   const handleSave = useCallback(async (
-    properties: any[],
+    properties: FunctionProperty[],
     onFetchFunctions: () => Promise<void>
   ) => {
-    if (!botId) return;
+    if (!botId) {
+      onError?.('Bot ID is required');
+      return;
+    }
     
     const validation = validateFunctionData(functionName, properties);
     if (!validation.valid) {
@@ -50,24 +55,63 @@ export function useFunctionForm({
     setSaving(true);
     onError?.('');
     
-    // Simulate save operation
-    setTimeout(async () => {
-      try {
-        if (editing && functionToEdit) {
-          onSuccess?.('Function updated successfully!');
-        } else {
-          onSuccess?.('Function created successfully!');
+    try {
+      // Format properties for API
+      const formattedProperties = formatPropertiesForAPI(properties);
+      
+      // Build bitrix_field_mappings from properties
+      // Map CRM field data: id → crm_field_code, title → crm_field_name, type → data_type
+      const bitrixFieldMappings = formattedProperties.map(formattedProp => {
+        const originalProp = properties.find(p => 
+          (p.field_code || p.name) === formattedProp.field_code
+        );
+        
+        // Ensure data_type is properly formatted (uppercase)
+        let dataType = 'STRING';
+        if (originalProp?.type) {
+          dataType = originalProp.type.toUpperCase();
         }
         
-        await onFetchFunctions();
-        resetForm();
-        onSaveComplete?.();
-      } catch (err: any) {
-        onError?.(err?.message || 'Failed to save function');
-      } finally {
-        setSaving(false);
+        return {
+          name: formattedProp.field_name, // Use CRM field title as name
+          description: formattedProp.description || '',
+          crm_field_name: formattedProp.field_name, // CRM field title → crm_field_name
+          crm_field_code: formattedProp.field_code, // CRM field id → crm_field_code
+          data_type: dataType, // CRM field type → data_type
+        };
+      });
+      
+      // Build result_format
+      const resultFormat = formatFunctionForAPI(properties, selectedPhase || undefined);
+      
+      const functionData = {
+        bot: botId,
+        name: functionName,
+        trigger_instructions: functionInstruction || '',
+        result_format: resultFormat || '',
+        bitrix_field_mappings: bitrixFieldMappings,
+      };
+      
+      if (editing && functionToEdit) {
+        // Update existing function
+        await functionsService.updateFunction(functionToEdit.id, functionData);
+        onSuccess?.('Function updated successfully!');
+      } else {
+        // Create new function
+        await functionsService.createFunction(functionData);
+        onSuccess?.('Function created successfully!');
       }
-    }, 500);
+      
+      await onFetchFunctions();
+      resetForm();
+      onSaveComplete?.();
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to save function';
+      onError?.(errorMessage);
+      console.error('Error saving function:', err);
+    } finally {
+      setSaving(false);
+    }
   }, [botId, functionName, functionInstruction, selectedPhase, editing, functionToEdit, onSuccess, onError, onSaveComplete]);
 
   const handleEdit = useCallback(async (func: FunctionData) => {
@@ -76,15 +120,36 @@ export function useFunctionForm({
         await fetchCRMData();
       }
       
-      setFunctionToEdit(func);
-      setFunctionName(func.name);
-      setFunctionInstruction(func.instruction || '');
-      setSelectedPhase(func.phase || '');
+      // Fetch fresh data from API to ensure we have the latest
+      let apiFunction: Function;
+      try {
+        apiFunction = await functionsService.getFunction(func.id);
+      } catch (err) {
+        // If fetch fails, use the existing function data
+        apiFunction = func as any;
+      }
       
-      const properties = func.properties || [];
+      setFunctionToEdit(func);
+      setFunctionName(apiFunction.name || func.name);
+      setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
+      
+      // Parse result_format to get stage and properties
+      const parsed = parseResultFormat(apiFunction.result_format || func.instruction);
+      setSelectedPhase(parsed.stage || func.phase || '');
+      
+      // Map bitrix_field_mappings to properties
+      const properties: FunctionProperty[] = (apiFunction.bitrix_field_mappings || func.properties || []).map((mapping, index) => ({
+        id: (mapping as any).id || `${func.id}-${index}`,
+        name: mapping.name || mapping.crm_field_name,
+        field_code: mapping.crm_field_code,
+        field_name: mapping.crm_field_name,
+        type: mapping.data_type || 'STRING',
+        description: mapping.description || '',
+        required: false,
+      }));
       
       // Try to find the pipeline for this stage
-      if (func.phase && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
+      if (parsed.stage && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
         const firstPipeline = pipelines[0];
         if (firstPipeline?.pipeline_id) {
           setSelectedPipeline(firstPipeline.pipeline_id);
@@ -97,7 +162,7 @@ export function useFunctionForm({
       setViewMode('edit');
       setViewingFunction(null);
       
-      return { properties, phase: func.phase };
+      return { properties, phase: parsed.stage || func.phase };
     } catch (err: any) {
       onError?.(err?.message || 'Failed to load function data');
       throw err;
@@ -110,15 +175,36 @@ export function useFunctionForm({
         await fetchCRMData();
       }
       
-      setViewingFunction(func);
-      setFunctionName(func.name);
-      setFunctionInstruction(func.instruction || '');
-      setSelectedPhase(func.phase || '');
+      // Fetch fresh data from API to ensure we have the latest
+      let apiFunction: Function;
+      try {
+        apiFunction = await functionsService.getFunction(func.id);
+      } catch (err) {
+        // If fetch fails, use the existing function data
+        apiFunction = func as any;
+      }
       
-      const properties = func.properties || [];
+      setViewingFunction(func);
+      setFunctionName(apiFunction.name || func.name);
+      setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
+      
+      // Parse result_format to get stage and properties
+      const parsed = parseResultFormat(apiFunction.result_format || func.instruction);
+      setSelectedPhase(parsed.stage || func.phase || '');
+      
+      // Map bitrix_field_mappings to properties
+      const properties: FunctionProperty[] = (apiFunction.bitrix_field_mappings || func.properties || []).map((mapping, index) => ({
+        id: (mapping as any).id || `${func.id}-${index}`,
+        name: mapping.name || mapping.crm_field_name,
+        field_code: mapping.crm_field_code,
+        field_name: mapping.crm_field_name,
+        type: mapping.data_type || 'STRING',
+        description: mapping.description || '',
+        required: false,
+      }));
       
       // Try to find the pipeline for this stage
-      if (func.phase && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
+      if (parsed.stage && pipelines.length > 0 && fetchStages && setSelectedPipeline) {
         const firstPipeline = pipelines[0];
         if (firstPipeline?.pipeline_id) {
           setSelectedPipeline(firstPipeline.pipeline_id);
@@ -129,7 +215,7 @@ export function useFunctionForm({
       
       setViewMode('view');
       
-      return { properties, phase: func.phase };
+      return { properties, phase: parsed.stage || func.phase };
     } catch (err: any) {
       onError?.(err?.message || 'Failed to load function data');
       throw err;

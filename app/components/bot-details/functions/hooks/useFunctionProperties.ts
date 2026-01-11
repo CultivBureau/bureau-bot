@@ -42,9 +42,13 @@ export function useFunctionProperties() {
   }, []);
 
   const handleFieldSelect = useCallback((propertyId: string, field: CRMField) => {
-    // Use the new API format: id as field_code, title as field_name
+    // Map CRM field data from /api/Bitrix/crm-fields/ to function property:
+    // - field.id → field_code (will become crm_field_code in bitrix_field_mappings)
+    // - field.title → field_name (will become crm_field_name in bitrix_field_mappings)
+    // - field.type → type (will become data_type in bitrix_field_mappings)
     const fieldCode = field.id || '';
     const fieldName = field.title || '';
+    const fieldType = field.type || 'STRING';
     
     setProperties(prev => prev.map(prop => 
       prop.id === propertyId 
@@ -53,6 +57,7 @@ export function useFunctionProperties() {
             field_code: fieldCode,
             field_name: fieldName,
             name: fieldCode,
+            type: fieldType,
           } 
         : prop
     ));

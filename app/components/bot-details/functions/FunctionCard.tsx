@@ -1,7 +1,7 @@
 'use client';
 
-import { memo, useState } from 'react';
-import { Settings, Edit, Trash2 } from 'lucide-react';
+import { memo } from 'react';
+import { Settings, Edit, Trash2, Eye } from 'lucide-react';
 import type { FunctionData } from '../../../types/functions';
 
 interface FunctionCardProps {
@@ -11,6 +11,22 @@ interface FunctionCardProps {
   onEdit: (func: FunctionData) => void;
   onDelete: (func: FunctionData) => void;
   onMenuToggle: (functionId: string | null) => void;
+}
+
+function formatDate(dateString: string | undefined): string {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return dateString;
+  }
 }
 
 export const FunctionCard = memo(function FunctionCard({
@@ -23,8 +39,7 @@ export const FunctionCard = memo(function FunctionCard({
 }: FunctionCardProps) {
   return (
     <div 
-      onClick={() => onView(func)}
-      className="p-4 rounded-xl border border-border bg-card/50 relative cursor-pointer hover:bg-card/70 transition-colors"
+      className="p-4 rounded-xl border border-border bg-card/50 relative hover:bg-card/70 transition-colors"
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-medium text-card-foreground">
@@ -43,12 +58,24 @@ export const FunctionCard = memo(function FunctionCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  onView(func);
+                  onMenuToggle(null);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-secondary flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                View
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
                   onEdit(func);
+                  onMenuToggle(null);
                 }}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-secondary flex items-center gap-2"
               >
                 <Edit className="w-4 h-4" />
-                Edit
+                Update
               </button>
               <button
                 onClick={(e) => {
@@ -65,11 +92,13 @@ export const FunctionCard = memo(function FunctionCard({
           )}
         </div>
       </div>
-      <p className="text-sm mb-3 text-muted-foreground">
-        {func.instruction ? func.instruction.substring(0, 100) + '...' : 'No description'}
-      </p>
-      <div className="text-xs text-muted-foreground">
-        {func.properties.length} properties • {func.phase || 'No phase'}
+      <div className="space-y-2 text-xs text-muted-foreground">
+        <div>
+          <span className="font-medium">Created:</span> {formatDate(func.created_at)}
+        </div>
+        <div>
+          <span className="font-medium">Updated:</span> {formatDate(func.updated_at)}
+        </div>
       </div>
     </div>
   );
