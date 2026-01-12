@@ -1,0 +1,7 @@
+services:
+  web:
+    image: ${DOCKER_USERNAME}/bureau-bot:main
+    ports:
+      - "8080:3000"
+    restart: unless-stopped
+    container_name: bureau-bot-web
