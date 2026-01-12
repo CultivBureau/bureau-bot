@@ -43,7 +43,7 @@ export function ModelSelector({
       const gptModels = await botService.getGPTModels();
       setModels(gptModels);
     } catch (error) {
-      console.error('Failed to fetch models:', error);
+      // Error fetching models
     } finally {
       setLoadingModels(false);
     }

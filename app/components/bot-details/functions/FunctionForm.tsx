@@ -12,6 +12,7 @@ interface FunctionFormProps {
   saving: boolean;
   functionName: string;
   functionInstruction: string;
+  resultFormat: string;
   selectedPhase: string;
   selectedPipeline: string;
   properties: FunctionProperty[];
@@ -25,6 +26,7 @@ interface FunctionFormProps {
   viewingFunction: any;
   onNameChange: (value: string) => void;
   onInstructionChange: (value: string) => void;
+  onResultFormatChange: (value: string) => void;
   onPhaseChange: (value: string) => void;
   onPipelineChange: (value: string) => void;
   onFieldSearchChange: (propertyId: string, term: string) => void;
@@ -45,6 +47,7 @@ export const FunctionForm = memo(function FunctionForm({
   saving,
   functionName,
   functionInstruction,
+  resultFormat,
   selectedPhase,
   selectedPipeline,
   properties,
@@ -58,6 +61,7 @@ export const FunctionForm = memo(function FunctionForm({
   viewingFunction,
   onNameChange,
   onInstructionChange,
+  onResultFormatChange,
   onPhaseChange,
   onPipelineChange,
   onFieldSearchChange,
@@ -143,6 +147,24 @@ export const FunctionForm = memo(function FunctionForm({
           rows={6}
           disabled={viewMode === 'view'}
           className={`w-full px-4 py-3 rounded-xl border border-border resize-y ${
+            viewMode === 'view' 
+              ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
+              : 'bg-background text-foreground'
+          }`}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-card-foreground">
+          Result Format <span className="text-xs text-muted-foreground">(Optional)</span>
+        </label>
+        <input
+          type="text"
+          value={resultFormat}
+          onChange={(e) => onResultFormatChange(e.target.value)}
+          placeholder="Enter result format (optional)"
+          disabled={viewMode === 'view'}
+          className={`w-full px-4 py-3 rounded-xl border border-border ${
             viewMode === 'view' 
               ? 'bg-secondary/50 text-muted-foreground cursor-not-allowed' 
               : 'bg-background text-foreground'

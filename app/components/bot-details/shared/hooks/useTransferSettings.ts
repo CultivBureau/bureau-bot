@@ -138,7 +138,7 @@ export function useTransferSettings(botId: string | null) {
         const usersList = Array.isArray(data) ? data : (data.results ?? []);
         setUsers(usersList);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        // Error fetching users
       } finally {
         setLoadingUsers(false);
       }
@@ -161,7 +161,7 @@ export function useTransferSettings(botId: string | null) {
         const channelsList = Array.isArray(data) ? data : (data.results ?? []);
         setChannels(channelsList);
       } catch (error) {
-        console.error('Error fetching channels:', error);
+        // Error fetching channels
       } finally {
         setLoadingChannels(false);
       }

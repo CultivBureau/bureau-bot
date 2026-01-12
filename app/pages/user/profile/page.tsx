@@ -2,7 +2,6 @@
 
 import { DashboardLayout } from '../../../components/dashboard/DashboardLayout';
 import { PersonalInfoCard } from '../../../components/profile/PersonalInfoCard';
-import { PlanInfoCard } from '../../../components/profile/PlanInfoCard';
 import { ProfilePageHeader } from '../../../components/profile/ProfilePageHeader';
 import { ProfileAlerts } from '../../../components/profile/ProfileAlerts';
 import { useProfile } from '../../../components/profile/hooks/useProfile';
@@ -44,20 +43,16 @@ export default function ProfilePage() {
 
         <ProfileAlerts success={success} error={error} />
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <PersonalInfoCard
-            user={user}
-            formData={formData}
-            isEditing={isEditing}
-            saving={saving}
-            onEdit={handleEdit}
-            onInputChange={handleInputChange}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-          />
-
-          <PlanInfoCard user={user} />
-        </div>
+        <PersonalInfoCard
+          user={user}
+          formData={formData}
+          isEditing={isEditing}
+          saving={saving}
+          onEdit={handleEdit}
+          onInputChange={handleInputChange}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />
       </div>
     </DashboardLayout>
   );

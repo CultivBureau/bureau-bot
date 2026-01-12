@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useSyncExternalStore, useRef } from 'react';
-import { LayoutDashboard, CreditCard, Bot, User, LogOut, Menu, Moon, Sun } from 'lucide-react';
+import { Bot, User, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { authService } from '../../services/auth';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '../../store/hooks';
@@ -94,9 +94,7 @@ export function DashboardNavHeader() {
   const userName = (decodedToken?.first_name as string) || 'User';
 
   const navigation = [
-    { name: 'Dashboard', href: '/pages/dashboard', icon: LayoutDashboard },
     { name: 'Bots', href: '/pages/bots', icon: Bot },
-    { name: 'Payment', href: '/pages/payment', icon: CreditCard },
   ];
 
   useEffect(() => {
@@ -174,7 +172,7 @@ export function DashboardNavHeader() {
       }`}>
         <div className="flex justify-between items-center h-16 px-6">
           {/* Logo */}
-          <Link href="/pages/dashboard" className="flex items-center gap-2">
+          <Link href="/pages/bots" className="flex items-center gap-2">
             <Bot className="w-6 h-6 text-primary" />
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-hero-text bg-clip-text text-transparent">
               BureauBot

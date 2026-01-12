@@ -88,7 +88,6 @@ export function parseFunctionProperties(
       };
     });
   } catch (err) {
-    console.error('Failed to parse function properties:', err);
     return [];
   }
 }

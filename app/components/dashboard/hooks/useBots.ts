@@ -38,7 +38,6 @@ export function useBots() {
     const token = state.auth.token;
     
     if (!token) {
-      console.warn('No authentication token available. Skipping channel types fetch.');
       return;
     }
     
@@ -46,7 +45,7 @@ export function useBots() {
       const types = await botService.getChannelTypes();
       setChannelTypes(types);
     } catch (err) {
-      console.error('Failed to fetch channel types:', err);
+      // Error fetching channel types
     }
   }, []);
 

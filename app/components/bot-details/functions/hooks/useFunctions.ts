@@ -53,7 +53,6 @@ export function useFunctions(botId: string | null) {
     } catch (err: any) {
       const errorMessage = err?.message || 'Failed to fetch functions';
       setError(errorMessage);
-      console.error('Error fetching functions:', err);
     } finally {
       setLoading(false);
     }

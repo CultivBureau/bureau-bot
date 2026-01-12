@@ -94,11 +94,11 @@ class UserService {
   }
 
   async getUserById(userId: string): Promise<User> {
-    return this.request<User>(`/api/users/${userId}/`);
+    return this.request<User>(`/api/Users/${userId}/`);
   }
 
   async updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
-    const response = await this.request<UpdateUserResponse>(`/api/users/${userId}/update/`, {
+    const response = await this.request<UpdateUserResponse>(`/api/Users/${userId}/update/`, {
       method: 'PUT',
       body: JSON.stringify(userData),
     });

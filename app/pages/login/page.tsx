@@ -48,8 +48,8 @@ export default function LoginPage() {
 
     try {
       await authService.login({ email, password });
-      // Redirect to dashboard on success
-      router.push('/pages/dashboard');
+      // Redirect to bots page on success
+      router.push('/pages/bots');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
       setError(errorMessage);

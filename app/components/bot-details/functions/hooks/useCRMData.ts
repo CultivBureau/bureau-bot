@@ -46,7 +46,7 @@ export function useCRMData(botId: string | null) {
         : [];
       setPipelines(pipelinesList);
     } catch (err) {
-      console.error('Failed to fetch CRM data:', err);
+      // Error fetching CRM data
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export function useCRMData(botId: string | null) {
         : [];
       setPipelines(pipelinesList);
     } catch (err) {
-      console.error('Failed to fetch pipelines:', err);
+      // Error fetching pipelines
     }
   }, [botId]);
 
@@ -83,7 +83,6 @@ export function useCRMData(botId: string | null) {
         : [];
       setStages(stagesList);
     } catch (err) {
-      console.error('Failed to fetch stages:', err);
       setStages([]);
     }
   }, [botId]);

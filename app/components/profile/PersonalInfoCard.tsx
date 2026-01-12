@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Save, Loader2, Mail, Phone,Shield } from 'lucide-react';
+import { User, Save, Loader2, Mail, Phone } from 'lucide-react';
 import { User as UserType } from '../../types/auth';
 import { Button } from '../landing/ui/button';
 
@@ -34,7 +34,7 @@ export function PersonalInfoCard({
     <div className="rounded-3xl border border-border bg-card/90 dark:bg-card/80 backdrop-blur-lg p-8 shadow-xl transition-colors">
       {/* Header Section with Status */}
       <div className="mb-7">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-card-foreground tracking-tight">Personal Information</h2>
           {!isEditing && (
             <Button
@@ -45,12 +45,6 @@ export function PersonalInfoCard({
               Edit Profile
             </Button>
           )}
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <Shield className="h-4 w-4 text-muted-foreground" />
-          <span className={user.is_active ? 'text-green-600 dark:text-green-400 font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
-            {user.is_active ? 'Active Account' : 'Inactive Account'}
-          </span>
         </div>
       </div>
 
@@ -127,17 +121,6 @@ export function PersonalInfoCard({
             className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:bg-muted disabled:cursor-not-allowed"
             required
           />
-        </div>
-
-        {/* Member Since */}
-        <div className="pt-5 border-t border-border">
-          <p className="text-xs text-muted-foreground font-medium">
-            Member since {new Date(user.created_on).toLocaleDateString('en-GB', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })}
-          </p>
         </div>
 
         {/* Action Buttons */}

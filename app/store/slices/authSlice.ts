@@ -39,7 +39,6 @@ const decodeToken = (token: string): DecodedToken | null => {
     
     return JSON.parse(jsonPayload) as DecodedToken;
   } catch (error) {
-    console.error('Error decoding token:', error);
     return null;
   }
 };

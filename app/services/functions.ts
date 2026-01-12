@@ -18,7 +18,7 @@ export interface Function {
   bot_id: string;
   name: string;
   trigger_instructions: string;
-  result_format: string;
+  result_format?: string;
   bitrix_field_mappings: BitrixFieldMapping[];
   created_on?: string;
   updated_on?: string;
@@ -45,7 +45,7 @@ interface CreateFunctionData {
   bot: string;
   name: string;
   trigger_instructions: string;
-  result_format: string;
+  result_format?: string;
   bitrix_field_mappings: Array<{
     id?: string;
     name: string;
@@ -97,9 +97,7 @@ class FunctionsService {
       },
     };
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API Request:', { url, method: config.method || 'GET' });
-    }
+
 
     try {
       const response = await fetch(url, config);
@@ -131,42 +129,15 @@ class FunctionsService {
             errors?: any;
           };
           errorMessage = error.detail || error.error || error.message || errorMessage;
-          
-          // Log full error details in development
-          if (process.env.NODE_ENV === 'development') {
-            console.error('API Error Response:', {
-              status: response.status,
-              url,
-              method: config.method || 'GET',
-              error: errorData,
-              headers: Object.fromEntries(response.headers.entries()),
-            });
-          }
+
         } catch (jsonError) {
           try {
             const text = await response.text();
             errorMessage = text || errorMessage;
-            if (process.env.NODE_ENV === 'development') {
-              console.error('API Error Response (text):', {
-                status: response.status,
-                url,
-                method: config.method || 'GET',
-                text: text || '(empty)',
-                headers: Object.fromEntries(response.headers.entries()),
-              });
-            }
+
           } catch (textError) {
             // Response has no body or can't be read
-            if (process.env.NODE_ENV === 'development') {
-              console.error('API Error Response (no body):', {
-                status: response.status,
-                url,
-                method: config.method || 'GET',
-                statusText: response.statusText,
-                headers: Object.fromEntries(response.headers.entries()),
-                requestHeaders: config.headers,
-              });
-            }
+
           }
         }
         

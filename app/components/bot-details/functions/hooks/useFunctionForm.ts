@@ -29,6 +29,7 @@ export function useFunctionForm({
 }: UseFunctionFormOptions) {
   const [functionName, setFunctionName] = useState('');
   const [functionInstruction, setFunctionInstruction] = useState('');
+  const [resultFormat, setResultFormat] = useState('');
   const [selectedPhase, setSelectedPhase] = useState<string>('');
   const [selectedPipeline, setSelectedPipelineLocal] = useState<string>('');
   const [editing, setEditing] = useState(false);
@@ -81,16 +82,17 @@ export function useFunctionForm({
         };
       });
       
-      // Build result_format
-      const resultFormat = formatFunctionForAPI(properties, selectedPhase || undefined);
-      
-      const functionData = {
+      const functionData: any = {
         bot: botId,
         name: functionName,
         trigger_instructions: functionInstruction || '',
-        result_format: resultFormat || '',
         bitrix_field_mappings: bitrixFieldMappings,
       };
+      
+      // Only include result_format if it has a value
+      if (resultFormat && resultFormat.trim()) {
+        functionData.result_format = resultFormat.trim();
+      }
       
       if (editing && functionToEdit) {
         // Update existing function
@@ -108,7 +110,6 @@ export function useFunctionForm({
     } catch (err: any) {
       const errorMessage = err?.message || 'Failed to save function';
       onError?.(errorMessage);
-      console.error('Error saving function:', err);
     } finally {
       setSaving(false);
     }
@@ -132,6 +133,7 @@ export function useFunctionForm({
       setFunctionToEdit(func);
       setFunctionName(apiFunction.name || func.name);
       setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
+      setResultFormat(apiFunction.result_format || '');
       
       // Parse result_format to get stage and properties
       const parsed = parseResultFormat(apiFunction.result_format || func.instruction);
@@ -187,6 +189,7 @@ export function useFunctionForm({
       setViewingFunction(func);
       setFunctionName(apiFunction.name || func.name);
       setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
+      setResultFormat(apiFunction.result_format || '');
       
       // Parse result_format to get stage and properties
       const parsed = parseResultFormat(apiFunction.result_format || func.instruction);
@@ -225,6 +228,7 @@ export function useFunctionForm({
   const resetForm = useCallback(() => {
     setFunctionName('');
     setFunctionInstruction('');
+    setResultFormat('');
     setSelectedPhase('');
     setSelectedPipelineLocal('');
     setEditing(false);
@@ -242,6 +246,8 @@ export function useFunctionForm({
     setFunctionName,
     functionInstruction,
     setFunctionInstruction,
+    resultFormat,
+    setResultFormat,
     selectedPhase,
     setSelectedPhase,
     selectedPipeline: selectedPipeline,

@@ -1,15 +1,13 @@
 'use client';
 
 import { memo } from 'react';
-import { Plus } from 'lucide-react';
+import { Code } from 'lucide-react';
 import { FunctionCard } from './FunctionCard';
-import { EmptyState } from './EmptyState';
 import type { FunctionData } from '../../../types/functions';
 
 interface FunctionListProps {
   functions: FunctionData[];
   menuOpen: string | null;
-  onCreateClick: () => void;
   onView: (func: FunctionData) => void;
   onEdit: (func: FunctionData) => void;
   onDelete: (func: FunctionData) => void;
@@ -19,45 +17,43 @@ interface FunctionListProps {
 export const FunctionList = memo(function FunctionList({
   functions,
   menuOpen,
-  onCreateClick,
   onView,
   onEdit,
   onDelete,
   onMenuToggle,
 }: FunctionListProps) {
-  if (functions.length === 0) {
-    return <EmptyState onCreateClick={onCreateClick} />;
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-card-foreground">
-          Functions ({functions.length})
-        </h2>
-        <button 
-          onClick={onCreateClick}
-          className="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Create Function
-        </button>
-      </div>
+    <section className="rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-card-foreground">
+            Stored items ({functions.length})
+          </h3>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {functions.map((func) => (
-          <FunctionCard
-            key={func.id}
-            function={func}
-            menuOpen={menuOpen}
-            onView={onView}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onMenuToggle={onMenuToggle}
-          />
-        ))}
-      </div>
-    </div>
+        {functions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
+            <Code className="mb-4 h-12 w-12" />
+            <p>No functions created yet</p>
+            <p className="text-sm">
+              Create your first function to add custom capabilities to your bot.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {functions.map((func) => (
+              <FunctionCard
+                key={func.id}
+                function={func}
+                menuOpen={menuOpen}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onMenuToggle={onMenuToggle}
+              />
+            ))}
+          </div>
+        )}
+      </section>
   );
 });
 

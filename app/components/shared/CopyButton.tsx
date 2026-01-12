@@ -34,13 +34,13 @@ export function CopyButton({ text, className = '', variant = 'default' }: CopyBu
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                 } catch (err) {
-                    console.error('Fallback copy failed:', err);
+                    // Fallback failed
                 }
 
                 document.body.removeChild(textArea);
             }
         } catch (err) {
-            console.error('Failed to copy text:', err);
+            // Failed to copy
         }
     };
 
