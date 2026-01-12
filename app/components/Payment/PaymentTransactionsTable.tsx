@@ -143,7 +143,6 @@ export function PaymentTransactionsTable({ transactions = mockTransactions }: Pa
                       className="rounded-full"
                       onClick={() => {
                         // TODO: Implement download invoice
-                        console.log('Download invoice:', transaction.invoice);
                       }}
                     >
                       <Download className="h-4 w-4" />

@@ -29,7 +29,7 @@ export function BotCard({ bot, channelTypes = [], onEdit, onToggleActive }: BotC
   return (
     <div className="group relative overflow-hidden rounded-3xl border-2 border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-primary/50">
       <Link
-        href={`/pages/bot-details/overview?botId=${bot.id}`}
+        href={`/pages/bot-details/configure?botId=${bot.id}`}
         className="absolute inset-0 z-10"
         aria-label={`Open ${bot.name}`}
       />

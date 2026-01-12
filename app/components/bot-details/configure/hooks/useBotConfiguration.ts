@@ -79,7 +79,6 @@ export function useBotConfiguration() {
 
   const handlePay = useCallback(() => {
     // TODO: Implement payment logic
-    console.log('Pay button clicked for bot:', botId);
   }, [botId]);
 
   return {

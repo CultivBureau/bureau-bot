@@ -92,8 +92,8 @@ export default function SignupPage() {
         password: formData.password,
         password_confirm: formData.confirmPassword,
       });
-      // Redirect to dashboard on success
-      router.push('/pages/dashboard');
+      // Redirect to bots page on success
+      router.push('/pages/bots');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
       // Handle field-specific errors

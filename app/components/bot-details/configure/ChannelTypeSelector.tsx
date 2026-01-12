@@ -42,7 +42,7 @@ export function ChannelTypeSelector({
       const types = await botService.getChannelTypes();
       setChannelTypes(types);
     } catch (error) {
-      console.error('Failed to fetch channel types:', error);
+      // Error fetching channel types
     } finally {
       setLoadingChannelTypes(false);
     }

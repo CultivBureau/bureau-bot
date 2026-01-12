@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Plus } from 'lucide-react';
 import { useFunctions } from './hooks/useFunctions';
 import { useCRMData } from './hooks/useCRMData';
 import { useFunctionForm } from './hooks/useFunctionForm';
@@ -42,6 +43,8 @@ export function FunctionsContent() {
     setFunctionName,
     functionInstruction,
     setFunctionInstruction,
+    resultFormat,
+    setResultFormat,
     selectedPhase,
     setSelectedPhase,
     selectedPipeline: formSelectedPipeline,
@@ -233,24 +236,28 @@ export function FunctionsContent() {
         onSuccessDismiss={() => setSuccess('')}
       />
 
-      <div className="rounded-3xl border border-border bg-card/70 backdrop-blur-sm p-8 shadow-sm">
-        {!showCreateForm ? (
-          <FunctionList
-            functions={functions}
-            menuOpen={menuOpen}
-            onCreateClick={handleCreateFunction}
-            onView={handleViewFunction}
-            onEdit={handleEditFunction}
-            onDelete={handleDeleteFunction}
-            onMenuToggle={setMenuOpen}
-          />
-        ) : (
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-card-foreground">
+          Functions
+        </h2>
+        <button
+          onClick={() => showCreateForm ? handleCancelCreate() : handleCreateFunction()}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          <Plus className="h-4 w-4" />
+          {showCreateForm ? 'Close form' : 'Create function'}
+        </button>
+      </div>
+
+      {showCreateForm && (
+        <div className="rounded-3xl border border-border bg-card/70 backdrop-blur-sm p-8 shadow-sm">
           <FunctionForm
             viewMode={viewMode}
             editing={editing}
             saving={saving}
             functionName={functionName}
             functionInstruction={functionInstruction}
+            resultFormat={resultFormat}
             selectedPhase={selectedPhase}
             selectedPipeline={selectedPipeline}
             properties={properties}
@@ -264,6 +271,7 @@ export function FunctionsContent() {
             viewingFunction={viewingFunction}
             onNameChange={setFunctionName}
             onInstructionChange={setFunctionInstruction}
+            onResultFormatChange={setResultFormat}
             onPhaseChange={setSelectedPhase}
             onPipelineChange={setSelectedPipeline}
             onFieldSearchChange={handleFieldSearchChange}
@@ -277,8 +285,17 @@ export function FunctionsContent() {
             onCancel={handleCancelCreate}
             onSave={handleSave}
           />
-        )}
-      </div>
+        </div>
+      )}
+
+      <FunctionList
+        functions={functions}
+        menuOpen={menuOpen}
+        onView={handleViewFunction}
+        onEdit={handleEditFunction}
+        onDelete={handleDeleteFunction}
+        onMenuToggle={setMenuOpen}
+      />
 
       {functionToDelete && (
         <DeleteConfirmationModal

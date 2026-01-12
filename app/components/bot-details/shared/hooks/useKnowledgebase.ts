@@ -86,12 +86,6 @@ export function useKnowledgebase(botId: string | null) {
           formData.append('title', newItem.title);
           formData.append('file', newItem.file);
 
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📝 Updating item with file:', editingItemId);
-            console.log('  - title:', newItem.title);
-            console.log('  - file:', newItem.file.name);
-          }
-
           await knowledgeBaseService.updateKnowledgeBaseItem(editingItemId, formData);
           setSuccess('Knowledge base item updated with new file!');
         } else if (uploadType === 'text' && newItem.content.trim()) {
@@ -122,15 +116,6 @@ export function useKnowledgebase(botId: string | null) {
           formData.append('title', newItem.title);
           formData.append('source_type', 'file');
           formData.append('file', newItem.file);
-
-          // Log FormData contents for debugging
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📤 Uploading file with FormData:');
-            console.log('  - bot_id:', botId);
-            console.log('  - title:', newItem.title);
-            console.log('  - source_type: file');
-            console.log('  - file:', newItem.file.name, `(${newItem.file.size} bytes, type: ${newItem.file.type})`);
-          }
 
           await knowledgeBaseService.uploadFile(formData);
           setSuccess('File uploaded successfully to OpenAI and knowledge base!');

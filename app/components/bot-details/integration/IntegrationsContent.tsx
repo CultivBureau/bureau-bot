@@ -52,7 +52,7 @@ export function IntegrationsContent() {
       setBotName(bot.name || '');
       setIntegration(integrationData);
     } catch (err) {
-      console.error('Failed to load data:', err);
+
       setError('Failed to load integration information');
     } finally {
       setLoading(false);

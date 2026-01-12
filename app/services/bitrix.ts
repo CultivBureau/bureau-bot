@@ -65,9 +65,7 @@ class BitrixService {
       },
     };
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API Request:', { url, method: config.method || 'GET' });
-    }
+
 
     try {
       const response = await fetch(url, config);

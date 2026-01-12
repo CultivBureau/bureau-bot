@@ -74,7 +74,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
             });
           }
         } catch (error) {
-          console.error('Error fetching options:', error);
           setErrors((prev) => ({
             ...prev,
             _general: 'Failed to load options. Please try again.',
@@ -262,7 +261,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
         ...prev,
         _general: errorMessage,
       }));
-      console.error(`Error ${isEditMode ? 'updating' : 'creating'} bot:`, error);
     } finally {
       setIsSubmitting(false);
     }
