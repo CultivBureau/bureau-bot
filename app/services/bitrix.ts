@@ -127,13 +127,36 @@ class BitrixService {
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/Bitrix/crm-fields/?${queryString}` : '/api/Bitrix/crm-fields/';
-    const response = await this.request<BitrixCRMField[] | { crm_fields: BitrixCRMField[] } | { results: BitrixCRMField[] }>(endpoint, { method: 'GET' });
-    // Handle multiple response formats: array, { crm_fields: [...] }, or { results: [...] }
+    const response = await this.request<any>(endpoint, { method: 'GET' });
+    
+    // Handle new nested response format with crm_fields array containing raw object
+    if (response && typeof response === 'object' && 'crm_fields' in response && Array.isArray(response.crm_fields)) {
+      const fields: BitrixCRMField[] = [];
+      
+      response.crm_fields.forEach((item: any) => {
+        if (item.raw && typeof item.raw === 'object') {
+          // Transform the nested raw object structure into flat BitrixCRMField array
+          Object.entries(item.raw).forEach(([fieldId, fieldData]: [string, any]) => {
+            fields.push({
+              id: fieldId,
+              type: fieldData.type || 'string',
+              isRequired: fieldData.isRequired || false,
+              isReadOnly: fieldData.isReadOnly || false,
+              isImmutable: fieldData.isImmutable || false,
+              isMultiple: fieldData.isMultiple || false,
+              isDynamic: fieldData.isDynamic || false,
+              title: fieldData.title || fieldId,
+            });
+          });
+        }
+      });
+      
+      return fields;
+    }
+    
+    // Handle legacy formats
     if (Array.isArray(response)) {
       return response;
-    }
-    if ('crm_fields' in response) {
-      return response.crm_fields;
     }
     if ('results' in response) {
       return response.results;
