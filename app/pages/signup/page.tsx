@@ -95,15 +95,52 @@ export default function SignupPage() {
       // Redirect to bots page on success
       router.push('/pages/bots');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
-      // Handle field-specific errors
-      if (err instanceof Error && err.message.includes('email')) {
-        setErrors({ email: 'Email is already registered or invalid.' });
-      } else if (err instanceof Error && err.message.includes('password')) {
-        setErrors({ password: 'Password does not meet requirements.' });
-      } else {
-        setErrors({ email: errorMessage });
+      const newErrors: Partial<Record<keyof SignupFormState, string>> = {};
+      
+      // Check if error has field-specific validation errors
+      if (err instanceof Error && 'fieldErrors' in err) {
+        const fieldErrors = (err as Error & { fieldErrors?: Record<string, string[]> }).fieldErrors;
+        
+        if (fieldErrors) {
+          // Handle email errors
+          if (fieldErrors.email && Array.isArray(fieldErrors.email)) {
+            const emailError = fieldErrors.email[0];
+            if (emailError.toLowerCase().includes('already exists')) {
+              newErrors.email = 'This email is already registered. Please use a different email or sign in.';
+            } else {
+              newErrors.email = emailError;
+            }
+          }
+          
+          // Handle phone number errors
+          if (fieldErrors.phone_number && Array.isArray(fieldErrors.phone_number)) {
+            const phoneError = fieldErrors.phone_number[0];
+            if (phoneError.toLowerCase().includes('used by another user')) {
+              newErrors.phone = 'This phone number is already registered. Please use a different number.';
+            } else {
+              newErrors.phone = phoneError;
+            }
+          }
+          
+          // Handle password errors
+          if (fieldErrors.password && Array.isArray(fieldErrors.password)) {
+            newErrors.password = fieldErrors.password.join(' ');
+          }
+          
+          // Handle password confirmation errors
+          if (fieldErrors.password_confirm && Array.isArray(fieldErrors.password_confirm)) {
+            newErrors.confirmPassword = fieldErrors.password_confirm.join(' ');
+          }
+        }
       }
+      
+      // If no field errors were found, show a generic error
+      if (Object.keys(newErrors).length === 0) {
+        const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+        newErrors.email = errorMessage;
+      }
+      
+      setErrors(newErrors);
       setIsLoading(false);
     }
   };
@@ -259,6 +296,11 @@ export default function SignupPage() {
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
+                    {!errors.password && (
+                      <p className="text-xs text-hero-subtext mt-1">
+                        Password must be at least 8 characters long and include uppercase and lowercase letters, a number, and a special character.
+                      </p>
+                    )}
                     {errors.password && (
                       <p className="text-sm text-destructive">{errors.password}</p>
                     )}

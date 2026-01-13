@@ -137,7 +137,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 1: Open Developer Resources</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 1: Open Developer Resources</h3>
                             <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                                 <li>Open Developer Resources</li>
                                 <li>Scroll down to "Other" and select it</li>
@@ -158,7 +158,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 2: Open Local Application</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 2: Open Local Application</h3>
                             <p className="text-sm text-muted-foreground">Select "Local Application" from the options</p>
                         </div>
                         <div className="relative w-full h-64 rounded-lg overflow-hidden border border-border">
@@ -176,7 +176,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 3: Configure Application</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 3: Configure Application</h3>
                             <p className="text-sm text-muted-foreground">Type in the handler path and bot name</p>
                         </div>
                         <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border mb-4">
@@ -189,25 +189,25 @@ export function BitrixIntegrationWizard({
                         </div>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Handler Path</label>
+                                <label className="text-sm font-medium text-foreground">Handler Path</label>
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
                                         value={HANDLER_PATH}
                                         readOnly
-                                        className="flex-1 px-3 py-2 rounded-lg border border-border bg-muted text-sm"
+                                        className="flex-1 px-3 py-2 rounded-lg border border-border bg-muted text-sm text-foreground"
                                     />
                                     <CopyButton text={HANDLER_PATH} variant="inline" />
                                 </div>
                                 <p className="text-xs text-muted-foreground">Copy this URL to use in Bitrix24</p>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Bot Name</label>
+                                <label className="text-sm font-medium text-foreground">Bot Name</label>
                                 <input
                                     type="text"
                                     value={botName}
                                     onChange={(e) => setBotName(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground"
                                     placeholder="Enter bot name"
                                 />
                             </div>
@@ -219,7 +219,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 4: Copy Credentials</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 4: Copy Credentials</h3>
                             <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                                 <li>Copy Application ID (Client ID)</li>
                                 <li>Copy Application Key (Client Secret)</li>
@@ -247,39 +247,39 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 5: Generate Integration Link</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 5: Generate Integration Link</h3>
                             <p className="text-sm text-muted-foreground">
                                 Paste the credentials you copied in the previous step
                             </p>
                         </div>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Application ID (Client ID)</label>
+                                <label className="text-sm font-medium text-foreground">Application ID (Client ID)</label>
                                 <input
                                     type="text"
                                     value={clientId}
                                     onChange={(e) => setClientId(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground"
                                     placeholder="Enter application ID"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Application Key (Client Secret)</label>
+                                <label className="text-sm font-medium text-foreground">Application Key (Client Secret)</label>
                                 <input
                                     type="text"
                                     value={clientSecret}
                                     onChange={(e) => setClientSecret(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground"
                                     placeholder="Enter application key"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Portal Link</label>
+                                <label className="text-sm font-medium text-foreground">Portal Link</label>
                                 <input
                                     type="text"
                                     value={portalLink}
                                     onChange={(e) => setPortalLink(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground"
                                     placeholder="e.g., diet-hub.bitrix24.com"
                                 />
                             </div>
@@ -291,19 +291,19 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 6: Copy Webhook URL</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 6: Copy Webhook URL</h3>
                             <p className="text-sm text-muted-foreground">
                                 Copy the generated webhook URL to use in Bitrix24
                             </p>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Generated Webhook URL</label>
+                            <label className="text-sm font-medium text-foreground">Generated Webhook URL</label>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
                                     value={webhookUrl}
                                     readOnly
-                                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-muted text-sm break-all"
+                                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-muted text-sm text-foreground break-all"
                                 />
                                 <CopyButton text={webhookUrl} variant="inline" />
                             </div>
@@ -320,7 +320,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 7: Paste Link in Bitrix24</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 7: Paste Link in Bitrix24</h3>
                             <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                                 <li>Paste the webhook URL in both Handler Path and Installation Path</li>
                                 <li>Click Save</li>
@@ -341,7 +341,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 8: Add Permissions</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 8: Add Permissions</h3>
                             <p className="text-sm text-muted-foreground">
                                 Add the required permissions for the bot to function properly
                             </p>
@@ -361,7 +361,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 9: Open Application</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 9: Open Application</h3>
                             <p className="text-sm text-muted-foreground">Click "Open Application" to proceed</p>
                         </div>
                         <div className="relative w-full h-64 rounded-lg overflow-hidden border border-border">
@@ -379,7 +379,7 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 10: Copy Tokens</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 10: Copy Tokens</h3>
                             <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
                                 <li>Copy Access Token</li>
                                 <li>Copy Refresh Token</li>
@@ -405,29 +405,29 @@ export function BitrixIntegrationWizard({
                 return (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <h3 className="text-lg font-semibold">Step 11: Save Tokens & Register</h3>
+                            <h3 className="text-lg font-semibold text-foreground">Step 11: Save Tokens & Register</h3>
                             <p className="text-sm text-muted-foreground">
                                 Paste the tokens you copied and complete the integration
                             </p>
                         </div>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Access Token</label>
+                                <label className="text-sm font-medium text-foreground">Access Token</label>
                                 <input
                                     type="text"
                                     value={accessToken}
                                     onChange={(e) => setAccessToken(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground"
                                     placeholder="Paste access token"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Refresh Token</label>
+                                <label className="text-sm font-medium text-foreground">Refresh Token</label>
                                 <input
                                     type="text"
                                     value={refreshToken}
                                     onChange={(e) => setRefreshToken(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground"
                                     placeholder="Paste refresh token"
                                 />
                             </div>
@@ -448,14 +448,14 @@ export function BitrixIntegrationWizard({
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-border">
                     <div>
-                        <h2 className="text-xl font-semibold">Bitrix24 Integration Setup</h2>
+                        <h2 className="text-xl font-semibold text-foreground">Bitrix24 Integration Setup</h2>
                         <p className="text-sm text-muted-foreground mt-1">
                             Step {currentStep} of {totalSteps}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="rounded-full p-2 hover:bg-muted transition-colors"
+                        className="rounded-full p-2 hover:bg-muted transition-colors text-foreground"
                         disabled={loading}
                     >
                         <X className="h-5 w-5" />

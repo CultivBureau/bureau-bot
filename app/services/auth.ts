@@ -36,12 +36,17 @@ class AuthService {
 
       if (!response.ok) {
         const error: AuthError = data;
-        throw new Error(
+        // Create a custom error that includes field-specific validation errors
+        const customError = new Error(
           error.detail ||
           error.error ||
           error.message ||
           `Request failed with status ${response.status}`
-        );
+        ) as Error & { fieldErrors?: AuthError };
+        
+        // Attach field-specific errors to the error object
+        customError.fieldErrors = error;
+        throw customError;
       }
 
       return data as T;

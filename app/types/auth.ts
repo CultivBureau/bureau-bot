@@ -46,6 +46,7 @@ export interface AuthError {
   detail?: string;
   message?: string;
   email?: string[];
+  phone_number?: string[];
   password?: string[];
   password_confirm?: string[];
   [key: string]: unknown;
