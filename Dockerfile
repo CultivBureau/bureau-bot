@@ -16,9 +16,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Copy .env if it exists (optional for build-time)
-RUN if [ -f .env ]; then cp .env .env; fi
+COPY .env .env
 
 # Build without running any scripts
 RUN npm run build --ignore-scripts || npm run build
