@@ -19,11 +19,12 @@ class BotService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
-    // Use environment variable
-    const baseUrl = apiBaseUrl;
+    if (!apiBaseUrl) {
+      throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
+    }
     
     // Remove trailing slash if present (endpoints will include leading slash)
-    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
   }
 
   private getAuthToken(): string | null {

@@ -29,8 +29,12 @@ interface GetIntegrationSettingsParams {
 class BitrixService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const baseUrl = apiBaseUrl;
-    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    
+    if (!apiBaseUrl) {
+      throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
+    }
+    
+    return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
   }
 
   private getAuthToken(): string | null {
