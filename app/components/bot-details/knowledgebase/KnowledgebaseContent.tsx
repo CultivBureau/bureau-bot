@@ -166,12 +166,6 @@ export function KnowledgebaseContent() {
       )}
 
       <section className="rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-card-foreground">
-            Stored items ({items.length})
-          </h3>
-        </div>
-
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
             <Database className="mb-4 h-12 w-12" />

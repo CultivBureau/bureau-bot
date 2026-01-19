@@ -74,7 +74,6 @@ export function useBots() {
     } catch (err: unknown) {
       const errorMessage = extractErrorMessage(err) || getDefaultErrorMessage('load');
       setError(errorMessage);
-      console.error('Error fetching bot:', err);
       return null;
     }
   }, []);

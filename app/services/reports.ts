@@ -3,7 +3,7 @@ import { store } from '../store/store';
 class ReportsService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const baseUrl = apiBaseUrl || 'https://bot-linker-backend.cultivbureau.com';
+    const baseUrl = apiBaseUrl;
     return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   }
 

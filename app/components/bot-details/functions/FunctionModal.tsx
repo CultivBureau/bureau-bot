@@ -12,7 +12,6 @@ interface FunctionModalProps {
   saving: boolean;
   functionName: string;
   functionInstruction: string;
-  resultFormat: string;
   selectedPhase: string;
   selectedPipeline: string;
   properties: FunctionProperty[];
@@ -26,7 +25,6 @@ interface FunctionModalProps {
   viewingFunction: any;
   onNameChange: (value: string) => void;
   onInstructionChange: (value: string) => void;
-  onResultFormatChange: (value: string) => void;
   onPhaseChange: (value: string) => void;
   onPipelineChange: (value: string) => void;
   onFieldSearchChange: (propertyId: string, term: string) => void;
@@ -48,7 +46,6 @@ export function FunctionModal({
   saving,
   functionName,
   functionInstruction,
-  resultFormat,
   selectedPhase,
   selectedPipeline,
   properties,
@@ -62,7 +59,6 @@ export function FunctionModal({
   viewingFunction,
   onNameChange,
   onInstructionChange,
-  onResultFormatChange,
   onPhaseChange,
   onPipelineChange,
   onFieldSearchChange,
@@ -99,7 +95,6 @@ export function FunctionModal({
             saving={saving}
             functionName={functionName}
             functionInstruction={functionInstruction}
-            resultFormat={resultFormat}
             selectedPhase={selectedPhase}
             selectedPipeline={selectedPipeline}
             properties={properties}
@@ -113,7 +108,6 @@ export function FunctionModal({
             viewingFunction={viewingFunction}
             onNameChange={onNameChange}
             onInstructionChange={onInstructionChange}
-            onResultFormatChange={onResultFormatChange}
             onPhaseChange={onPhaseChange}
             onPipelineChange={onPipelineChange}
             onFieldSearchChange={onFieldSearchChange}

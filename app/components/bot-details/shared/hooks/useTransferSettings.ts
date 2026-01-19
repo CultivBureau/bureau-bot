@@ -85,7 +85,6 @@ export function useTransferSettings(botId: string | null) {
         setSettings(loadedSettings);
         setInitialSettings(loadedSettings);
       } catch (err) {
-        console.error('Error fetching transfer settings:', err);
         setError('Failed to load transfer settings');
       } finally {
         setLoading(false);

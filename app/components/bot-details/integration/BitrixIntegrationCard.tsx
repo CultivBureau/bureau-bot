@@ -1,6 +1,6 @@
 'use client';
 
-import { Link as LinkIcon, CheckCircle, XCircle } from 'lucide-react';
+import { Link as LinkIcon, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 interface BitrixIntegration {
     id: string;
@@ -44,6 +44,13 @@ export function BitrixIntegrationCard({ integration, onDelete }: BitrixIntegrati
                         </p>
                     </div>
                 </div>
+                <button
+                    onClick={onDelete}
+                    className="rounded-full border border-red-200 p-1.5 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 transition-colors"
+                    aria-label="Delete integration"
+                >
+                    <Trash2 className="h-4 w-4" />
+                </button>
             </div>
 
             <div className="mt-4 space-y-3">

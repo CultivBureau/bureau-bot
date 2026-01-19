@@ -43,8 +43,6 @@ export function FunctionsContent() {
     setFunctionName,
     functionInstruction,
     setFunctionInstruction,
-    resultFormat,
-    setResultFormat,
     selectedPhase,
     setSelectedPhase,
     selectedPipeline: formSelectedPipeline,
@@ -257,7 +255,6 @@ export function FunctionsContent() {
             saving={saving}
             functionName={functionName}
             functionInstruction={functionInstruction}
-            resultFormat={resultFormat}
             selectedPhase={selectedPhase}
             selectedPipeline={selectedPipeline}
             properties={properties}
@@ -271,7 +268,6 @@ export function FunctionsContent() {
             viewingFunction={viewingFunction}
             onNameChange={setFunctionName}
             onInstructionChange={setFunctionInstruction}
-            onResultFormatChange={setResultFormat}
             onPhaseChange={setSelectedPhase}
             onPipelineChange={setSelectedPipeline}
             onFieldSearchChange={handleFieldSearchChange}

@@ -201,16 +201,7 @@ export function BitrixIntegrationWizard({
                                 </div>
                                 <p className="text-xs text-muted-foreground">Copy this URL to use in Bitrix24</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Bot Name</label>
-                                <input
-                                    type="text"
-                                    value={botName}
-                                    onChange={(e) => setBotName(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground"
-                                    placeholder="Enter bot name"
-                                />
-                            </div>
+                            
                         </div>
                     </div>
                 );

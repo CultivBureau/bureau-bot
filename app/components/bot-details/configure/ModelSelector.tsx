@@ -74,7 +74,7 @@ export function ModelSelector({
               <select
                 value={editValue}
                 onChange={(e) => onChange(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-xl border border-input bg-input-background text-card-foreground min-w-0"
+                className="flex-1 px-4 py-2 rounded-xl border border-input bg-background text-foreground min-w-0 [&>option]:bg-background [&>option]:text-foreground dark:[&>option]:bg-card dark:[&>option]:text-card-foreground"
                 disabled={saving}
               >
                 {models.length > 0 ? (

@@ -29,7 +29,7 @@ interface GetIntegrationSettingsParams {
 class BitrixService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const baseUrl = apiBaseUrl || 'https://bot-linker-backend.cultivbureau.com';
+    const baseUrl = apiBaseUrl;
     return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   }
 
@@ -43,16 +43,13 @@ class BitrixService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.getBaseURL()}${endpoint}`;
-    const token = this.getAuthToken();
+    
+    // Get valid token (will auto-refresh if expired)
+    const token = await authService.getValidToken();
 
     if (!token) {
       authService.logoutAndRedirect();
       throw new Error('Authentication token not found. Please log in again.');
-    }
-
-    if (authService.isTokenExpired()) {
-      authService.logoutAndRedirect();
-      throw new Error('Your session has expired. Please log in again.');
     }
 
     const config: RequestInit = {

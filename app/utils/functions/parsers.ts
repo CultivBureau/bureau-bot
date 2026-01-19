@@ -33,7 +33,7 @@ export function parsePropertiesFromResultFormat(
       }));
     }
   } catch (err) {
-    console.error('Failed to parse properties from result_format:', err);
+    // Silent error handling
   }
   
   return [];
