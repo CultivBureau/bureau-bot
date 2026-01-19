@@ -16,7 +16,9 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-COPY .env .env
+
+# Copy .env if it exists (optional for build-time)
+RUN if [ -f .env ]; then cp .env .env; fi
 
 # Build without running any scripts
 RUN npm run build --ignore-scripts || npm run build
@@ -39,9 +41,6 @@ RUN chown nextjs:nodejs .next
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Copy .env for runtime
-COPY --from=builder --chown=nextjs:nodejs /app/.env ./.env
 
 USER nextjs
 
