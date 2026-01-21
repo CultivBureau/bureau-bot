@@ -87,7 +87,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
         webhookUrl: '',
       });
       setErrors({});
-      setShowChannelDropdown(false);
       setShowModelDropdown(false);
     }
   }, [isOpen]);
@@ -96,12 +95,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        channelDropdownRef.current &&
-        !channelDropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowChannelDropdown(false);
-      }
-      if (
         modelDropdownRef.current &&
         !modelDropdownRef.current.contains(event.target as Node)
       ) {
@@ -109,14 +102,14 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
       }
     };
 
-    if (showChannelDropdown || showModelDropdown) {
+    if (showModelDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showChannelDropdown, showModelDropdown]);
+  }, [showModelDropdown]);
 
   const validateCurrentStep = useCallback((): boolean => {
     const validationErrors = validateStep(currentStep, formData, isEditMode);
