@@ -36,20 +36,8 @@ export function DashboardCharts({ bots }: DashboardChartsProps) {
     }))
     .sort((a, b) => b.usage - a.usage);
 
-  // Prepare data for pie chart (bots by channel type)
-  const channelData = bots.reduce((acc, bot) => {
-    const channel = bot.channel_type || 'unknown';
-    const existing = acc.find((item) => item.name === channel);
-    if (existing) {
-      existing.value += 1;
-    } else {
-      acc.push({ name: channel, value: 1 });
-    }
-    return acc;
-  }, [] as Array<{ name: string; value: number }>);
-
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6">
       {/* Histogram Chart */}
       <div className="rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm">
         <h3 className="mb-4 text-lg font-semibold text-card-foreground">Bot Usage Statistics</h3>
@@ -75,36 +63,6 @@ export function DashboardCharts({ bots }: DashboardChartsProps) {
             <Bar dataKey="usage" fill={CHART_COLORS.primary} name="Total Usage" radius={[8, 8, 0, 0]} />
             <Bar dataKey="sessions" fill={CHART_COLORS.lighten1} name="Sessions" radius={[8, 8, 0, 0]} />
           </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Pie Chart */}
-      <div className="rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold text-card-foreground">Bots by Channel Type</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={channelData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-              outerRadius={100}
-              fill={CHART_COLORS.primary}
-              dataKey="value"
-            >
-              {channelData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip 
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px',
-              }}
-            />
-          </PieChart>
         </ResponsiveContainer>
       </div>
     </div>

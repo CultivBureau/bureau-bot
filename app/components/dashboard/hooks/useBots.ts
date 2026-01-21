@@ -1,14 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { botService } from '../../../services/bot';
-import { store } from '../../../store/store';
 import { mapBotToBotData } from '../../../utils/bots/mappers';
 import { extractErrorMessage, getDefaultErrorMessage } from '../../../utils/bots/errorHandlers';
-import type { BotData, Bot, ChannelType } from '../../../types/bot';
+import type { BotData, Bot } from '../../../types/bot';
 
 export function useBots() {
   const [bots, setBots] = useState<BotData[]>([]);
   const [fullBots, setFullBots] = useState<Bot[]>([]);
-  const [channelTypes, setChannelTypes] = useState<ChannelType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -30,22 +28,6 @@ export function useBots() {
       setError(errorMessage);
     } finally {
       setLoading(false);
-    }
-  }, []);
-
-  const fetchChannelTypes = useCallback(async () => {
-    const state = store.getState();
-    const token = state.auth.token;
-    
-    if (!token) {
-      return;
-    }
-    
-    try {
-      const types = await botService.getChannelTypes();
-      setChannelTypes(types);
-    } catch (err) {
-      // Error fetching channel types
     }
   }, []);
 
@@ -78,14 +60,9 @@ export function useBots() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchChannelTypes();
-  }, [fetchChannelTypes]);
-
   return {
     bots,
     fullBots,
-    channelTypes,
     loading,
     error,
     fetchBots,

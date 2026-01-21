@@ -13,7 +13,6 @@ import type { Bot } from '../../types/bot';
 export default function BotsPage() {
   const {
     bots,
-    channelTypes,
     loading,
     error,
     fetchBots,
@@ -89,7 +88,6 @@ export default function BotsPage() {
         <section>
           <BotsGrid
             bots={bots}
-            channelTypes={channelTypes}
             onEdit={handleEditBot}
             onToggleActive={handleToggleActive}
             onCreateBot={handleCreateNewBot}

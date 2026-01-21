@@ -3,7 +3,6 @@ import type { BotFormData } from '../../components/dashboard/NewBotModal';
 export interface ValidationErrors {
   apiKey?: string;
   assistantName?: string;
-  channelType?: string;
   aiModel?: string;
   instructions?: string;
   _general?: string;
@@ -34,9 +33,6 @@ export function validateStep(
   } else if (step === 2) {
     if (!formData.assistantName.trim()) {
       errors.assistantName = 'Bot name is required';
-    }
-    if (!formData.channelType) {
-      errors.channelType = 'Channel type is required';
     }
     if (!formData.aiModel) {
       errors.aiModel = 'AI model is required';
@@ -76,10 +72,6 @@ export function validateFormForSubmit(
 
   if (!formData.assistantName.trim()) {
     errors.assistantName = 'Bot name is required';
-  }
-
-  if (!formData.channelType) {
-    errors.channelType = 'Channel type is required';
   }
 
   if (!formData.aiModel) {

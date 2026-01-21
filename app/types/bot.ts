@@ -3,17 +3,8 @@ export interface GPTModel {
   label: string;
 }
 
-export interface ChannelType {
-  value: string;
-  label: string;
-}
-
 export interface GPTModelsResponse {
   gpt_models: GPTModel[];
-}
-
-export interface ChannelTypesResponse {
-  channel_types: ChannelType[];
 }
 
 export interface ValidateOpenAIKeyRequest {
@@ -27,7 +18,6 @@ export interface ValidateOpenAIKeyResponse {
 
 export interface CreateBotRequest {
   name: string;
-  channel_type: string;
   gpt_model: string;
   openai_api_key: string;
   instructions: string;
@@ -40,7 +30,6 @@ export interface CreateBotRequest {
 
 export interface UpdateBotRequest {
   name?: string;
-  channel_type?: string;
   gpt_model?: string;
   openai_api_key?: string;
   instructions?: string;
@@ -60,7 +49,6 @@ export interface Bot {
   user_id: string;
   name: string;
   assistant_name?: string;
-  channel_type: string;
   gpt_model: string;
   openai_api_key: string;
   assistant_id?: string;
@@ -99,7 +87,6 @@ export interface GetBotsParams {
 export interface BotData {
   id: string;
   name: string;
-  channel_type: string;
   gpt_model: string;
   is_active: boolean;
   created_on: string;

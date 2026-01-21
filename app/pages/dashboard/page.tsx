@@ -19,7 +19,6 @@ const mockBotsAPI = {
         {
           id: '1',
           name: 'Customer Support Bot',
-          channel_type: 'whatsapp',
           gpt_model: 'gpt-4',
           is_active: true,
           created_on: '2024-01-15',
@@ -30,7 +29,6 @@ const mockBotsAPI = {
         {
           id: '2',
           name: 'Sales Assistant',
-          channel_type: 'telegram',
           gpt_model: 'gpt-3.5-turbo',
           is_active: true,
           created_on: '2024-01-10',
@@ -41,7 +39,6 @@ const mockBotsAPI = {
         {
           id: '3',
           name: 'Help Desk Bot',
-          channel_type: 'web',
           gpt_model: 'gpt-4',
           is_active: false,
           created_on: '2024-01-05',

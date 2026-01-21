@@ -7,7 +7,6 @@ export function mapBotToBotData(bot: Bot): BotData {
   return {
     id: bot.id,
     name: bot.name,
-    channel_type: bot.channel_type,
     gpt_model: bot.gpt_model,
     is_active: bot.is_active,
     created_on: bot.created_on,

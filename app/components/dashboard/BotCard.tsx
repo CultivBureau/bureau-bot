@@ -4,27 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { MoreVertical, Play, Pause, Edit, Power } from "lucide-react";
-import type { BotData, ChannelType } from "../../types/bot";
+import type { BotData } from "../../types/bot";
 
 interface BotCardProps {
   bot: BotData;
-  channelTypes?: ChannelType[];
   onEdit?: (botId: string) => void;
   onToggleActive?: (botId: string) => void;
 }
 
-export function BotCard({ bot, channelTypes = [], onEdit, onToggleActive }: BotCardProps) {
+export function BotCard({ bot, onEdit, onToggleActive }: BotCardProps) {
   const [openMenu, setOpenMenu] = useState(false);
   const isActive = bot.is_active;
   const statusClasses = isActive
     ? 'bg-green-500/10 text-green-600 dark:text-green-400'
     : 'bg-secondary text-secondary-foreground';
-
-  // Get channel label from channel types
-  const getChannelLabel = (channelValue: string): string => {
-    const channelType = channelTypes.find((ct) => ct.value === channelValue);
-    return channelType?.label || channelValue.toUpperCase();
-  };
 
   return (
     <div className="group relative overflow-hidden rounded-3xl border-2 border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-primary/50">
@@ -129,12 +122,6 @@ export function BotCard({ bot, channelTypes = [], onEdit, onToggleActive }: BotC
 
       {/* Bot Details */}
       <dl className="mt-6 space-y-2 text-sm text-center">
-        <div className="flex flex-col items-center gap-1">
-          <dt className="text-muted-foreground">Channel</dt>
-          <dd className="font-medium text-card-foreground">
-            {bot.channel_type ? getChannelLabel(bot.channel_type) : '—'}
-          </dd>
-        </div>
         <div className="flex flex-col items-center gap-1">
           <dt className="text-muted-foreground">Model</dt>
           <dd className="font-medium text-card-foreground">

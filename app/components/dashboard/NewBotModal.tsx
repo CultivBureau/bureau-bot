@@ -12,7 +12,6 @@ import type { Bot } from '../../types/bot';
 export interface BotFormData {
   apiKey: string;
   assistantName: string;
-  channelType: string;
   aiModel: string;
   instructions: string;
   webhookUrl: string;
@@ -33,14 +32,10 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
     errors,
     isSubmitting,
     isValidating,
-    showChannelDropdown,
-    setShowChannelDropdown,
     showModelDropdown,
     setShowModelDropdown,
-    channelTypes,
     gptModels,
     loadingOptions,
-    channelDropdownRef,
     modelDropdownRef,
     handleNext,
     handleBack,
@@ -52,14 +47,8 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
 
   const totalSteps = 3;
 
-  const handleToggleChannelDropdown = () => {
-    setShowChannelDropdown(!showChannelDropdown);
-    setShowModelDropdown(false);
-  };
-
   const handleToggleModelDropdown = () => {
     setShowModelDropdown(!showModelDropdown);
-    setShowChannelDropdown(false);
   };
 
   return (
@@ -89,15 +78,11 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
             <Step2Configuration
               formData={formData}
               errors={errors}
-              channelTypes={channelTypes}
               gptModels={gptModels}
               loadingOptions={loadingOptions}
-              showChannelDropdown={showChannelDropdown}
               showModelDropdown={showModelDropdown}
-              channelDropdownRef={channelDropdownRef}
               modelDropdownRef={modelDropdownRef}
               onInputChange={handleInputChange}
-              onToggleChannelDropdown={handleToggleChannelDropdown}
               onToggleModelDropdown={handleToggleModelDropdown}
             />
           )}

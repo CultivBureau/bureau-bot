@@ -6,35 +6,27 @@ import { Input } from '../landing/ui/input';
 import { Label } from '../landing/ui/label';
 import { cn } from '../landing/ui/utils';
 import type { BotFormData } from './NewBotModal';
-import type { ChannelType, GPTModel } from '../../types/bot';
+import type { GPTModel } from '../../types/bot';
 
 interface Step2ConfigurationProps {
   formData: BotFormData;
   errors: Partial<Record<keyof BotFormData | '_general', string>>;
-  channelTypes: ChannelType[];
   gptModels: GPTModel[];
   loadingOptions: boolean;
-  showChannelDropdown: boolean;
   showModelDropdown: boolean;
-  channelDropdownRef: React.RefObject<HTMLDivElement | null>;
   modelDropdownRef: React.RefObject<HTMLDivElement | null>;
   onInputChange: (field: keyof BotFormData, value: string) => void;
-  onToggleChannelDropdown: () => void;
   onToggleModelDropdown: () => void;
 }
 
 export const Step2Configuration = memo(function Step2Configuration({
   formData,
   errors,
-  channelTypes,
   gptModels,
   loadingOptions,
-  showChannelDropdown,
   showModelDropdown,
-  channelDropdownRef,
   modelDropdownRef,
   onInputChange,
-  onToggleChannelDropdown,
   onToggleModelDropdown,
 }: Step2ConfigurationProps) {
   return (

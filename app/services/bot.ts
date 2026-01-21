@@ -2,9 +2,7 @@ import { store } from '../store/store';
 import { authService } from './auth';
 import type {
   GPTModel,
-  ChannelType,
   GPTModelsResponse,
-  ChannelTypesResponse,
   ValidateOpenAIKeyRequest,
   ValidateOpenAIKeyResponse,
   CreateBotRequest,
@@ -118,11 +116,6 @@ class BotService {
   async getGPTModels(): Promise<GPTModel[]> {
     const response = await this.request<GPTModelsResponse>('/api/Bots/gpt-models/');
     return response.gpt_models;
-  }
-
-  async getChannelTypes(): Promise<ChannelType[]> {
-    const response = await this.request<ChannelTypesResponse>('/api/Bots/channel-types/');
-    return response.channel_types;
   }
 
   async validateOpenAIKey(key: string): Promise<ValidateOpenAIKeyResponse> {
