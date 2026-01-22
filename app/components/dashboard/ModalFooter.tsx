@@ -42,7 +42,6 @@ export const ModalFooter = memo(function ModalFooter({
         type="button"
         onClick={currentStep === 3 ? onSubmit : onNext}
         disabled={isSubmitting || isValidating}
-        className="dark:bg-card dark:border-border dark:hover:bg-card/80 dark:text-card-foreground"
       >
         {isSubmitting
           ? isEditMode

@@ -34,7 +34,8 @@ export function IntegrationsContent() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     integrationId: string | null;
-  }>({ isOpen: false, integrationId: null });
+    isDeleting: boolean;
+  }>({ isOpen: false, integrationId: null, isDeleting: false });
 
   const loadIntegration = async () => {
     if (!botId) {
@@ -64,30 +65,33 @@ export function IntegrationsContent() {
   }, [botId]);
 
   const handleDeleteIntegration = (integrationId: string) => {
-    setDeleteConfirmation({ isOpen: true, integrationId });
+    setDeleteConfirmation({ isOpen: true, integrationId, isDeleting: false });
   };
 
   const confirmDelete = async () => {
     if (!deleteConfirmation.integrationId) return;
 
-    try {
-      // TODO: Add delete API endpoint when available
-      // await bitrixService.deleteIntegration(deleteConfirmation.integrationId);
+    setDeleteConfirmation(prev => ({ ...prev, isDeleting: true }));
 
-      setSuccess('Integration deleted successfully');
+    try {
+      const result = await bitrixService.deleteIntegration(deleteConfirmation.integrationId);
+
+      setSuccess(result.message || 'Integration deleted successfully');
       setIntegration(null);
-      setDeleteConfirmation({ isOpen: false, integrationId: null });
+      setDeleteConfirmation({ isOpen: false, integrationId: null, isDeleting: false });
 
       // Reload integration data
       await loadIntegration();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete integration');
-      setDeleteConfirmation({ isOpen: false, integrationId: null });
+      setDeleteConfirmation({ isOpen: false, integrationId: null, isDeleting: false });
     }
   };
 
   const cancelDelete = () => {
-    setDeleteConfirmation({ isOpen: false, integrationId: null });
+    if (!deleteConfirmation.isDeleting) {
+      setDeleteConfirmation({ isOpen: false, integrationId: null, isDeleting: false });
+    }
   };
 
   const handleWizardClose = () => {
@@ -198,6 +202,7 @@ export function IntegrationsContent() {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         isOpen={deleteConfirmation.isOpen}
+        isLoading={deleteConfirmation.isDeleting}
       />
     </div>
   );

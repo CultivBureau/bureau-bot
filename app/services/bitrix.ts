@@ -29,11 +29,11 @@ interface GetIntegrationSettingsParams {
 class BitrixService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    
+
     if (!apiBaseUrl) {
       throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
     }
-    
+
     return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
   }
 
@@ -47,7 +47,7 @@ class BitrixService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.getBaseURL()}${endpoint}`;
-    
+
     // Get valid token (will auto-refresh if expired)
     const token = await authService.getValidToken();
 
@@ -129,11 +129,11 @@ class BitrixService {
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/Bitrix/crm-fields/?${queryString}` : '/api/Bitrix/crm-fields/';
     const response = await this.request<any>(endpoint, { method: 'GET' });
-    
+
     // Handle new nested response format with crm_fields array containing raw object
     if (response && typeof response === 'object' && 'crm_fields' in response && Array.isArray(response.crm_fields)) {
       const fields: BitrixCRMField[] = [];
-      
+
       response.crm_fields.forEach((item: any) => {
         if (item.raw && typeof item.raw === 'object') {
           // Transform the nested raw object structure into flat BitrixCRMField array
@@ -151,10 +151,10 @@ class BitrixService {
           });
         }
       });
-      
+
       return fields;
     }
-    
+
     // Handle legacy formats
     if (Array.isArray(response)) {
       return response;
@@ -177,7 +177,7 @@ class BitrixService {
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/Bitrix/pipelines/?${queryString}` : '/api/Bitrix/pipelines/';
     const response = await this.request<any>(endpoint, { method: 'GET' });
-    
+
     // Handle API response format: { status, entity_type, pipelines: [...], ... }
     if (response && response.pipelines && Array.isArray(response.pipelines)) {
       return response.pipelines;
@@ -200,7 +200,7 @@ class BitrixService {
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/Bitrix/stages/?${queryString}` : '/api/Bitrix/stages/';
     const response = await this.request<any>(endpoint, { method: 'GET' });
-    
+
     // Handle API response format: { status, bot_id, bot_name, pipeline_id, entity_type, stages: [...], ... }
     if (response && response.stages && Array.isArray(response.stages)) {
       return response.stages;
@@ -214,7 +214,7 @@ class BitrixService {
     queryParams.append('bot_id', params.bot_id);
     const endpoint = `/api/Bitrix/integration-settings/?${queryParams.toString()}`;
     const response = await this.request<any>(endpoint, { method: 'GET' });
-    
+
     // Handle API response format: { results: [...], ... } or direct data
     if (response && response.results && Array.isArray(response.results)) {
       return response;
@@ -246,7 +246,7 @@ class BitrixService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bot_id: botId, webhook_url: webhookUrl }),
     });
-    
+
     // Handle API response format: { status, data: {...}, ... }
     if (response && response.status === 'success') {
       return response;
@@ -285,7 +285,7 @@ class BitrixService {
     const response = await this.request<any>(`/api/Bitrix/bitrix-users/?${queryParams.toString()}`, {
       method: 'GET',
     });
-    
+
     // Handle API response format: { results: [...], ... } or direct array
     if (response && response.results && Array.isArray(response.results)) {
       return response.results;
@@ -299,7 +299,7 @@ class BitrixService {
     const response = await this.request<any>(`/api/Bitrix/bitrix-channels/?${queryParams.toString()}`, {
       method: 'GET',
     });
-    
+
     // Handle API response format: { results: [...], ... } or direct array
     if (response && response.results && Array.isArray(response.results)) {
       return response.results;
@@ -430,6 +430,27 @@ class BitrixService {
       }
     }
     return null;
+  }
+
+  // Delete Integration
+  async deleteIntegration(integrationId: string): Promise<{
+    status: string;
+    message: string;
+    integration_id: string;
+    bot_id?: string;
+    unregister?: any;
+    token_refresh?: any;
+  }> {
+    return await this.request<{
+      status: string;
+      message: string;
+      integration_id: string;
+      bot_id?: string;
+      unregister?: any;
+      token_refresh?: any;
+    }>(`/api/Integrations/${integrationId}/`, {
+      method: 'DELETE',
+    });
   }
 }
 

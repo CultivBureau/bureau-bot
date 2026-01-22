@@ -1,6 +1,6 @@
 'use client';
 
-import { X, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle, Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface ConfirmationToastProps {
@@ -8,6 +8,7 @@ interface ConfirmationToastProps {
   onConfirm: () => void;
   onCancel: () => void;
   isOpen: boolean;
+  isLoading?: boolean;
 }
 
 export function ConfirmationToast({
@@ -15,6 +16,7 @@ export function ConfirmationToast({
   onConfirm,
   onCancel,
   isOpen,
+  isLoading = false,
 }: ConfirmationToastProps) {
   useEffect(() => {
     if (isOpen) {
@@ -23,7 +25,7 @@ export function ConfirmationToast({
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -36,7 +38,7 @@ export function ConfirmationToast({
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[100]"
-        onClick={onCancel}
+        onClick={isLoading ? undefined : onCancel}
       />
 
       {/* Toast */}
@@ -57,28 +59,31 @@ export function ConfirmationToast({
               </div>
               <button
                 onClick={onCancel}
-                className="rounded-full p-1 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900 transition-colors"
+                disabled={isLoading}
+                className="rounded-full p-1 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Close"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            
+
             <div className="flex gap-2 justify-end">
               <button
                 onClick={onCancel}
-                className="rounded-full border border-amber-300 dark:border-amber-700 bg-white dark:bg-amber-950 px-4 py-2 text-sm font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-50 dark:hover:bg-amber-900 transition-colors"
+                disabled={isLoading}
+                className="rounded-full border border-amber-300 dark:border-amber-700 bg-white dark:bg-amber-950 px-4 py-2 text-sm font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-50 dark:hover:bg-amber-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={() => {
                   onConfirm();
-                  onCancel();
                 }}
-                className="rounded-full bg-red-600 dark:bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 dark:hover:bg-red-800 transition-colors"
+                disabled={isLoading}
+                className="rounded-full bg-red-600 dark:bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 dark:hover:bg-red-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Delete
+                {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {isLoading ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
