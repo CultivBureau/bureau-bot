@@ -2,6 +2,7 @@
 
 import { Link as LinkIcon, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
+
 interface BitrixIntegration {
     id: string;
     bot: string;
