@@ -57,7 +57,15 @@ export const Step3Instructions = memo(function Step3Instructions({
             className="text-foreground"
           />
           <p className="text-xs text-muted-foreground">
-            Optional: Webhook URL for receiving bot events and updates
+            Learn how to get your webhook URL from the{' '}
+            <a 
+              href="#" 
+              className="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              documentation
+            </a>
           </p>
         </div>
       </div>

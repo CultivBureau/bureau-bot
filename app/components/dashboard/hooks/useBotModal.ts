@@ -18,7 +18,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
   const [formData, setFormData] = useState<BotFormData>({
     apiKey: '',
     assistantName: 'AI Assistant',
-    channelType: '',
     aiModel: '',
     instructions: 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
     webhookUrl: '',
@@ -26,12 +25,9 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
   const [errors, setErrors] = useState<Partial<Record<keyof BotFormData | '_general', string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [showChannelDropdown, setShowChannelDropdown] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
-  const [channelTypes, setChannelTypes] = useState<any[]>([]);
   const [gptModels, setGptModels] = useState<any[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
-  const channelDropdownRef = useRef<HTMLDivElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize form data when bot prop changes (for edit mode)
@@ -40,7 +36,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
       setFormData({
         apiKey: '',
         assistantName: bot.name || 'AI Assistant',
-        channelType: bot.channel_type || '',
         aiModel: bot.gpt_model || '',
         instructions: bot.instructions || 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
         webhookUrl: bot.webhook_url || '',
@@ -48,25 +43,18 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
     }
   }, [isOpen, bot]);
 
-  // Fetch channel types and GPT models when modal opens
+  // Fetch GPT models when modal opens
   useEffect(() => {
     if (isOpen) {
       const fetchOptions = async () => {
         setLoadingOptions(true);
         try {
-          const [channels, models] = await Promise.all([
-            botService.getChannelTypes(),
-            botService.getGPTModels(),
-          ]);
-          setChannelTypes(channels);
+          const models = await botService.getGPTModels();
           setGptModels(models);
           
           if (!bot) {
             setFormData((prev) => {
               const updated = { ...prev };
-              if (channels.length > 0 && !updated.channelType) {
-                updated.channelType = channels[0].value;
-              }
               if (models.length > 0 && !updated.aiModel) {
                 updated.aiModel = models[0].value;
               }
@@ -94,13 +82,11 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
       setFormData({
         apiKey: '',
         assistantName: 'AI Assistant',
-        channelType: '',
         aiModel: '',
         instructions: 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
         webhookUrl: '',
       });
       setErrors({});
-      setShowChannelDropdown(false);
       setShowModelDropdown(false);
     }
   }, [isOpen]);
@@ -109,12 +95,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        channelDropdownRef.current &&
-        !channelDropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowChannelDropdown(false);
-      }
-      if (
         modelDropdownRef.current &&
         !modelDropdownRef.current.contains(event.target as Node)
       ) {
@@ -122,14 +102,14 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
       }
     };
 
-    if (showChannelDropdown || showModelDropdown) {
+    if (showModelDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showChannelDropdown, showModelDropdown]);
+  }, [showModelDropdown]);
 
   const validateCurrentStep = useCallback((): boolean => {
     const validationErrors = validateStep(currentStep, formData, isEditMode);
@@ -193,9 +173,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
         if (formData.assistantName !== bot.name) {
           updateData.name = formData.assistantName;
         }
-        if (formData.channelType && formData.channelType !== bot.channel_type) {
-          updateData.channel_type = formData.channelType;
-        }
         if (formData.aiModel && formData.aiModel !== bot.gpt_model) {
           updateData.gpt_model = formData.aiModel;
         }
@@ -216,7 +193,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
       } else {
         const botData = {
           name: formData.assistantName.trim(),
-          channel_type: formData.channelType,
           gpt_model: formData.aiModel,
           openai_api_key: formData.apiKey.trim(),
           instructions: formData.instructions.trim(),
@@ -242,7 +218,6 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
       setFormData({
         apiKey: '',
         assistantName: 'AI Assistant',
-        channelType: '',
         aiModel: '',
         instructions: 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
         webhookUrl: '',
@@ -280,14 +255,10 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
     errors,
     isSubmitting,
     isValidating,
-    showChannelDropdown,
-    setShowChannelDropdown,
     showModelDropdown,
     setShowModelDropdown,
-    channelTypes,
     gptModels,
     loadingOptions,
-    channelDropdownRef,
     modelDropdownRef,
     handleNext,
     handleBack,

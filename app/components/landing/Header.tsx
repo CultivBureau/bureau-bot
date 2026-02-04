@@ -158,7 +158,9 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-4">
-      <nav className="max-w-7xl mx-auto rounded-full bg-card/70 backdrop-blur-xl border border-border shadow-lg">
+      <nav className={`max-w-7xl mx-auto bg-card/70 backdrop-blur-xl border border-border shadow-lg ${
+        mobileMenuOpen ? 'rounded-3xl' : 'rounded-full'
+      }`}>
         <div className="flex justify-between items-center h-16 px-6">
           <div className="flex items-center gap-2">
             <Bot className="w-6 h-6 text-primary" />
@@ -173,9 +175,9 @@ export function Header() {
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             </Button>
-            <Link href={isAuthenticated ? "/pages/dashboard" : "/pages/login"}>
+            <Link href={isAuthenticated ? "/pages/bots" : "/pages/login"}>
               <Button className="rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:bg-primary/90">
-                {isAuthenticated ? "Dashboard" : "Login"}
+                {isAuthenticated ? "Bots" : "Login"}
               </Button>
             </Link>
           </div>
@@ -195,12 +197,12 @@ export function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border rounded-b-3xl px-6">
+          <div className="md:hidden py-4 border-t border-border px-6">
             {renderNav(true)}
             <div className="pt-4 border-t border-border flex flex-col gap-3 mt-4">
-              <Link href={isAuthenticated ? "/pages/dashboard" : "/pages/login"}>
+              <Link href={isAuthenticated ? "/pages/bots" : "/pages/login"}>
                 <Button className="w-full rounded-full bg-primary text-primary-foreground">
-                  {isAuthenticated ? "Dashboard" : "Login"}
+                  {isAuthenticated ? "Bots" : "Login"}
                 </Button>
               </Link>
             </div>

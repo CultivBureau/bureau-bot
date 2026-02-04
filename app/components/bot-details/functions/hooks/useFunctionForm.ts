@@ -29,7 +29,6 @@ export function useFunctionForm({
 }: UseFunctionFormOptions) {
   const [functionName, setFunctionName] = useState('');
   const [functionInstruction, setFunctionInstruction] = useState('');
-  const [resultFormat, setResultFormat] = useState('');
   const [selectedPhase, setSelectedPhase] = useState<string>('');
   const [selectedPipeline, setSelectedPipelineLocal] = useState<string>('');
   const [editing, setEditing] = useState(false);
@@ -89,11 +88,6 @@ export function useFunctionForm({
         bitrix_field_mappings: bitrixFieldMappings,
       };
       
-      // Only include result_format if it has a value
-      if (resultFormat && resultFormat.trim()) {
-        functionData.result_format = resultFormat.trim();
-      }
-      
       if (editing && functionToEdit) {
         // Update existing function
         await functionsService.updateFunction(functionToEdit.id, functionData);
@@ -133,7 +127,6 @@ export function useFunctionForm({
       setFunctionToEdit(func);
       setFunctionName(apiFunction.name || func.name);
       setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
-      setResultFormat(apiFunction.result_format || '');
       
       // Parse result_format to get stage and properties
       const parsed = parseResultFormat(apiFunction.result_format || func.instruction);
@@ -189,7 +182,6 @@ export function useFunctionForm({
       setViewingFunction(func);
       setFunctionName(apiFunction.name || func.name);
       setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
-      setResultFormat(apiFunction.result_format || '');
       
       // Parse result_format to get stage and properties
       const parsed = parseResultFormat(apiFunction.result_format || func.instruction);
@@ -228,7 +220,6 @@ export function useFunctionForm({
   const resetForm = useCallback(() => {
     setFunctionName('');
     setFunctionInstruction('');
-    setResultFormat('');
     setSelectedPhase('');
     setSelectedPipelineLocal('');
     setEditing(false);
@@ -246,8 +237,6 @@ export function useFunctionForm({
     setFunctionName,
     functionInstruction,
     setFunctionInstruction,
-    resultFormat,
-    setResultFormat,
     selectedPhase,
     setSelectedPhase,
     selectedPipeline: selectedPipeline,

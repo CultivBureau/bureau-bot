@@ -8,11 +8,12 @@ class AuthService {
     // They must be available when the server starts
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     
-    // Use environment variable or fallback to default backend URL
-    const baseUrl = apiBaseUrl || 'https://bot-linker-backend.cultivbureau.com';
+    if (!apiBaseUrl) {
+      throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
+    }
     
     // Remove trailing slash if present (endpoints will include leading slash)
-    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
   }
 
   private async request<T>(
@@ -88,6 +89,53 @@ class AuthService {
     }
 
     return response;
+  }
+
+  async refreshAccessToken(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken();
+    
+    if (!refreshToken) {
+      this.logoutAndRedirect();
+      return null;
+    }
+
+    try {
+      // Try the refresh endpoint - adjust based on your actual API
+      const response = await this.request<{ token: string; refresh_token: string }>(
+        '/api/Authentication/refresh/',
+        {
+          method: 'POST',
+          body: JSON.stringify({ refresh: refreshToken }),
+        }
+      );
+
+      // Store new tokens in Redux store
+      store.dispatch(setTokens({
+        token: response.token,
+        refreshToken: response.refresh_token,
+      }));
+
+      return response.token;
+    } catch (error) {
+      // If refresh fails, logout user
+      this.logoutAndRedirect();
+      return null;
+    }
+  }
+
+  async getValidToken(): Promise<string | null> {
+    const token = this.getToken();
+    
+    if (!token) {
+      return null;
+    }
+
+    // If token is expired or about to expire, refresh it
+    if (this.isTokenExpired()) {
+      return await this.refreshAccessToken();
+    }
+
+    return token;
   }
 
   logout(): void {

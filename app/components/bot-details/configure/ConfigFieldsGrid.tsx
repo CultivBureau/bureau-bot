@@ -6,7 +6,6 @@ import { ApiKeyField } from './ApiKeyField';
 import { ModelSelector } from './ModelSelector';
 import { WaitTimeField } from './WaitTimeField';
 import { ConfigField } from './ConfigField';
-import { ChannelTypeSelector } from './ChannelTypeSelector';
 import type { Bot } from '../../../types/bot';
 
 interface ConfigFieldsGridProps {
@@ -45,27 +44,16 @@ export const ConfigFieldsGrid = memo(function ConfigFieldsGrid({
         saving={saving}
       />
 
-      <ChannelTypeSelector
-        value={bot.channel_type}
-        editing={editingField === 'channel_type'}
-        editValue={editValues.channel_type ?? bot.channel_type}
-        onEdit={() => onEdit('channel_type')}
-        onSave={() => onSave('channel_type')}
-        onCancel={onCancel}
-        onChange={(value) => onChange('channel_type', value)}
-        saving={saving}
-      />
-
       <ApiKeyField
         value={bot.openai_api_key || ''}
-        editing={false}
-        editValue={bot.openai_api_key || ''}
-        onEdit={() => {}}
-        onSave={() => {}}
+        editing={editingField === 'openai_api_key'}
+        editValue={editValues.openai_api_key ?? bot.openai_api_key ?? ''}
+        onEdit={() => onEdit('openai_api_key')}
+        onSave={() => onSave('openai_api_key')}
         onCancel={onCancel}
-        onChange={() => {}}
+        onChange={(value) => onChange('openai_api_key', value)}
         saving={saving}
-        disabled={true}
+        disabled={false}
       />
 
       <ModelSelector

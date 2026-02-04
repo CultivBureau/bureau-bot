@@ -2,9 +2,7 @@ import { store } from '../store/store';
 import { authService } from './auth';
 import type {
   GPTModel,
-  ChannelType,
   GPTModelsResponse,
-  ChannelTypesResponse,
   ValidateOpenAIKeyRequest,
   ValidateOpenAIKeyResponse,
   CreateBotRequest,
@@ -18,12 +16,13 @@ import type {
 class BotService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    
-    // Use environment variable or fallback to default backend URL
-    const baseUrl = apiBaseUrl || 'https://bot-linker-backend.cultivbureau.com';
-    
+
+    if (!apiBaseUrl) {
+      throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
+    }
+
     // Remove trailing slash if present (endpoints will include leading slash)
-    return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
   }
 
   private getAuthToken(): string | null {
@@ -36,18 +35,14 @@ class BotService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.getBaseURL()}${endpoint}`;
-    const token = this.getAuthToken();
-    
+
+    // Get valid token (will auto-refresh if expired)
+    const token = await authService.getValidToken();
+
     // Check if token exists
     if (!token) {
       authService.logoutAndRedirect();
       throw new Error('Authentication token not found. Please log in again.');
-    }
-
-    // Check if token is expired before making the request
-    if (authService.isTokenExpired()) {
-      authService.logoutAndRedirect();
-      throw new Error('Your session has expired. Please log in again.');
     }
 
     const config: RequestInit = {
@@ -65,17 +60,17 @@ class BotService {
 
     try {
       const response = await fetch(url, config);
-      
+
       // Handle 401 Unauthorized - token expired or invalid
       if (response.status === 401) {
         authService.logoutAndRedirect();
         throw new Error('Your session has expired. Please log in again.');
       }
-      
+
       // Handle network errors or cases where response is not ok
       if (!response.ok) {
         let errorMessage = `Request failed with status ${response.status}`;
-        
+
         try {
           const errorData = await response.json();
           const error = errorData as { detail?: string; error?: string; message?: string };
@@ -89,7 +84,7 @@ class BotService {
             // Use default error message
           }
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -123,16 +118,11 @@ class BotService {
     return response.gpt_models;
   }
 
-  async getChannelTypes(): Promise<ChannelType[]> {
-    const response = await this.request<ChannelTypesResponse>('/api/Bots/channel-types/');
-    return response.channel_types;
-  }
-
   async validateOpenAIKey(key: string): Promise<ValidateOpenAIKeyResponse> {
     const requestData: ValidateOpenAIKeyRequest = {
       openaikey: key,
     };
-    
+
     return this.request<ValidateOpenAIKeyResponse>('/api/Bots/validate-openai-key/', {
       method: 'POST',
       body: JSON.stringify(requestData),
@@ -148,7 +138,7 @@ class BotService {
 
   async getBots(params?: GetBotsParams): Promise<BotsListResponse> {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.pageNumber) {
       queryParams.append('pageNumber', params.pageNumber.toString());
     }
@@ -161,7 +151,7 @@ class BotService {
 
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/Bots/?${queryString}` : '/api/Bots/';
-    
+
     return this.request<BotsListResponse>(endpoint);
   }
 
@@ -186,7 +176,7 @@ class BotService {
     const requestData: RestoreBotRequest = {
       id: botId,
     };
-    
+
     return this.request<Bot>('/api/Bots/restore/', {
       method: 'POST',
       body: JSON.stringify(requestData),

@@ -1,0 +1,9 @@
+services:
+  web:
+    image: ${DOCKER_USERNAME}/bureau-bot:Staging
+    ports:
+      - "8081:3000"
+    restart: unless-stopped
+    container_name: bureau-bot-staging
+    env_file:
+      - .env.staging

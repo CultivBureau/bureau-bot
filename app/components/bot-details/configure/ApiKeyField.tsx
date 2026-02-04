@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Key, Edit, Check, X, Eye, EyeOff } from 'lucide-react';
+import { Key, Edit, Check, X } from 'lucide-react';
 import { Button } from '../../landing/ui/button';
 import { Input } from '../../landing/ui/input';
 import { cn } from '../../landing/ui/utils';
@@ -29,7 +28,6 @@ export function ApiKeyField({
   saving = false,
   disabled = false,
 }: ApiKeyFieldProps) {
-  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="space-y-2">
@@ -42,24 +40,13 @@ export function ApiKeyField({
           <>
             <div className="flex-1 relative min-w-0">
               <Input
-                type={showPassword ? 'text' : 'password'}
+                type="text"
                 value={editValue}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="sk-..."
-                className="pr-10 min-w-0"
+                className="min-w-0"
                 disabled={saving}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
             </div>
             <Button
               onClick={onSave}
@@ -90,26 +77,9 @@ export function ApiKeyField({
                 onClick={disabled ? undefined : onEdit}
               >
                 <div className="truncate">
-                  {value ? (
-                    showPassword ? value : `${value.substring(0, 12)}...`
-                  ) : (
-                    'Not set'
-                  )}
+                  {value || 'Not set'}
                 </div>
               </div>
-              {value && (
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              )}
             </div>
             {!disabled && (
               <Button

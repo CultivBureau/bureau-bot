@@ -3,11 +3,10 @@
 import { memo } from 'react';
 import { BotCard } from './BotCard';
 import { EmptyState } from './EmptyState';
-import type { BotData, ChannelType, Bot } from '../../types/bot';
+import type { BotData, Bot } from '../../types/bot';
 
 interface BotsGridProps {
   bots: BotData[];
-  channelTypes: ChannelType[];
   onEdit: (botId: string) => Promise<void>;
   onToggleActive: (botId: string) => Promise<void>;
   onCreateBot: () => void;
@@ -15,7 +14,6 @@ interface BotsGridProps {
 
 export const BotsGrid = memo(function BotsGrid({
   bots,
-  channelTypes,
   onEdit,
   onToggleActive,
   onCreateBot,
@@ -30,7 +28,6 @@ export const BotsGrid = memo(function BotsGrid({
         <BotCard
           key={bot.id}
           bot={bot}
-          channelTypes={channelTypes}
           onEdit={onEdit}
           onToggleActive={onToggleActive}
         />

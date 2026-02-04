@@ -71,10 +71,19 @@ const authSlice = createSlice({
       state.decodedToken = decodeToken(action.payload.token);
       state.isAuthenticated = true;
       
-      // Also persist to localStorage for compatibility
+      // Also persist to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('authToken', action.payload.token);
         localStorage.setItem('refreshToken', action.payload.refreshToken);
+      }
+    },
+    updateAccessToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+      state.decodedToken = decodeToken(action.payload);
+      
+      // Update localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('authToken', action.payload);
       }
     },
     clearTokens: (state) => {
@@ -114,6 +123,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setTokens, clearTokens, initializeAuth } = authSlice.actions;
+export const { setTokens, updateAccessToken, clearTokens, initializeAuth } = authSlice.actions;
 export default authSlice.reducer;
 

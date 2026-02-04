@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { File, FileText as FileTextIcon, Link, Trash2, Edit, Eye, HardDrive } from 'lucide-react';
+import { ReactNode, useState, useRef, useEffect } from 'react';
+import { File, FileText as FileTextIcon, Link, Trash2, Edit, Eye, HardDrive, MoreVertical } from 'lucide-react';
 import { KnowledgeBaseItem } from '../shared/hooks/useKnowledgebase';
 
 interface KnowledgebaseItemCardProps {
@@ -25,6 +25,26 @@ export function KnowledgebaseItemCard({
   formatFileSize,
   getFileIcon,
 }: KnowledgebaseItemCardProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isDropdownOpen]);
+
+  const isFileType = item.source_type === 'file';
+
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between">
@@ -41,19 +61,54 @@ export function KnowledgebaseItemCard({
             </p>
           </div>
         </div>
-        <div className="flex gap-1">
+        <div className="relative" ref={dropdownRef}>
           <button
-            onClick={onToggleExpand}
-            className="rounded-full border border-border p-1 text-xs text-muted-foreground hover:bg-secondary"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="rounded-full border border-border p-1.5 text-muted-foreground hover:bg-secondary"
           >
-            {isExpanded ? 'Hide' : 'Details'}
+            <MoreVertical className="h-4 w-4" />
           </button>
-          <button
-            onClick={onDelete}
-            className="rounded-full border border-red-200 p-1 text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          
+          {isDropdownOpen && (
+            <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border border-border bg-card shadow-lg z-10">
+              <div className="py-1">
+                {!isFileType && (
+                  <>
+                    <button
+                      onClick={() => {
+                        onView();
+                        setIsDropdownOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-card-foreground hover:bg-secondary"
+                    >
+                      <Eye className="h-4 w-4" />
+                      View
+                    </button>
+                    <button
+                      onClick={() => {
+                        onEdit();
+                        setIsDropdownOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-card-foreground hover:bg-secondary"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => {
+                    onDelete();
+                    setIsDropdownOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -62,36 +117,6 @@ export function KnowledgebaseItemCard({
           {item.source_type}
         </span>
       </div>
-
-      {isExpanded && (
-        <div className="mt-4 space-y-3 border-t border-border pt-4 text-sm">
-          {item.content && (
-            <div className="rounded-xl bg-secondary/50 p-3 text-card-foreground">
-              {item.content.length > 200
-                ? `${item.content.slice(0, 200)}…`
-                : item.content}
-            </div>
-          )}
-          {item.source_type !== 'file' && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={onView}
-                className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
-              >
-                <Eye className="h-3 w-3" />
-                View
-              </button>
-              <button
-                onClick={onEdit}
-                className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-card-foreground hover:bg-secondary"
-              >
-                <Edit className="h-3 w-3" />
-                Edit
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

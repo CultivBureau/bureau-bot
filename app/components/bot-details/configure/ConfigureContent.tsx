@@ -55,7 +55,7 @@ export function ConfigureContent() {
         </div>
       )}
 
-      <BotStatusCard bot={bot} onPay={handlePay} />
+      {bot.working && <BotStatusCard bot={bot} onPay={handlePay} />}
 
       <ConfigFieldsGrid
         bot={bot}
