@@ -92,10 +92,12 @@ export function useFunctionForm({
       
       if (editing && functionToEdit) {
         // Update existing function
+        console.log('Updating function with data:', functionData);
         await functionsService.updateFunction(functionToEdit.id, functionData);
         onSuccess?.('Function updated successfully!');
       } else {
         // Create new function
+        console.log('Creating function with data:', functionData);
         await functionsService.createFunction(functionData);
         onSuccess?.('Function created successfully!');
       }
