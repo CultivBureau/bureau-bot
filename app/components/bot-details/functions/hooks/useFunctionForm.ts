@@ -86,6 +86,8 @@ export function useFunctionForm({
         name: functionName,
         trigger_instructions: functionInstruction || '',
         bitrix_field_mappings: bitrixFieldMappings,
+        pipeline: selectedPipeline,
+        stage: selectedPhase,
       };
       
       if (editing && functionToEdit) {

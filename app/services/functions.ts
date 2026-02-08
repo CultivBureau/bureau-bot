@@ -54,6 +54,8 @@ interface CreateFunctionData {
     crm_field_code: string;
     data_type: string;
   }>;
+  pipeline?: string;
+  stage?: string;
 }
 
 interface UpdateFunctionData extends CreateFunctionData {}
