@@ -4,6 +4,6 @@ services:
     ports:
       - "8081:3000"
     restart: unless-stopped
-    container_name: bureaubot~stag
+    container_name: bureaubot.stag
     env_file:
       - .env.staging
