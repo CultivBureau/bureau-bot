@@ -16,6 +16,8 @@ export interface FunctionData {
   instruction: string;
   properties: FunctionProperty[];
   phase: string;
+  pipeline?: string;
+  stage?: string;
   created_at: string;
   updated_at: string;
   integration_type?: IntegrationType;

@@ -20,6 +20,8 @@ export interface Function {
   trigger_instructions: string;
   result_format?: string;
   bitrix_field_mappings: BitrixFieldMapping[];
+  pipeline?: string;
+  stage?: string;
   created_on?: string;
   updated_on?: string;
 }
@@ -58,16 +60,16 @@ interface CreateFunctionData {
   stage?: string;
 }
 
-interface UpdateFunctionData extends CreateFunctionData {}
+interface UpdateFunctionData extends CreateFunctionData { }
 
 class FunctionsService {
   private getBaseURL(): string {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    
+
     if (!apiBaseUrl) {
       throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
     }
-    
+
     return apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
   }
 
@@ -81,10 +83,10 @@ class FunctionsService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.getBaseURL()}${endpoint}`;
-    
+
     // Get valid token (will auto-refresh if expired)
     const token = await authService.getValidToken();
-    
+
     if (!token) {
       authService.logoutAndRedirect();
       throw new Error('Authentication token not found. Please log in again.');
@@ -104,30 +106,30 @@ class FunctionsService {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (response.status === 401) {
         authService.logoutAndRedirect();
         throw new Error('Your session has expired. Please log in again.');
       }
-      
+
       if (response.status === 204) {
         // No content for DELETE requests
         return {} as T;
       }
-      
+
       if (!response.ok) {
         let errorMessage = `Request failed with status ${response.status}`;
         let errorDetails: any = null;
-        
+
         // Clone response to read body without consuming it
         const responseClone = response.clone();
-        
+
         try {
           const errorData = await responseClone.json();
           errorDetails = errorData;
-          const error = errorData as { 
-            detail?: string; 
-            error?: string; 
+          const error = errorData as {
+            detail?: string;
+            error?: string;
             message?: string;
             errors?: any;
           };
@@ -143,13 +145,13 @@ class FunctionsService {
 
           }
         }
-        
+
         // Include more context for 500 errors
         if (response.status === 500) {
           const requestInfo = `URL: ${url}, Method: ${config.method || 'GET'}`;
           errorMessage = `Server error (500): ${errorMessage}. ${requestInfo}. This is likely a backend issue - please check server logs.`;
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -179,7 +181,7 @@ class FunctionsService {
   // Get all functions with filtering and pagination
   async getFunctions(params?: GetFunctionsParams): Promise<FunctionsListResponse> {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.bot_id) {
       queryParams.append('bot_id', params.bot_id);
     }
@@ -192,10 +194,10 @@ class FunctionsService {
     if (params?.name) {
       queryParams.append('name', params.name);
     }
-    
+
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/Functions/?${queryString}` : '/api/Functions/';
-    
+
     return await this.request<FunctionsListResponse>(endpoint, { method: 'GET' });
   }
 
