@@ -132,9 +132,12 @@ export function useFunctionForm({
       setFunctionName(apiFunction.name || func.name);
       setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
 
-      // Prioritize the new pipeline/stage fields from the backend
-      const stageValue = apiFunction.stage || func.stage || '';
+      // Parse legacy format as fallback
+      const parsed = parseResultFormat(apiFunction.result_format || func.instruction || '');
+
+      // Prioritize the new pipeline/stage fields from the backend, fallback to legacy
       const pipelineValue = apiFunction.pipeline || func.pipeline || '';
+      const stageValue = apiFunction.stage || func.stage || parsed.stage || func.phase || '';
 
       setSelectedPhase(stageValue);
       setSelectedPipelineLocal(pipelineValue);
@@ -155,7 +158,17 @@ export function useFunctionForm({
         if (setSelectedPipeline) {
           setSelectedPipeline(pipelineValue);
         }
-        await fetchStages(pipelineValue);
+        const loadedStages = await fetchStages(pipelineValue);
+
+        // If stageValue is a name (legacy) but matched a stage_name, update it to stage_code (ID)
+        if (stageValue && loadedStages) {
+          const matchByName = (loadedStages as any[]).find(s =>
+            s.stage_name === stageValue || s.stage_code === stageValue
+          );
+          if (matchByName) {
+            setSelectedPhase(matchByName.stage_code);
+          }
+        }
       }
 
       setEditing(true);
@@ -188,9 +201,12 @@ export function useFunctionForm({
       setFunctionName(apiFunction.name || func.name);
       setFunctionInstruction(apiFunction.trigger_instructions || func.instruction || '');
 
-      // Prioritize the new pipeline/stage fields from the backend
-      const stageValue = apiFunction.stage || func.stage || '';
+      // Parse legacy format as fallback
+      const parsed = parseResultFormat(apiFunction.result_format || func.instruction || '');
+
+      // Prioritize the new pipeline/stage fields from the backend, fallback to legacy
       const pipelineValue = apiFunction.pipeline || func.pipeline || '';
+      const stageValue = apiFunction.stage || func.stage || parsed.stage || func.phase || '';
 
       setSelectedPhase(stageValue);
       setSelectedPipelineLocal(pipelineValue);
@@ -211,7 +227,17 @@ export function useFunctionForm({
         if (setSelectedPipeline) {
           setSelectedPipeline(pipelineValue);
         }
-        await fetchStages(pipelineValue);
+        const loadedStages = await fetchStages(pipelineValue);
+
+        // If stageValue is a name (legacy) but matched a stage_name, update it to stage_code (ID)
+        if (stageValue && loadedStages) {
+          const matchByName = (loadedStages as any[]).find(s =>
+            s.stage_name === stageValue || s.stage_code === stageValue
+          );
+          if (matchByName) {
+            setSelectedPhase(matchByName.stage_code);
+          }
+        }
       }
 
       setViewMode('view');
