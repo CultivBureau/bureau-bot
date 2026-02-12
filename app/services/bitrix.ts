@@ -130,29 +130,21 @@ class BitrixService {
     const endpoint = queryString ? `/api/Bitrix/crm-fields/?${queryString}` : '/api/Bitrix/crm-fields/';
     const response = await this.request<any>(endpoint, { method: 'GET' });
 
-    // Handle new nested response format with crm_fields array containing raw object
+    // Handle new response format with crm_fields array
     if (response && typeof response === 'object' && 'crm_fields' in response && Array.isArray(response.crm_fields)) {
-      const fields: BitrixCRMField[] = [];
-
-      response.crm_fields.forEach((item: any) => {
-        if (item.raw && typeof item.raw === 'object') {
-          // Transform the nested raw object structure into flat BitrixCRMField array
-          Object.entries(item.raw).forEach(([fieldId, fieldData]: [string, any]) => {
-            fields.push({
-              id: fieldId,
-              type: fieldData.type || 'string',
-              isRequired: fieldData.isRequired || false,
-              isReadOnly: fieldData.isReadOnly || false,
-              isImmutable: fieldData.isImmutable || false,
-              isMultiple: fieldData.isMultiple || false,
-              isDynamic: fieldData.isDynamic || false,
-              title: fieldData.title || fieldId,
-            });
-          });
-        }
-      });
-
-      return fields;
+      return response.crm_fields.map((item: any) => ({
+        id: item.code,
+        type: item.raw?.type || 'string',
+        isRequired: item.raw?.isRequired || false,
+        isReadOnly: item.raw?.isReadOnly || false,
+        isImmutable: item.raw?.isImmutable || false,
+        isMultiple: item.raw?.isMultiple || false,
+        isDynamic: item.raw?.isDynamic || false,
+        // Include both Name and Code in the title format: Name (CODE)
+        title: item.name && item.name !== item.code
+          ? `${item.name} (${item.code})`
+          : item.code,
+      }));
     }
 
     // Handle legacy formats
