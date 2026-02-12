@@ -12,7 +12,7 @@ interface UseFunctionFormOptions {
   fetchCRMData?: () => Promise<void>;
   crmFields?: any[];
   pipelines?: any[];
-  fetchStages?: (pipelineId: string) => Promise<void>;
+  fetchStages?: (pipelineId: string) => Promise<any[] | undefined>;
   setSelectedPipeline?: (pipelineId: string) => void;
 }
 
@@ -46,7 +46,7 @@ export function useFunctionForm({
       return;
     }
 
-    const validation = validateFunctionData(functionName, properties);
+    const validation = validateFunctionData(functionName, properties, selectedPipeline, selectedPhase);
     if (!validation.valid) {
       onError?.(validation.error || 'Validation failed');
       return;

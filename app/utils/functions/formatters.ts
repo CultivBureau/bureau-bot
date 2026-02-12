@@ -26,20 +26,20 @@ export function formatFunctionForAPI(
   stage?: string
 ): string | null {
   const propertiesData = formatPropertiesForAPI(properties);
-  
+
   let resultFormat = '';
-  
+
   if (stage) {
     resultFormat = `Stage: ${stage}`;
   }
-  
+
   if (propertiesData.length > 0) {
     const propertiesJson = JSON.stringify(propertiesData);
-    resultFormat = resultFormat 
+    resultFormat = resultFormat
       ? `${resultFormat}|Properties: ${propertiesJson}`
       : `Properties: ${propertiesJson}`;
   }
-  
+
   return resultFormat || null;
 }
 
@@ -48,15 +48,22 @@ export function formatFunctionForAPI(
  */
 export function validateFunctionData(
   name: string,
-  properties: FunctionProperty[]
+  properties: FunctionProperty[],
+  pipeline?: string,
+  stage?: string
 ): { valid: boolean; error?: string } {
   if (!name.trim()) {
     return { valid: false, error: 'Function name is required' };
   }
-  
-  // Optional: Add more validation rules here
-  // For example, check if properties are valid, etc.
-  
+
+  if (pipeline && !stage) {
+    return { valid: false, error: 'Stage is required when a pipeline is selected' };
+  }
+
+  if (stage && !pipeline) {
+    return { valid: false, error: 'Pipeline is required when a stage is selected' };
+  }
+
   return { valid: true };
 }
 
