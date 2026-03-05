@@ -11,8 +11,8 @@ interface User {
 
 interface UserSelectorProps {
   users: User[];
-  selectedUserIds: string;
-  onSelect: (userIds: string) => void;
+  selectedUserIds: number[];
+  onSelect: (userIds: number[]) => void;
   disabled?: boolean;
   loading?: boolean;
   prerequisiteMessage?: string;
@@ -29,13 +29,9 @@ export function UserSelector({
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const selectedUserIdsArray = useMemo(() => {
-    return selectedUserIds ? selectedUserIds.split(',').filter(Boolean) : [];
-  }, [selectedUserIds]);
-
   const selectedUsers = useMemo(() => {
-    return users.filter(user => selectedUserIdsArray.includes(user.id.toString()));
-  }, [users, selectedUserIdsArray]);
+    return users.filter(user => selectedUserIds.includes(Number(user.id)));
+  }, [users, selectedUserIds]);
 
   useEffect(() => {
     if (!showDropdown && selectedUsers.length > 0) {
@@ -55,28 +51,29 @@ export function UserSelector({
   }, [users, searchTerm]);
 
   const handleUserSelect = (user: User) => {
-    const userIdStr = user.id.toString();
-    const currentIds = selectedUserIdsArray;
+    const userId = Number(user.id);
+    const currentIds = selectedUserIds;
     
-    if (currentIds.includes(userIdStr)) {
-      const updatedIds = currentIds.filter(id => id !== userIdStr);
-      onSelect(updatedIds.join(','));
+    if (currentIds.includes(userId)) {
+      const updatedIds = currentIds.filter(id => id !== userId);
+      onSelect(updatedIds);
     } else {
-      onSelect([...currentIds, userIdStr].join(','));
+      onSelect([...currentIds, userId]);
     }
+    // Keep dropdown open for multiple selections
     setSearchTerm('');
-    setShowDropdown(false);
+    // Don't close dropdown - allow multiple selections
   };
 
-  const handleRemoveUser = (userId: string) => {
-    const updatedIds = selectedUserIdsArray.filter(id => id !== userId);
-    onSelect(updatedIds.join(','));
+  const handleRemoveUser = (userId: number) => {
+    const updatedIds = selectedUserIds.filter(id => id !== userId);
+    onSelect(updatedIds);
   };
 
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-card-foreground">
-        Select Users
+        Select Users <span className="text-xs text-muted-foreground font-normal">(Multiple selection allowed)</span>
       </label>
       {prerequisiteMessage && (
         <p className="text-sm text-amber-600">{prerequisiteMessage}</p>
@@ -100,20 +97,21 @@ export function UserSelector({
               setSearchTerm('');
             }, 200);
           }}
-          placeholder="Click to see all users..."
+          placeholder="Click to select multiple users..."
           className={`w-full px-4 py-3 rounded-xl border-2 border-border bg-background text-foreground ${
             disabled ? 'cursor-not-allowed opacity-60' : ''
           }`}
         />
         {!disabled && showDropdown && (
-          <div className="absolute z-50 w-full mt-1 max-h-60 overflow-auto rounded-lg border-2 border-border bg-card">
-            {filteredUsers.length === 0 ? (
-              <div className="p-3 text-sm text-muted-foreground">
-                {loading ? 'Loading users...' : users.length === 0 ? 'No users available' : 'No users found'}
-              </div>
-            ) : (
-              filteredUsers.map(user => {
-                const isSelected = selectedUserIdsArray.includes(user.id.toString());
+          <div className="absolute z-50 w-full mt-1 rounded-lg border-2 border-border bg-card shadow-lg">
+            <div className="max-h-60 overflow-auto">
+              {filteredUsers.length === 0 ? (
+                <div className="p-3 text-sm text-muted-foreground">
+                  {loading ? 'Loading users...' : users.length === 0 ? 'No users available' : 'No users found'}
+                </div>
+              ) : (
+                filteredUsers.map(user => {
+                const isSelected = selectedUserIds.includes(Number(user.id));
                 return (
                   <div
                     key={user.id}
@@ -145,6 +143,18 @@ export function UserSelector({
                   </div>
                 );
               })
+              )}
+            </div>
+            {filteredUsers.length > 0 && (
+              <div className="border-t border-border p-2 bg-secondary/30">
+                <button
+                  type="button"
+                  onClick={() => setShowDropdown(false)}
+                  className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Done selecting ({selectedUsers.length} selected)
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -159,7 +169,7 @@ export function UserSelector({
               <span className="text-sm font-medium">{user.name}</span>
               <button
                 type="button"
-                onClick={() => handleRemoveUser(user.id.toString())}
+                onClick={() => handleRemoveUser(Number(user.id))}
                 className="hover:opacity-70 transition-opacity"
               >
                 <X className="w-4 h-4" />
