@@ -60,7 +60,7 @@ const navItems = [
     label: 'Transfer',
     icon: ArrowRightLeft,
     href: (botId: string) => `/pages/bot-details/transfer?botId=${botId}`,
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: 'knowledgebase',
