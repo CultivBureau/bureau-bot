@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   LayoutDashboard,
   Settings,
@@ -11,9 +11,9 @@ import {
   Code,
   Link as LinkIcon,
   ArrowRightLeft,
-} from 'lucide-react';
-import { cn } from '../../landing/ui/utils';
-import { SimpleToast } from '../../shared/SimpleToast';
+} from "lucide-react";
+import { cn } from "../../landing/ui/utils";
+import { SimpleToast } from "../../shared/SimpleToast";
 
 interface BotDetailsSidebarProps {
   botId: string;
@@ -21,52 +21,59 @@ interface BotDetailsSidebarProps {
 
 const navItems = [
   {
-    id: 'overview',
-    label: 'Overview',
+    id: "overview",
+    label: "Overview",
     icon: LayoutDashboard,
     href: (botId: string) => `/pages/bot-details/overview?botId=${botId}`,
     comingSoon: true,
   },
   {
-    id: 'configure',
-    label: 'Configure',
+    id: "configure",
+    label: "Configure",
     icon: Settings,
     href: (botId: string) => `/pages/bot-details/configure?botId=${botId}`,
     comingSoon: false,
   },
   {
-    id: 'functions',
-    label: 'Functions',
+    id: "functions",
+    label: "Functions",
     icon: Code,
     href: (botId: string) => `/pages/bot-details/functions?botId=${botId}`,
     comingSoon: false,
   },
   {
-    id: 'instructions',
-    label: 'Instructions',
+    id: "instructions",
+    label: "Instructions",
     icon: FileText,
     href: (botId: string) => `/pages/bot-details/instructions?botId=${botId}`,
     comingSoon: false,
   },
   {
-    id: 'integration',
-    label: 'Integrations',
+    id: "integration",
+    label: "Integrations",
     icon: LinkIcon,
     href: (botId: string) => `/pages/bot-details/integration?botId=${botId}`,
     comingSoon: false,
   },
   {
-    id: 'transfer',
-    label: 'Transfer',
+    id: "transfer",
+    label: "Transfer",
     icon: ArrowRightLeft,
     href: (botId: string) => `/pages/bot-details/transfer?botId=${botId}`,
     comingSoon: false,
   },
   {
-    id: 'knowledgebase',
-    label: 'Knowledgebase',
+    id: "knowledgebase",
+    label: "Knowledgebase",
     icon: Database,
     href: (botId: string) => `/pages/bot-details/knowledgebase?botId=${botId}`,
+    comingSoon: false,
+  },
+  {
+    id: "conversations",
+    label: "Conversations",
+    icon: Database,
+    href: (botId: string) => `/pages/bot-details/conversations?botId=${botId}`,
     comingSoon: false,
   },
 ];
@@ -76,7 +83,7 @@ export function BotDetailsSidebar({ botId }: BotDetailsSidebarProps) {
   const [showToast, setShowToast] = useState(false);
 
   const isActive = (href: string) => {
-    const hrefPathname = href.split('?')[0];
+    const hrefPathname = href.split("?")[0];
     return pathname === hrefPathname;
   };
 
@@ -101,8 +108,8 @@ export function BotDetailsSidebar({ botId }: BotDetailsSidebarProps) {
                   key={item.id}
                   onClick={handleComingSoonClick}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-not-allowed opacity-60',
-                    'text-muted-foreground hover:bg-card/30'
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-not-allowed opacity-60",
+                    "text-muted-foreground hover:bg-card/30",
                   )}
                 >
                   <Icon className="h-5 w-5" />
@@ -116,10 +123,10 @@ export function BotDetailsSidebar({ botId }: BotDetailsSidebarProps) {
                 key={item.id}
                 href={href}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                   active
-                    ? 'bg-primary/15 text-primary border border-primary/20'
-                    : 'text-muted-foreground hover:bg-card/50 hover:text-card-foreground'
+                    ? "bg-primary/15 text-primary border border-primary/20"
+                    : "text-muted-foreground hover:bg-card/50 hover:text-card-foreground",
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -144,8 +151,8 @@ export function BotDetailsSidebar({ botId }: BotDetailsSidebarProps) {
                   key={item.id}
                   onClick={handleComingSoonClick}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap cursor-not-allowed opacity-60',
-                    'text-muted-foreground hover:bg-card/30 border border-transparent'
+                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap cursor-not-allowed opacity-60",
+                    "text-muted-foreground hover:bg-card/30 border border-transparent",
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -159,10 +166,10 @@ export function BotDetailsSidebar({ botId }: BotDetailsSidebarProps) {
                 key={item.id}
                 href={href}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap',
+                  "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
                   active
-                    ? 'bg-primary/15 text-primary border border-primary/20'
-                    : 'text-muted-foreground hover:bg-card/50 hover:text-card-foreground border border-transparent'
+                    ? "bg-primary/15 text-primary border border-primary/20"
+                    : "text-muted-foreground hover:bg-card/50 hover:text-card-foreground border border-transparent",
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -182,4 +189,3 @@ export function BotDetailsSidebar({ botId }: BotDetailsSidebarProps) {
     </>
   );
 }
-

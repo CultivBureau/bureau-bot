@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { BotDetailsPageShell } from '../../../components/bot-details/shared/BotDetailsPageShell';
-import { KnowledgebaseContent } from '../../../components/bot-details/knowledgebase/KnowledgebaseContent';
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { BotDetailsPageShell } from "../../../components/bot-details/shared/BotDetailsPageShell";
+import { KnowledgebaseContent } from "../../../components/bot-details/knowledgebase/KnowledgebaseContent";
 
 function KnowledgebasePageContent() {
   const searchParams = useSearchParams();
-  const botId = searchParams.get('botId');
+  const botId = searchParams.get("botId");
 
   return (
     <BotDetailsPageShell
@@ -33,4 +33,3 @@ export default function KnowledgebasePage() {
     </Suspense>
   );
 }
-
