@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { memo } from 'react';
-import { Plus, HelpCircle } from 'lucide-react';
-import { FunctionPropertyEditor } from './FunctionPropertyEditor';
-import type { FunctionProperty, CRMField, ViewMode } from '../../../types/functions';
+import { memo } from "react";
+import { Plus, HelpCircle } from "lucide-react";
+import { FunctionPropertyEditor } from "./FunctionPropertyEditor";
+import type { FunctionProperty, CRMField, ViewMode } from "../../../types/functions";
 
 interface FunctionPropertiesListProps {
   properties: FunctionProperty[];
@@ -44,30 +44,17 @@ export const FunctionPropertiesList = memo(function FunctionPropertiesList({
         <label className="text-sm font-medium text-card-foreground">
           Function properties for crm fields:
         </label>
-        {viewMode !== 'view' && (
-          <>
-            <button
-              onClick={onAddProperty}
-              className="p-2 rounded-lg bg-green-500/20 text-green-600 hover:bg-green-500/30"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-            <button className="p-2 rounded-lg bg-blue-500/20 text-blue-600 hover:bg-blue-500/30">
-              <HelpCircle className="w-4 h-4" />
-            </button>
-          </>
-        )}
       </div>
-    
+
       {properties.map((property) => {
-        const filteredFields = getFilteredFields(fieldSearchTerms[property.id] || '');
-        
+        const filteredFields = getFilteredFields(fieldSearchTerms[property.id] || "");
+
         return (
           <FunctionPropertyEditor
             key={property.id}
             property={property}
             viewMode={viewMode}
-            fieldSearchTerm={fieldSearchTerms[property.id] || ''}
+            fieldSearchTerm={fieldSearchTerms[property.id] || ""}
             showDropdown={showFieldDropdowns[property.id] || false}
             filteredFields={filteredFields}
             loadingCRMData={loadingCRMData}
@@ -81,7 +68,20 @@ export const FunctionPropertiesList = memo(function FunctionPropertiesList({
           />
         );
       })}
+
+      {viewMode !== "view" && (
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onAddProperty}
+            className="p-3 rounded-lg bg-green-500/20 text-green-600 hover:bg-green-500/30"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          <button className="p-3 rounded-lg bg-blue-500/20 text-blue-600 hover:bg-blue-500/30">
+            <HelpCircle className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 });
-
