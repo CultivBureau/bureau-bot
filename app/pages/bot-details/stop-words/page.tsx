@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { BotDetailsPageShell } from '../../../components/bot-details/shared/BotDetailsPageShell';
-import { StopWordsContent } from '../../../components/bot-details/stop-words/StopWordsContent';
+import { BotDetailsPageShell } from '@/app/components/bot-details/shared/BotDetailsPageShell';
+import { StopWordsContent } from '@/app/components/bot-details/stop-words/StopWordsContent';
 
 function StopWordsPageContent() {
   const searchParams = useSearchParams();
