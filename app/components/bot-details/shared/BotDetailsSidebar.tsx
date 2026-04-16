@@ -11,6 +11,7 @@ import {
   Code,
   Link as LinkIcon,
   ArrowRightLeft,
+  Ban,
 } from 'lucide-react';
 import { cn } from '../../landing/ui/utils';
 import { SimpleToast } from '../../shared/SimpleToast';
@@ -67,6 +68,13 @@ const navItems = [
     label: 'Knowledgebase',
     icon: Database,
     href: (botId: string) => `/pages/bot-details/knowledgebase?botId=${botId}`,
+    comingSoon: false,
+  },
+  {
+    id: 'stop-words',
+    label: 'Stop Words',
+    icon: Ban,
+    href: (botId: string) => `/pages/bot-details/stop-words?botId=${botId}`,
     comingSoon: false,
   },
 ];
