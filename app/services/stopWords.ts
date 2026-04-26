@@ -119,17 +119,18 @@ class StopWordsService {
 
   async createStopWords(
     botId: string,
-    stopWords: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }>
+    stopWords: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType; functionId?: string }>
   ): Promise<StopWord[]> {
     const cleanedItems = this.cleanStopWords(stopWords);
 
     const requestData: CreateStopWordsRequest = {
       bot_id: botId,
-      stopwords: cleanedItems.map((item) => ({
-        text: item.text,
-        equal_include: item.equalInclude,
-        media_type: item.mediaType,
-      })),
+          stopwords: cleanedItems.map((item) => ({
+            direct_function_id: item.functionId || null,
+            text: item.text,
+            equal_include: item.equalInclude,
+            media_type: item.mediaType,
+          })),
     };
 
     const response = await this.request<StopWordApiItem[]>(
@@ -171,19 +172,20 @@ class StopWordsService {
   }
 
   private cleanStopWords(
-    items: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }>
-  ): Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }> {
+    items: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType; functionId?: string }>
+  ): Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType; functionId?: string }> {
     const cleaned = items
       .map((item) => ({
+        functionId: item.functionId?.trim(),
         text: item.text.trim(),
         equalInclude: item.equalInclude,
         mediaType: item.mediaType,
       }))
       .filter((item) => item.text.length > 0);
 
-    const unique = new Map<string, { text: string; equalInclude: boolean; mediaType: StopWordMediaType }>();
+    const unique = new Map<string, { text: string; equalInclude: boolean; mediaType: StopWordMediaType; functionId?: string }>();
     cleaned.forEach((item) => {
-      const key = `${item.mediaType}::${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
+      const key = `${item.functionId || 'none'}::${item.mediaType}::${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
       if (!unique.has(key)) {
         unique.set(key, item);
       }
@@ -196,6 +198,8 @@ class StopWordsService {
     return {
       id: item.id,
       botId: item.bot_id,
+      functionId: item.function_id || item.function || undefined,
+      directFunctionName: item.direct_function_name || null,
       text: item.text,
       equalInclude: item.equal_include,
       mediaType: item.media_type ?? 'text',

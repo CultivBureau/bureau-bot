@@ -37,7 +37,9 @@ export function StopWordsContent() {
 
   const {
     stopWords,
+    functions,
     loading,
+    functionsLoading,
     error,
     success,
     showCreateModal,
@@ -146,6 +148,7 @@ export function StopWordsContent() {
       {/* Table */}
       <StopWordsTable
         stopWords={filteredStopWords}
+        functions={functions}
         loading={loading}
         onEdit={openEditModal}
         onDelete={handleDeleteStopWord}
@@ -157,6 +160,8 @@ export function StopWordsContent() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSave={handleCreateStopWords}
+        functions={functions}
+        functionsLoading={functionsLoading}
         saving={creating}
       />
 
@@ -166,6 +171,8 @@ export function StopWordsContent() {
         onClose={closeEditModal}
         onSave={handleEditStopWord}
         stopWord={editingWord}
+        functions={functions}
+        functionsLoading={functionsLoading}
         saving={updating}
       />
 

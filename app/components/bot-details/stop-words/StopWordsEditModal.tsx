@@ -10,8 +10,10 @@ import type { StopWord, StopWordMediaType } from '../../../types/stopWords';
 interface StopWordsEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { text: string; equalInclude: boolean; mediaType: StopWordMediaType }) => void;
+  onSave: (data: { functionId: string; text: string; equalInclude: boolean; mediaType: StopWordMediaType }) => void;
   stopWord?: StopWord | null;
+  functions: Array<{ id: string; name: string }>;
+  functionsLoading?: boolean;
   saving?: boolean;
 }
 
@@ -56,9 +58,12 @@ export function StopWordsEditModal({
   onClose,
   onSave,
   stopWord,
+  functions,
+  functionsLoading = false,
   saving = false,
 }: StopWordsEditModalProps) {
   const [formData, setFormData] = useState({
+    functionId: '',
     text: '',
     equalInclude: false,
     mediaType: 'text' as StopWordMediaType,
@@ -67,12 +72,15 @@ export function StopWordsEditModal({
   useEffect(() => {
     if (stopWord) {
       setFormData({
+        functionId: stopWord.functionId || '',
         text: stopWord.text,
         equalInclude: stopWord.equalInclude,
         mediaType: stopWord.mediaType,
       });
     }
   }, [stopWord, isOpen]);
+
+  const selectedFunctionName = functions.find((item) => item.id === formData.functionId)?.name;
 
   if (!isOpen) return null;
 
@@ -82,16 +90,17 @@ export function StopWordsEditModal({
 
     if (resolvedText) {
       onSave({
+        functionId: formData.functionId,
         text: resolvedText,
         equalInclude: formData.mediaType === 'text' ? formData.equalInclude : false,
         mediaType: formData.mediaType,
       });
-      setFormData({ text: '', equalInclude: false, mediaType: 'text' });
+      setFormData({ functionId: '', text: '', equalInclude: false, mediaType: 'text' });
     }
   };
 
   const handleClose = () => {
-    setFormData({ text: '', equalInclude: false, mediaType: 'text' });
+    setFormData({ functionId: '', text: '', equalInclude: false, mediaType: 'text' });
     onClose();
   };
 
@@ -134,6 +143,30 @@ export function StopWordsEditModal({
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <Label htmlFor="function-id">Function *</Label>
+              <select
+                id="function-id"
+                value={formData.functionId}
+                onChange={(e) => setFormData((prev) => ({ ...prev, functionId: e.target.value }))}
+                disabled={saving || functionsLoading || functions.length === 0}
+                className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+              >
+                <option value="">{functionsLoading ? 'Loading functions...' : 'Select function'}</option>
+                {functions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-muted-foreground">Choose which function this rule belongs to.</p>
+              {formData.functionId && (
+                <p className="mt-1 text-xs text-foreground">
+                  Selected function: <span className="font-medium">{selectedFunctionName || 'Unknown function'}</span>
+                </p>
+              )}
             </div>
 
             {formData.mediaType === 'text' ? (
@@ -191,7 +224,11 @@ export function StopWordsEditModal({
               </Button>
               <Button
                 type="submit"
-                disabled={saving || (formData.mediaType === 'text' && !formData.text.trim())}
+                disabled={
+                  saving ||
+                  !formData.functionId ||
+                  (formData.mediaType === 'text' && !formData.text.trim())
+                }
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>

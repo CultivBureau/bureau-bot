@@ -13,6 +13,7 @@ const formatRuleValue = (item: StopWord) => {
 
 interface StopWordsTableProps {
   stopWords: StopWord[];
+  functions: Array<{ id: string; name: string }>;
   loading?: boolean;
   onEdit: (word: StopWord) => void;
   onDelete: (word: StopWord) => void;
@@ -21,11 +22,23 @@ interface StopWordsTableProps {
 
 export function StopWordsTable({
   stopWords,
+  functions,
   loading = false,
   onEdit,
   onDelete,
   deletingId = null,
 }: StopWordsTableProps) {
+  const getFunctionName = (item: StopWord) => {
+    if (item.directFunctionName) {
+      return item.directFunctionName;
+    }
+    if (item.functionId) {
+      const matched = functions.find((fn) => fn.id === item.functionId);
+      return matched?.name || 'Unknown function';
+    }
+    return 'Not assigned';
+  };
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-8 text-center">
@@ -59,6 +72,9 @@ export function StopWordsTable({
                 Media Type
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-card-foreground">
+                Function Name
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-card-foreground">
                 Rule Value
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-card-foreground">
@@ -76,6 +92,7 @@ export function StopWordsTable({
                 className="border-b border-border last:border-b-0 hover:bg-card/50 transition-colors"
               >
                 <td className="px-6 py-4 text-sm text-card-foreground capitalize">{item.mediaType}</td>
+                <td className="px-6 py-4 text-sm text-card-foreground">{getFunctionName(item)}</td>
                 <td className="px-6 py-4 text-sm text-card-foreground">{formatRuleValue(item)}</td>
                 <td className="px-6 py-4 text-sm text-card-foreground">
                   {item.mediaType === 'text' ? (

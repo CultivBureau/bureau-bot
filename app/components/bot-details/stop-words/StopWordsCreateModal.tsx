@@ -9,6 +9,7 @@ import type { StopWordMediaType } from '../../../types/stopWords';
 
 interface StopWordCreateRow {
   id: string;
+  functionId: string;
   mediaType: StopWordMediaType;
   text: string;
   equalInclude: boolean;
@@ -16,6 +17,7 @@ interface StopWordCreateRow {
 
 const makeRow = (): StopWordCreateRow => ({
   id: `row-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  functionId: '',
   mediaType: 'text',
   text: '',
   equalInclude: false,
@@ -59,7 +61,9 @@ const resolveRowText = (row: StopWordCreateRow) => (
 interface StopWordsCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (words: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }>) => void;
+  onSave: (words: Array<{ functionId: string; text: string; equalInclude: boolean; mediaType: StopWordMediaType }>) => void;
+  functions: Array<{ id: string; name: string }>;
+  functionsLoading?: boolean;
   saving?: boolean;
 }
 
@@ -67,6 +71,8 @@ export function StopWordsCreateModal({
   isOpen,
   onClose,
   onSave,
+  functions,
+  functionsLoading = false,
   saving = false,
 }: StopWordsCreateModalProps) {
   const [rows, setRows] = useState<StopWordCreateRow[]>([makeRow()]);
@@ -79,14 +85,15 @@ export function StopWordsCreateModal({
 
     const words = rows
       .map((row) => ({
+        functionId: row.functionId,
         text: resolveRowText(row),
         equalInclude: row.mediaType === 'text' ? row.equalInclude : false,
         mediaType: row.mediaType,
       }))
-      .filter((row) => row.mediaType !== 'text' || row.text.length > 0);
+      .filter((row) => row.functionId.length > 0 && (row.mediaType !== 'text' || row.text.length > 0));
 
     if (words.length === 0) {
-      setFormError('Please add at least one stop word before submitting.');
+      setFormError('Please choose a function and add at least one valid stop-word rule before submitting.');
       return;
     }
 
@@ -109,7 +116,7 @@ export function StopWordsCreateModal({
   const removeRow = (id: string) => {
     setRows((prev) => {
       if (prev.length === 1) {
-        return [{ ...prev[0], mediaType: 'text', text: '', equalInclude: false }];
+        return [{ ...prev[0], functionId: '', mediaType: 'text', text: '', equalInclude: false }];
       }
       return prev.filter((row) => row.id !== id);
     });
@@ -119,8 +126,9 @@ export function StopWordsCreateModal({
     setRows((prev) => [...prev, makeRow()]);
   };
 
-  const validCount = rows.filter((row) => row.text.trim().length > 0).length;
-  const validCountComputed = rows.filter((row) => row.mediaType !== 'text' || row.text.trim().length > 0).length;
+  const validCountComputed = rows.filter(
+    (row) => row.functionId.length > 0 && (row.mediaType !== 'text' || row.text.trim().length > 0)
+  ).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
@@ -143,7 +151,7 @@ export function StopWordsCreateModal({
             <div>
               <Label>Stop Words *</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Choose media type first. Text needs a stop word phrase, while audio/video/image apply as media-level rules.
+                Choose a function and media type first. Text needs a stop word phrase, while audio/video/image apply as media-level rules.
               </p>
 
               {formError && (
@@ -154,7 +162,7 @@ export function StopWordsCreateModal({
 
               <div className="space-y-3">
                 {rows.map((row, index) => (
-                  <div key={row.id} className="grid grid-cols-12 gap-2 items-center">
+                  <div key={row.id} className="grid grid-cols-12 gap-2 items-start">
                     <div className="col-span-3">
                       <select
                         value={row.mediaType}
@@ -175,6 +183,23 @@ export function StopWordsCreateModal({
                         ))}
                       </select>
                     </div>
+                    <div className="col-span-3">
+                      <select
+                        value={row.functionId}
+                        onChange={(e) => updateRow(row.id, { functionId: e.target.value })}
+                        disabled={saving || functionsLoading || functions.length === 0}
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                        aria-label={`Function for row ${index + 1}`}
+                      >
+                        <option value="">{functionsLoading ? 'Loading functions...' : 'Select function'}</option>
+                        {functions.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-1 text-xs text-muted-foreground">Choose which function this rule belongs to.</p>
+                    </div>
                     {row.mediaType === 'text' ? (
                       <div className="col-span-5">
                         <Label htmlFor={`word-${row.id}`} className="sr-only">
@@ -192,16 +217,17 @@ export function StopWordsCreateModal({
                         </p>
                       </div>
                     ) : (
-                      <div className="col-span-8 rounded-md border border-dashed border-border bg-muted/30 px-3 py-2">
+                      <div className="col-span-5 rounded-md border border-dashed border-border bg-muted/30 px-3 py-2">
                         <p className="text-sm font-medium text-foreground">{getTypeMeta(row.mediaType).title}</p>
                         <p className="text-xs text-muted-foreground">{getTypeMeta(row.mediaType).help}</p>
                       </div>
                     )}
+                    <div className="col-span-1" />
                     {row.mediaType === 'text' && (
-                      <>
+                      <div className="col-span-5 col-start-7">
                         <label
                           htmlFor={`equal-include-${row.id}`}
-                          className="col-span-3 flex items-center gap-2 text-sm text-foreground"
+                          className="flex items-center gap-2 text-sm text-foreground"
                         >
                           <input
                             id={`equal-include-${row.id}`}
@@ -219,7 +245,7 @@ export function StopWordsCreateModal({
                         <span id={`equal-include-help-${row.id}`} className="sr-only">
                           Enabled means exact word match only. Disabled means include or contains match.
                         </span>
-                      </>
+                      </div>
                     )}
                     <button
                       type="button"

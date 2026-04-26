@@ -1,25 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
 import { stopWordsService } from '../../../../services/stopWords';
+import { functionsService } from '../../../../services/functions';
 import type { StopWord, StopWordMediaType } from '../../../../types/stopWords';
 
 interface StopWordCreateInput {
+  functionId: string;
   text: string;
   equalInclude: boolean;
   mediaType: StopWordMediaType;
 }
 
+interface StopWordFunctionOption {
+  id: string;
+  name: string;
+}
+
 const normalizeStopWordInputs = (items: StopWordCreateInput[]) => {
   const cleaned = items
     .map((item) => ({
+      functionId: item.functionId,
       text: item.text.trim(),
       mediaType: item.mediaType,
       equalInclude: item.mediaType === 'text' ? item.equalInclude : false,
     }))
-    .filter((item) => item.text.length > 0);
+    .filter((item) => item.functionId.length > 0 && item.text.length > 0);
 
   const unique = new Map<string, StopWordCreateInput>();
   cleaned.forEach((item) => {
-    const key = `${item.mediaType}::${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
+    const key = `${item.functionId}::${item.mediaType}::${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
     if (!unique.has(key)) {
       unique.set(key, item);
     }
@@ -34,8 +42,10 @@ const normalizeStopWordInputs = (items: StopWordCreateInput[]) => {
 export function useStopWords(botId: string | null) {
   const [stopWords, setStopWords] = useState<StopWord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [functionsLoading, setFunctionsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [functions, setFunctions] = useState<StopWordFunctionOption[]>([]);
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -74,6 +84,37 @@ export function useStopWords(botId: string | null) {
   useEffect(() => {
     fetchStopWords();
   }, [fetchStopWords]);
+
+  const fetchFunctions = useCallback(async () => {
+    if (!botId) {
+      setFunctions([]);
+      return;
+    }
+
+    try {
+      setFunctionsLoading(true);
+      const response = await functionsService.getFunctions({
+        bot_id: botId,
+        pageNumber: 1,
+        pageSize: 100,
+      });
+
+      const mapped = (response.results || []).map((item) => ({
+        id: item.id,
+        name: item.name,
+      }));
+
+      setFunctions(mapped);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to fetch functions');
+    } finally {
+      setFunctionsLoading(false);
+    }
+  }, [botId]);
+
+  useEffect(() => {
+    fetchFunctions();
+  }, [fetchFunctions]);
 
   const handleCreateStopWords = useCallback(async (newWords: StopWordCreateInput[]) => {
     if (!botId) {
@@ -123,6 +164,11 @@ export function useStopWords(botId: string | null) {
       return;
     }
 
+    if (!updatedWord.functionId) {
+      setError('Please choose a function.');
+      return;
+    }
+
     if (!updatedWord.text.trim()) {
       setError('Please enter a valid stop word.');
       return;
@@ -134,6 +180,7 @@ export function useStopWords(botId: string | null) {
 
     try {
       await stopWordsService.updateStopWord(editingWord.id, {
+        direct_function_id: updatedWord.functionId || null,
         text: updatedWord.text.trim(),
         equal_include: updatedWord.mediaType === 'text' ? updatedWord.equalInclude : false,
         media_type: updatedWord.mediaType,
@@ -185,7 +232,9 @@ export function useStopWords(botId: string | null) {
 
   return {
     stopWords,
+    functions,
     loading,
+    functionsLoading,
     error,
     success,
     showCreateModal,
