@@ -10,7 +10,7 @@ import type { StopWord, StopWordMediaType } from '../../../types/stopWords';
 interface StopWordsEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { functionId: string; text: string; equalInclude: boolean; mediaType: StopWordMediaType }) => void;
+  onSave: (data: { functionId?: string; text: string; equalInclude: boolean; mediaType: StopWordMediaType }) => void;
   stopWord?: StopWord | null;
   functions: Array<{ id: string; name: string }>;
   functionsLoading?: boolean;
@@ -146,7 +146,7 @@ export function StopWordsEditModal({
             </div>
 
             <div>
-              <Label htmlFor="function-id">Function *</Label>
+              <Label htmlFor="function-id">Function</Label>
               <select
                 id="function-id"
                 value={formData.functionId}
@@ -226,7 +226,6 @@ export function StopWordsEditModal({
                 type="submit"
                 disabled={
                   saving ||
-                  !formData.functionId ||
                   (formData.mediaType === 'text' && !formData.text.trim())
                 }
               >

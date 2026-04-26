@@ -4,7 +4,7 @@ import { functionsService } from '../../../../services/functions';
 import type { StopWord, StopWordMediaType } from '../../../../types/stopWords';
 
 interface StopWordCreateInput {
-  functionId: string;
+  functionId?: string;
   text: string;
   equalInclude: boolean;
   mediaType: StopWordMediaType;
@@ -23,7 +23,7 @@ const normalizeStopWordInputs = (items: StopWordCreateInput[]) => {
       mediaType: item.mediaType,
       equalInclude: item.mediaType === 'text' ? item.equalInclude : false,
     }))
-    .filter((item) => item.functionId.length > 0 && item.text.length > 0);
+    .filter((item) => item.text.length > 0);
 
   const unique = new Map<string, StopWordCreateInput>();
   cleaned.forEach((item) => {
@@ -161,11 +161,6 @@ export function useStopWords(botId: string | null) {
   const handleEditStopWord = useCallback(async (updatedWord: StopWordCreateInput) => {
     if (!editingWord) {
       setError('Cannot update stop word.');
-      return;
-    }
-
-    if (!updatedWord.functionId) {
-      setError('Please choose a function.');
       return;
     }
 

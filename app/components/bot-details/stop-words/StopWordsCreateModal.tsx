@@ -9,7 +9,7 @@ import type { StopWordMediaType } from '../../../types/stopWords';
 
 interface StopWordCreateRow {
   id: string;
-  functionId: string;
+  functionId?: string;
   mediaType: StopWordMediaType;
   text: string;
   equalInclude: boolean;
@@ -61,7 +61,7 @@ const resolveRowText = (row: StopWordCreateRow) => (
 interface StopWordsCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (words: Array<{ functionId: string; text: string; equalInclude: boolean; mediaType: StopWordMediaType }>) => void;
+  onSave: (words: Array<{ functionId?: string; text: string; equalInclude: boolean; mediaType: StopWordMediaType }>) => void;
   functions: Array<{ id: string; name: string }>;
   functionsLoading?: boolean;
   saving?: boolean;
@@ -90,10 +90,10 @@ export function StopWordsCreateModal({
         equalInclude: row.mediaType === 'text' ? row.equalInclude : false,
         mediaType: row.mediaType,
       }))
-      .filter((row) => row.functionId.length > 0 && (row.mediaType !== 'text' || row.text.length > 0));
+      .filter((row) => (row.mediaType !== 'text' || row.text.length > 0));
 
     if (words.length === 0) {
-      setFormError('Please choose a function and add at least one valid stop-word rule before submitting.');
+      setFormError('Please add at least one valid stop-word rule before submitting.');
       return;
     }
 
@@ -127,7 +127,7 @@ export function StopWordsCreateModal({
   };
 
   const validCountComputed = rows.filter(
-    (row) => row.functionId.length > 0 && (row.mediaType !== 'text' || row.text.trim().length > 0)
+    (row) => (row.mediaType !== 'text' || row.text.trim().length > 0)
   ).length;
 
   return (
@@ -149,9 +149,9 @@ export function StopWordsCreateModal({
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>Stop Words *</Label>
+              <Label>Stop Words</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Choose a function and media type first. Text needs a stop word phrase, while audio/video/image apply as media-level rules.
+                Add your stop words below. You can optionally link each rule to a function. Text rules need a phrase, while audio/video/image apply as media-level rules.
               </p>
 
               {formError && (
