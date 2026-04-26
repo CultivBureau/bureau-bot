@@ -7,6 +7,7 @@ export interface StopWordApiItem {
   text: string;
   equal_include: boolean;
   media_type?: StopWordMediaType;
+  direct_function_name?: string | null;
   created_on: string;
   updated_on: string;
 }
