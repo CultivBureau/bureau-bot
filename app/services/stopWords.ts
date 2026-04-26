@@ -6,6 +6,7 @@ import type {
   CreateStopWordsRequest,
   UpdateStopWordRequest,
   StopWordsListResponse,
+  StopWordMediaType,
 } from '../types/stopWords';
 
 class StopWordsService {
@@ -116,7 +117,10 @@ class StopWordsService {
       : [];
   }
 
-  async createStopWords(botId: string, stopWords: Array<{ text: string; equalInclude: boolean }>): Promise<StopWord[]> {
+  async createStopWords(
+    botId: string,
+    stopWords: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }>
+  ): Promise<StopWord[]> {
     const cleanedItems = this.cleanStopWords(stopWords);
 
     const requestData: CreateStopWordsRequest = {
@@ -124,6 +128,7 @@ class StopWordsService {
       stopwords: cleanedItems.map((item) => ({
         text: item.text,
         equal_include: item.equalInclude,
+        media_type: item.mediaType,
       })),
     };
 
@@ -166,18 +171,19 @@ class StopWordsService {
   }
 
   private cleanStopWords(
-    items: Array<{ text: string; equalInclude: boolean }>
-  ): Array<{ text: string; equalInclude: boolean }> {
+    items: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }>
+  ): Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }> {
     const cleaned = items
       .map((item) => ({
         text: item.text.trim(),
         equalInclude: item.equalInclude,
+        mediaType: item.mediaType,
       }))
       .filter((item) => item.text.length > 0);
 
-    const unique = new Map<string, { text: string; equalInclude: boolean }>();
+    const unique = new Map<string, { text: string; equalInclude: boolean; mediaType: StopWordMediaType }>();
     cleaned.forEach((item) => {
-      const key = `${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
+      const key = `${item.mediaType}::${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
       if (!unique.has(key)) {
         unique.set(key, item);
       }
@@ -192,6 +198,7 @@ class StopWordsService {
       botId: item.bot_id,
       text: item.text,
       equalInclude: item.equal_include,
+      mediaType: item.media_type ?? 'text',
       createdOn: item.created_on,
       updatedOn: item.updated_on,
     };

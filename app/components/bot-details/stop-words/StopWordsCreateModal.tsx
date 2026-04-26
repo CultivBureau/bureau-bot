@@ -5,23 +5,61 @@ import { X, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../landing/ui/button';
 import { Label } from '../../landing/ui/label';
 import { Input } from '../../landing/ui/input';
+import type { StopWordMediaType } from '../../../types/stopWords';
 
 interface StopWordCreateRow {
   id: string;
+  mediaType: StopWordMediaType;
   text: string;
   equalInclude: boolean;
 }
 
 const makeRow = (): StopWordCreateRow => ({
   id: `row-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  mediaType: 'text',
   text: '',
   equalInclude: false,
 });
 
+const mediaTypeOptions: Array<{ value: StopWordMediaType; label: string }> = [
+  { value: 'text', label: 'Text' },
+  { value: 'audio', label: 'Audio' },
+  { value: 'video', label: 'Video' },
+  { value: 'image', label: 'Image' },
+];
+
+const getTypeMeta = (mediaType: StopWordMediaType) => {
+  switch (mediaType) {
+    case 'audio':
+      return {
+        title: 'Audio Rule',
+        help: 'This rule applies to all audio messages. No keyword text is required.',
+      };
+    case 'video':
+      return {
+        title: 'Video Rule',
+        help: 'This rule applies to all video messages. No keyword text is required.',
+      };
+    case 'image':
+      return {
+        title: 'Image Rule',
+        help: 'This rule applies to all image messages. No keyword text is required.',
+      };
+    default:
+      return {
+        title: 'Text Stop Word',
+      };
+  }
+};
+
+const resolveRowText = (row: StopWordCreateRow) => (
+  row.mediaType === 'text' ? row.text.trim() : `__media_only__${row.mediaType}`
+);
+
 interface StopWordsCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (words: Array<{ text: string; equalInclude: boolean }>) => void;
+  onSave: (words: Array<{ text: string; equalInclude: boolean; mediaType: StopWordMediaType }>) => void;
   saving?: boolean;
 }
 
@@ -41,10 +79,11 @@ export function StopWordsCreateModal({
 
     const words = rows
       .map((row) => ({
-        text: row.text.trim(),
-        equalInclude: row.equalInclude,
+        text: resolveRowText(row),
+        equalInclude: row.mediaType === 'text' ? row.equalInclude : false,
+        mediaType: row.mediaType,
       }))
-      .filter((row) => row.text.length > 0);
+      .filter((row) => row.mediaType !== 'text' || row.text.length > 0);
 
     if (words.length === 0) {
       setFormError('Please add at least one stop word before submitting.');
@@ -70,7 +109,7 @@ export function StopWordsCreateModal({
   const removeRow = (id: string) => {
     setRows((prev) => {
       if (prev.length === 1) {
-        return [{ ...prev[0], text: '', equalInclude: false }];
+        return [{ ...prev[0], mediaType: 'text', text: '', equalInclude: false }];
       }
       return prev.filter((row) => row.id !== id);
     });
@@ -81,6 +120,7 @@ export function StopWordsCreateModal({
   };
 
   const validCount = rows.filter((row) => row.text.trim().length > 0).length;
+  const validCountComputed = rows.filter((row) => row.mediaType !== 'text' || row.text.trim().length > 0).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
@@ -103,7 +143,7 @@ export function StopWordsCreateModal({
             <div>
               <Label>Stop Words *</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Add one or more stop words in a single submit. Choose match mode per row.
+                Choose media type first. Text needs a stop word phrase, while audio/video/image apply as media-level rules.
               </p>
 
               {formError && (
@@ -115,34 +155,72 @@ export function StopWordsCreateModal({
               <div className="space-y-3">
                 {rows.map((row, index) => (
                   <div key={row.id} className="grid grid-cols-12 gap-2 items-center">
-                    <div className="col-span-7">
-                      <Input
-                        value={row.text}
-                        onChange={(e) => updateRow(row.id, { text: e.target.value })}
-                        placeholder={`Stop word ${index + 1}`}
-                        disabled={saving}
-                      />
-                    </div>
-                    <label
-                      htmlFor={`equal-include-${row.id}`}
-                      className="col-span-4 flex items-center gap-2 text-sm text-foreground"
-                    >
-                      <input
-                        id={`equal-include-${row.id}`}
-                        type="checkbox"
-                        checked={row.equalInclude}
+                    <div className="col-span-3">
+                      <select
+                        value={row.mediaType}
                         onChange={(e) =>
-                          updateRow(row.id, { equalInclude: e.target.checked })
+                          updateRow(row.id, {
+                            mediaType: e.target.value as StopWordMediaType,
+                            equalInclude: e.target.value === 'text' ? row.equalInclude : false,
+                          })
                         }
                         disabled={saving}
-                        className="h-4 w-4 rounded border-border"
-                        aria-describedby={`equal-include-help-${row.id}`}
-                      />
-                      Exact Match
-                    </label>
-                    <span id={`equal-include-help-${row.id}`} className="sr-only">
-                      Enabled means exact word match only. Disabled means include or contains match.
-                    </span>
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                        aria-label={`Media type for row ${index + 1}`}
+                      >
+                        {mediaTypeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {row.mediaType === 'text' ? (
+                      <div className="col-span-5">
+                        <Label htmlFor={`word-${row.id}`} className="sr-only">
+                          Text stop word for row {index + 1}
+                        </Label>
+                        <Input
+                          id={`word-${row.id}`}
+                          value={row.text}
+                          onChange={(e) => updateRow(row.id, { text: e.target.value })}
+                          placeholder={`Text stop word ${index + 1}`}
+                          disabled={saving}
+                        />
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {getTypeMeta('text').help}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="col-span-8 rounded-md border border-dashed border-border bg-muted/30 px-3 py-2">
+                        <p className="text-sm font-medium text-foreground">{getTypeMeta(row.mediaType).title}</p>
+                        <p className="text-xs text-muted-foreground">{getTypeMeta(row.mediaType).help}</p>
+                      </div>
+                    )}
+                    {row.mediaType === 'text' && (
+                      <>
+                        <label
+                          htmlFor={`equal-include-${row.id}`}
+                          className="col-span-3 flex items-center gap-2 text-sm text-foreground"
+                        >
+                          <input
+                            id={`equal-include-${row.id}`}
+                            type="checkbox"
+                            checked={row.equalInclude}
+                            onChange={(e) =>
+                              updateRow(row.id, { equalInclude: e.target.checked })
+                            }
+                            disabled={saving}
+                            className="h-4 w-4 rounded border-border"
+                            aria-describedby={`equal-include-help-${row.id}`}
+                          />
+                          Exact Match
+                        </label>
+                        <span id={`equal-include-help-${row.id}`} className="sr-only">
+                          Enabled means exact word match only. Disabled means include or contains match.
+                        </span>
+                      </>
+                    )}
                     <button
                       type="button"
                       onClick={() => removeRow(row.id)}
@@ -167,9 +245,9 @@ export function StopWordsCreateModal({
                 Add Row
               </Button>
 
-              {validCount > 0 && (
+              {validCountComputed > 0 && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  {validCount} valid row{validCount !== 1 ? 's' : ''} ready to submit
+                  {validCountComputed} valid row{validCountComputed !== 1 ? 's' : ''} ready to submit
                 </p>
               )}
             </div>
@@ -186,7 +264,7 @@ export function StopWordsCreateModal({
               </Button>
               <Button
                 type="submit"
-                disabled={saving || validCount === 0}
+                disabled={saving || validCountComputed === 0}
               >
                 {saving ? 'Adding...' : 'Add Stop Words'}
               </Button>

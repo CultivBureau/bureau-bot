@@ -4,15 +4,19 @@ export interface StopWordApiItem {
   bot_id: string;
   text: string;
   equal_include: boolean;
+  media_type?: StopWordMediaType;
   created_on: string;
   updated_on: string;
 }
+
+export type StopWordMediaType = 'text' | 'audio' | 'video' | 'image';
 
 export interface StopWord {
   id: string;
   botId: string;
   text: string;
   equalInclude: boolean;
+  mediaType: StopWordMediaType;
   createdOn?: string;
   updatedOn?: string;
 }
@@ -30,6 +34,7 @@ export interface StopWordsListResponse {
 export interface StopWordCreateItem {
   text: string;
   equal_include: boolean;
+  media_type: StopWordMediaType;
 }
 
 export interface CreateStopWordsRequest {
@@ -40,4 +45,5 @@ export interface CreateStopWordsRequest {
 export interface UpdateStopWordRequest {
   text: string;
   equal_include: boolean;
+  media_type: StopWordMediaType;
 }

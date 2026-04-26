@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Plus, AlertCircle, CheckCircle } from 'lucide-react';
 import { useStopWords } from './hooks/useStopWords';
@@ -7,10 +8,32 @@ import { StopWordsTable } from './StopWordsTable';
 import { StopWordsCreateModal } from './StopWordsCreateModal';
 import { StopWordsEditModal } from './StopWordsEditModal';
 import { ConfirmationToast } from '../../shared/ConfirmationToast';
+import type { StopWordMediaType } from '../../../types/stopWords';
+
+const mediaFilterOptions: Array<{ value: 'all' | StopWordMediaType; label: string }> = [
+  { value: 'all', label: 'All Media' },
+  { value: 'text', label: 'Text' },
+  { value: 'audio', label: 'Audio' },
+  { value: 'video', label: 'Video' },
+  { value: 'image', label: 'Image' },
+];
+
+const getDeleteWordLabel = (mediaType?: StopWordMediaType, text?: string) => {
+  if (!mediaType) {
+    return text || '';
+  }
+
+  if (mediaType === 'text') {
+    return text || '';
+  }
+
+  return `all ${mediaType} messages`;
+};
 
 export function StopWordsContent() {
   const searchParams = useSearchParams();
   const botId = searchParams.get('botId');
+  const [mediaFilter, setMediaFilter] = useState<'all' | StopWordMediaType>('all');
 
   const {
     stopWords,
@@ -35,6 +58,14 @@ export function StopWordsContent() {
     openEditModal,
     closeEditModal,
   } = useStopWords(botId);
+
+  const filteredStopWords = useMemo(() => {
+    if (mediaFilter === 'all') {
+      return stopWords;
+    }
+
+    return stopWords.filter((item) => item.mediaType === mediaFilter);
+  }, [stopWords, mediaFilter]);
 
   if (!botId) {
     return (
@@ -79,22 +110,42 @@ export function StopWordsContent() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h2 className="text-lg font-semibold text-card-foreground">
           Stop Words
         </h2>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-        >
-          <Plus className="h-4 w-4" />
-          Add Stop Words
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2">
+            <label htmlFor="media-filter" className="text-sm text-muted-foreground">
+              Filter
+            </label>
+            <select
+              id="media-filter"
+              value={mediaFilter}
+              onChange={(e) => setMediaFilter(e.target.value as 'all' | StopWordMediaType)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+            >
+              {mediaFilterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            Add Stop Words
+          </button>
+        </div>
       </div>
 
       {/* Table */}
       <StopWordsTable
-        stopWords={stopWords}
+        stopWords={filteredStopWords}
         loading={loading}
         onEdit={openEditModal}
         onDelete={handleDeleteStopWord}
@@ -120,7 +171,7 @@ export function StopWordsContent() {
 
       {/* Delete Confirmation Toast */}
       <ConfirmationToast
-        message={`Are you sure you want to delete the stop word "${deleteConfirmation.word?.text}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete the stop word "${getDeleteWordLabel(deleteConfirmation.word?.mediaType, deleteConfirmation.word?.text)}"? This action cannot be undone.`}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         isOpen={deleteConfirmation.isOpen}

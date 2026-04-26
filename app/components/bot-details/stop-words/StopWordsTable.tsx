@@ -3,6 +3,14 @@
 import { Edit, Trash2, AlertCircle } from 'lucide-react';
 import type { StopWord } from '../../../types/stopWords';
 
+const formatRuleValue = (item: StopWord) => {
+  if (item.mediaType === 'text') {
+    return item.text;
+  }
+
+  return `All ${item.mediaType} messages`;
+};
+
 interface StopWordsTableProps {
   stopWords: StopWord[];
   loading?: boolean;
@@ -48,7 +56,10 @@ export function StopWordsTable({
           <thead>
             <tr className="border-b border-border bg-card/50">
               <th className="px-6 py-4 text-left text-sm font-semibold text-card-foreground">
-                Text
+                Media Type
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-card-foreground">
+                Rule Value
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-card-foreground">
                 Match Type
@@ -64,17 +75,22 @@ export function StopWordsTable({
                 key={item.id || index}
                 className="border-b border-border last:border-b-0 hover:bg-card/50 transition-colors"
               >
-                <td className="px-6 py-4 text-sm text-card-foreground">{item.text}</td>
+                <td className="px-6 py-4 text-sm text-card-foreground capitalize">{item.mediaType}</td>
+                <td className="px-6 py-4 text-sm text-card-foreground">{formatRuleValue(item)}</td>
                 <td className="px-6 py-4 text-sm text-card-foreground">
-                  <span
-                    className={
-                      item.equalInclude
-                        ? 'inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700'
-                        : 'inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700'
-                    }
-                  >
-                    {item.equalInclude ? 'Equal' : 'Include'}
-                  </span>
+                  {item.mediaType === 'text' ? (
+                    <span
+                      className={
+                        item.equalInclude
+                          ? 'inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700'
+                          : 'inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700'
+                      }
+                    >
+                      {item.equalInclude ? 'Equal' : 'Include'}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">N/A</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">

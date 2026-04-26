@@ -1,23 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { stopWordsService } from '../../../../services/stopWords';
-import type { StopWord } from '../../../../types/stopWords';
+import type { StopWord, StopWordMediaType } from '../../../../types/stopWords';
 
 interface StopWordCreateInput {
   text: string;
   equalInclude: boolean;
+  mediaType: StopWordMediaType;
 }
 
 const normalizeStopWordInputs = (items: StopWordCreateInput[]) => {
   const cleaned = items
     .map((item) => ({
       text: item.text.trim(),
-      equalInclude: item.equalInclude,
+      mediaType: item.mediaType,
+      equalInclude: item.mediaType === 'text' ? item.equalInclude : false,
     }))
     .filter((item) => item.text.length > 0);
 
   const unique = new Map<string, StopWordCreateInput>();
   cleaned.forEach((item) => {
-    const key = `${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
+    const key = `${item.mediaType}::${item.text.toLowerCase()}::${item.equalInclude ? '1' : '0'}`;
     if (!unique.has(key)) {
       unique.set(key, item);
     }
@@ -133,7 +135,8 @@ export function useStopWords(botId: string | null) {
     try {
       await stopWordsService.updateStopWord(editingWord.id, {
         text: updatedWord.text.trim(),
-        equal_include: updatedWord.equalInclude,
+        equal_include: updatedWord.mediaType === 'text' ? updatedWord.equalInclude : false,
+        media_type: updatedWord.mediaType,
       });
       setSuccess('Stop word updated successfully!');
       setShowEditModal(false);
