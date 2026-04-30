@@ -36,6 +36,7 @@ export function useFunctionForm({
   const [functionToEdit, setFunctionToEdit] = useState<FunctionData | null>(null);
   const [viewingFunction, setViewingFunction] = useState<FunctionData | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('create');
+  const [stopBot, setStopBot] = useState(false);
 
   const handleSave = useCallback(async (
     properties: FunctionProperty[],
@@ -88,6 +89,7 @@ export function useFunctionForm({
         bitrix_field_mappings: bitrixFieldMappings,
         pipeline: selectedPipeline,
         stage: selectedPhase,
+        stop_bot: stopBot,
       };
 
       if (editing && functionToEdit) {
@@ -174,6 +176,7 @@ export function useFunctionForm({
       setEditing(true);
       setViewMode('edit');
       setViewingFunction(null);
+      setStopBot(apiFunction.stop_bot ?? func.stop_bot ?? false);
 
       return { properties, phase: stageValue };
     } catch (err: any) {
@@ -241,6 +244,7 @@ export function useFunctionForm({
       }
 
       setViewMode('view');
+      setStopBot(apiFunction.stop_bot ?? func.stop_bot ?? false);
 
       return { properties, phase: stageValue };
     } catch (err: any) {
@@ -258,6 +262,7 @@ export function useFunctionForm({
     setFunctionToEdit(null);
     setViewingFunction(null);
     setViewMode('create');
+    setStopBot(false);
   }, []);
 
   const setViewModeState = useCallback((mode: ViewMode) => {
@@ -278,6 +283,8 @@ export function useFunctionForm({
     functionToEdit,
     viewingFunction,
     viewMode,
+    stopBot,
+    setStopBot,
     handleSave,
     handleEdit,
     handleView,

@@ -52,6 +52,8 @@ export function FunctionsContent() {
     functionToEdit,
     viewingFunction,
     viewMode,
+    stopBot,
+    setStopBot,
     handleSave: formHandleSave,
     handleEdit: formHandleEdit,
     handleView: formHandleView,
@@ -160,7 +162,7 @@ export function FunctionsContent() {
 
   const confirmDelete = useCallback(async () => {
     if (!functionToDelete) return;
-    
+
     const result = await deleteFunction(functionToDelete.id);
     if (result.success) {
       setSuccess('Function deleted successfully!');
@@ -280,6 +282,8 @@ export function FunctionsContent() {
             onEditClick={() => viewingFunction && handleEditFunction(viewingFunction)}
             onCancel={handleCancelCreate}
             onSave={handleSave}
+            stopBot={stopBot}
+            onStopBotChange={setStopBot}
           />
         </div>
       )}

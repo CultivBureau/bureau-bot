@@ -22,6 +22,7 @@ export interface FunctionData {
   updated_at: string;
   integration_type?: IntegrationType;
   is_active?: boolean;
+  stop_bot?: boolean;
 }
 
 // New API response format from /api/bitrix/crm-fields/

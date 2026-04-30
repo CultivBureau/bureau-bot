@@ -37,6 +37,8 @@ interface FunctionFormProps {
   onEditClick: () => void;
   onCancel: () => void;
   onSave: () => void;
+  stopBot: boolean;
+  onStopBotChange: (value: boolean) => void;
 }
 
 export const FunctionForm = memo(function FunctionForm({
@@ -70,6 +72,8 @@ export const FunctionForm = memo(function FunctionForm({
   onEditClick,
   onCancel,
   onSave,
+  stopBot,
+  onStopBotChange,
 }: FunctionFormProps) {
   return (
     <div className="space-y-6">
@@ -177,6 +181,20 @@ export const FunctionForm = memo(function FunctionForm({
         viewMode={viewMode}
         loading={loadingCRMData}
       />
+      
+      <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/50">
+        <input
+          type="checkbox"
+          id="stopBot"
+          checked={stopBot}
+          onChange={(e) => onStopBotChange(e.target.checked)}
+          disabled={viewMode === 'view'}
+          className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+        />
+        <label htmlFor="stopBot" className="text-sm font-medium text-card-foreground cursor-pointer">
+          Stop bot after running the function
+        </label>
+      </div>
       
       {viewMode !== 'view' && (
         <div className="flex justify-end pt-6 gap-3">

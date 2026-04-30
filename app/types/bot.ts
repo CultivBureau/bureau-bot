@@ -26,6 +26,7 @@ export interface CreateBotRequest {
   webhook_url?: string | null;
   start_time?: string | null;
   end_time?: string | null;
+  n8nWorkFlow?: string;
 }
 
 export interface UpdateBotRequest {
@@ -38,6 +39,7 @@ export interface UpdateBotRequest {
   webhook_url?: string | null;
   start_time?: string | null;
   end_time?: string | null;
+  n8nWorkFlow?: string;
 }
 
 export interface RestoreBotRequest {
@@ -63,6 +65,7 @@ export interface Bot {
   created_on: string;
   updated_by: string;
   updated_on: string;
+  n8nWorkFlow?: string;
 }
 
 // Pagination response for bots list

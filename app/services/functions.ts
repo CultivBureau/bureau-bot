@@ -24,6 +24,7 @@ export interface Function {
   stage?: string;
   created_on?: string;
   updated_on?: string;
+  stop_bot?: boolean;
 }
 
 export interface FunctionsListResponse {
@@ -58,6 +59,7 @@ interface CreateFunctionData {
   }>;
   pipeline?: string;
   stage?: string;
+  stop_bot?: boolean;
 }
 
 interface UpdateFunctionData extends CreateFunctionData { }

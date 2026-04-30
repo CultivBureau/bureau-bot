@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { Bot as BotIcon, Globe } from 'lucide-react';
+import { Bot as BotIcon, Globe, Workflow } from 'lucide-react';
 import { ApiKeyField } from './ApiKeyField';
 import { ModelSelector } from './ModelSelector';
 import { WaitTimeField } from './WaitTimeField';
@@ -88,6 +88,19 @@ export const ConfigFieldsGrid = memo(function ConfigFieldsGrid({
         onCancel={onCancel}
         onChange={(value) => onChange('webhook_url', value)}
         icon={<Globe className="h-5 w-5" />}
+        saving={saving}
+      />
+
+      <ConfigField
+        label="n8n Workflow Link"
+        value={bot.n8nWorkFlow || ''}
+        editing={editingField === 'n8nWorkFlow'}
+        editValue={editValues.n8nWorkFlow ?? bot.n8nWorkFlow ?? ''}
+        onEdit={() => onEdit('n8nWorkFlow')}
+        onSave={() => onSave('n8nWorkFlow')}
+        onCancel={onCancel}
+        onChange={(value) => onChange('n8nWorkFlow', value)}
+        icon={<Workflow className="h-5 w-5" />}
         saving={saving}
       />
     </div>
