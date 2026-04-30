@@ -36,6 +36,8 @@ interface FunctionModalProps {
   onRemoveProperty: (propertyId: string) => void;
   onEditClick: () => void;
   onSave: () => void;
+  stopBot: boolean;
+  onStopBotChange: (value: boolean) => void;
 }
 
 export function FunctionModal({
@@ -70,6 +72,8 @@ export function FunctionModal({
   onRemoveProperty,
   onEditClick,
   onSave,
+  stopBot,
+  onStopBotChange,
 }: FunctionModalProps) {
   if (!isOpen) return null;
 
@@ -120,6 +124,8 @@ export function FunctionModal({
             onEditClick={onEditClick}
             onCancel={onClose}
             onSave={onSave}
+            stopBot={stopBot}
+            onStopBotChange={onStopBotChange}
           />
         </div>
       </div>
