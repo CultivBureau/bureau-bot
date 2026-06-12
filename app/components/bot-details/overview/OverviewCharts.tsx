@@ -24,7 +24,7 @@ export function OverviewCharts({
             Responses vs chat completions
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
-            Trend of assistant replies and generated completions
+            Trend of bot responses and generated completions
           </p>
           <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
             No response data yet.
@@ -59,7 +59,7 @@ export function OverviewCharts({
             Responses vs chat completions
           </h2>
           <p className="text-sm text-muted-foreground">
-            Trend of assistant replies and generated completions
+            Trend of bot responses and generated completions
           </p>
         </div>
         <div className="h-64 flex items-end justify-between gap-2">

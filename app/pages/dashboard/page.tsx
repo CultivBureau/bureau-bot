@@ -19,6 +19,8 @@ const mockBotsAPI = {
         {
           id: '1',
           name: 'Customer Support Bot',
+          llm_provider: 'openai',
+          llm_model: 'gpt-4',
           gpt_model: 'gpt-4',
           is_active: true,
           created_on: '2024-01-15',
@@ -29,7 +31,9 @@ const mockBotsAPI = {
         {
           id: '2',
           name: 'Sales Assistant',
-          gpt_model: 'gpt-3.5-turbo',
+          llm_provider: 'mistral',
+          llm_model: 'mistral-large-latest',
+          gpt_model: 'mistral-large-latest',
           is_active: true,
           created_on: '2024-01-10',
           updated_on: '2024-01-18',
@@ -39,6 +43,8 @@ const mockBotsAPI = {
         {
           id: '3',
           name: 'Help Desk Bot',
+          llm_provider: 'openai',
+          llm_model: 'gpt-4',
           gpt_model: 'gpt-4',
           is_active: false,
           created_on: '2024-01-05',

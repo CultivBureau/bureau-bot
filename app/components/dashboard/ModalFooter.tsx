@@ -53,9 +53,9 @@ export const ModalFooter = memo(function ModalFooter({
               ? isEditMode
                 ? 'Update Bot'
                 : 'Create Bot'
-              : isEditMode && !formData.apiKey.trim()
+              : isEditMode && !formData.providerApiKey.trim()
                 ? 'Continue'
-                : 'Validate & Continue'}
+                : 'Validate Key & Continue'}
       </Button>
     </div>
   );

@@ -3,8 +3,14 @@ export interface GPTModel {
   label: string;
 }
 
+export type LLMProvider = 'openai' | 'mistral';
+
 export interface GPTModelsResponse {
   gpt_models: GPTModel[];
+}
+
+export interface ProviderModelsResponse {
+  models: GPTModel[];
 }
 
 export interface ValidateOpenAIKeyRequest {
@@ -16,30 +22,45 @@ export interface ValidateOpenAIKeyResponse {
   valid: boolean;
 }
 
+export interface ValidateProviderKeyRequest {
+  llm_provider: LLMProvider;
+  encrypted_provider_api_key: string;
+}
+
 export interface CreateBotRequest {
   name: string;
-  gpt_model: string;
-  openai_api_key: string;
+  llm_provider: LLMProvider;
+  llm_model: string;
+  encrypted_provider_api_key: string;
+  provider_resource_id?: string | null;
+  gpt_model?: string;
+  openai_api_key?: string;
+  assistant_id?: string | null;
   instructions: string;
   wait_time?: number;
   assistant_name?: string;
   webhook_url?: string | null;
   start_time?: string | null;
   end_time?: string | null;
-  n8nWorkFlow?: string;
+  n8nWorkFlow?: string | null;
 }
 
 export interface UpdateBotRequest {
   name?: string;
-  gpt_model?: string;
-  openai_api_key?: string;
+  llm_provider?: LLMProvider;
+  llm_model?: string;
+  encrypted_provider_api_key?: string | null;
+  provider_resource_id?: string | null;
+  gpt_model?: string | null;
+  openai_api_key?: string | null;
+  assistant_id?: string | null;
   instructions?: string;
   wait_time?: number;
   assistant_name?: string;
   webhook_url?: string | null;
   start_time?: string | null;
   end_time?: string | null;
-  n8nWorkFlow?: string;
+  n8nWorkFlow?: string | null;
 }
 
 export interface RestoreBotRequest {
@@ -51,6 +72,15 @@ export interface Bot {
   user_id: string;
   name: string;
   assistant_name?: string;
+  llm_provider?: LLMProvider;
+  llm_model?: string;
+  encrypted_provider_api_key?: string;
+  provider_resource_id?: string | null;
+  provider_conversation_id?: string | null;
+  provider_key_fingerprint?: string | null;
+  provider_runtime_metadata?: Record<string, unknown> | string | null;
+  thread_binding_reason?: string | null;
+  agent_mode?: boolean;
   gpt_model: string;
   openai_api_key: string;
   assistant_id?: string;
@@ -90,7 +120,10 @@ export interface GetBotsParams {
 export interface BotData {
   id: string;
   name: string;
+  llm_provider: LLMProvider;
+  llm_model: string;
   gpt_model: string;
+  provider_resource_id?: string | null;
   is_active: boolean;
   created_on: string;
   updated_on: string;

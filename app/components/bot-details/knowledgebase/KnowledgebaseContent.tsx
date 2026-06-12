@@ -171,7 +171,7 @@ export function KnowledgebaseContent() {
             <Database className="mb-4 h-12 w-12" />
             <p>No knowledge items yet</p>
             <p className="text-sm">
-              Upload files or text so this assistant can rely on verified sources.
+              Upload files or text so this bot can rely on verified sources.
             </p>
           </div>
         ) : (

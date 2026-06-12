@@ -13,7 +13,7 @@ function ConfigurePageContent() {
     <BotDetailsPageShell
       botId={botId}
       title="Bot Configuration"
-      description="Manage assistant credentials, wait times, and instructions."
+      description="Manage provider credentials, model settings, wait times, and instructions."
     >
       <ConfigureContent />
     </BotDetailsPageShell>

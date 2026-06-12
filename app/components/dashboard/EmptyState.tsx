@@ -14,8 +14,7 @@ export function EmptyState({ onCreateBot }: EmptyStateProps) {
         No bots yet
       </h2>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        Create your first assistant to start routing conversations and measuring
-        performance.
+        Create your first bot to start routing conversations and measuring performance.
       </p>
       {onCreateBot && (
         <button

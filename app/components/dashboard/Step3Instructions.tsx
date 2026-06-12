@@ -23,7 +23,7 @@ export const Step3Instructions = memo(function Step3Instructions({
       <div className="text-center">
         <h3 className="text-2xl font-semibold text-card-foreground">Set Instructions & Webhook</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Configure advanced settings for your AI bot
+          Configure advanced settings for your bot
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export const Step3Instructions = memo(function Step3Instructions({
           </Label>
           <Textarea
             id="instructions"
-            placeholder="You are a helpful AI assistant. Please provide accurate and helpful responses to user queries."
+            placeholder="You are a helpful support bot. Please provide accurate and helpful responses to user queries."
             value={formData.instructions}
             onChange={(e) => onInputChange('instructions', e.target.value)}
             rows={6}

@@ -10,9 +10,11 @@ import { ModalFooter } from './ModalFooter';
 import type { Bot } from '../../types/bot';
 
 export interface BotFormData {
-  apiKey: string;
-  assistantName: string;
-  aiModel: string;
+  provider: 'openai' | 'mistral';
+  providerApiKey: string;
+  name: string;
+  llmModel: string;
+  providerResourceId: string;
   instructions: string;
   webhookUrl: string;
 }
@@ -32,11 +34,8 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
     errors,
     isSubmitting,
     isValidating,
-    showModelDropdown,
-    setShowModelDropdown,
-    gptModels,
+    providerModels,
     loadingOptions,
-    modelDropdownRef,
     handleNext,
     handleBack,
     handleSubmit,
@@ -46,10 +45,6 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
   if (!isOpen) return null;
 
   const totalSteps = 3;
-
-  const handleToggleModelDropdown = () => {
-    setShowModelDropdown(!showModelDropdown);
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 px-4 py-6 backdrop-blur-sm">
@@ -78,12 +73,9 @@ export function NewBotModal({ isOpen, onClose, onSubmit, bot }: NewBotModalProps
             <Step2Configuration
               formData={formData}
               errors={errors}
-              gptModels={gptModels}
+              providerModels={providerModels}
               loadingOptions={loadingOptions}
-              showModelDropdown={showModelDropdown}
-              modelDropdownRef={modelDropdownRef}
               onInputChange={handleInputChange}
-              onToggleModelDropdown={handleToggleModelDropdown}
             />
           )}
 
