@@ -4,15 +4,13 @@ import { useState, useEffect } from 'react';
 import { Cpu, Edit, Check, X, RefreshCw } from 'lucide-react';
 import { Button } from '../../landing/ui/button';
 import { botService } from '../../../services/bot';
-import { MISTRAL_MODELS } from '../../../constants/llm';
-import type { GPTModel, LLMProvider } from '../../../types/bot';
+import type { GPTModel } from '../../../types/bot';
 import { cn } from '../../landing/ui/utils';
 
 interface ModelSelectorProps {
   value: string;
   editing: boolean;
   editValue: string;
-  provider: LLMProvider;
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
@@ -24,7 +22,6 @@ export function ModelSelector({
   value,
   editing,
   editValue,
-  provider,
   onEdit,
   onSave,
   onCancel,
@@ -35,33 +32,29 @@ export function ModelSelector({
   const [loadingModels, setLoadingModels] = useState(false);
 
   useEffect(() => {
-    if (!editing) return;
+    if (editing) {
+      fetchModels();
+    }
+  }, [editing]);
 
-    const fetchModels = async () => {
-      setLoadingModels(true);
-      try {
-        if (provider === 'mistral') {
-          setModels(MISTRAL_MODELS);
-        } else {
-          const gptModels = await botService.getGPTModels();
-          setModels(gptModels);
-        }
-      } catch {
-        setModels(provider === 'mistral' ? MISTRAL_MODELS : []);
-      } finally {
-        setLoadingModels(false);
-      }
-    };
-
-    fetchModels();
-  }, [editing, provider]);
+  const fetchModels = async () => {
+    setLoadingModels(true);
+    try {
+      const gptModels = await botService.getGPTModels();
+      setModels(gptModels);
+    } catch (error) {
+      // Error fetching models
+    } finally {
+      setLoadingModels(false);
+    }
+  };
 
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-card-foreground">
-        Model
+        GPT Model
         {models.length > 0 && (
-          <span className="ml-2 text-xs font-normal text-muted-foreground">
+          <span className="text-xs font-normal text-muted-foreground ml-2">
             ({models.length} {models.length === 1 ? 'model' : 'models'} available)
           </span>
         )}
@@ -73,7 +66,9 @@ export function ModelSelector({
             {loadingModels ? (
               <div className="flex-1 px-4 py-2 rounded-xl bg-card/50 flex items-center justify-center gap-2">
                 <RefreshCw className="h-4 w-4 animate-spin" />
-                <span className="text-sm text-muted-foreground">Loading models...</span>
+                <span className="text-sm text-muted-foreground">
+                  Loading models...
+                </span>
               </div>
             ) : (
               <select
@@ -93,7 +88,12 @@ export function ModelSelector({
                 )}
               </select>
             )}
-            <Button onClick={onSave} disabled={saving || loadingModels} size="sm" className="flex-shrink-0">
+            <Button
+              onClick={onSave}
+              disabled={saving || loadingModels}
+              size="sm"
+              className="flex-shrink-0"
+            >
               <Check className="h-4 w-4" />
             </Button>
             <Button
@@ -109,14 +109,19 @@ export function ModelSelector({
         ) : (
           <>
             <div
-              className={cn(
-                'flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground cursor-pointer hover:bg-card/70 min-w-0 overflow-hidden'
-              )}
+              className="flex-1 px-4 py-2 rounded-xl bg-card/50 text-card-foreground cursor-pointer hover:bg-card/70 min-w-0 overflow-hidden"
               onClick={onEdit}
             >
-              <div className="truncate">{value || 'Not set'}</div>
+              <div className="truncate">
+                {value || 'Not set'}
+              </div>
             </div>
-            <Button onClick={onEdit} variant="outline" size="sm" className="flex-shrink-0">
+            <Button
+              onClick={onEdit}
+              variant="outline"
+              size="sm"
+              className="flex-shrink-0"
+            >
               <Edit className="h-4 w-4" />
             </Button>
           </>
@@ -125,3 +130,4 @@ export function ModelSelector({
     </div>
   );
 }
+

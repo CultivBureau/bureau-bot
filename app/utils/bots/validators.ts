@@ -1,11 +1,9 @@
 import type { BotFormData } from '../../components/dashboard/NewBotModal';
 
 export interface ValidationErrors {
-  provider?: string;
-  providerApiKey?: string;
-  name?: string;
-  llmModel?: string;
-  providerResourceId?: string;
+  apiKey?: string;
+  assistantName?: string;
+  aiModel?: string;
   instructions?: string;
   _general?: string;
 }
@@ -21,22 +19,23 @@ export function validateStep(
   const errors: ValidationErrors = {};
 
   if (step === 1) {
-    if (!formData.provider) {
-      errors.provider = 'Provider is required';
-    }
-
-    // In edit mode, provider key is optional unless the user supplies a new one.
-    if (!isEditMode && !formData.providerApiKey.trim()) {
-      errors.providerApiKey = 'Provider API key is required';
-    } else if (formData.providerApiKey.trim().length < 1 && !isEditMode) {
-      errors.providerApiKey = 'Provider API key is required';
+    // In edit mode, API key is optional (only validate if provided)
+    if (!isEditMode) {
+      if (!formData.apiKey.trim()) {
+        errors.apiKey = 'API key is required';
+      } else if (!formData.apiKey.startsWith('sk-')) {
+        errors.apiKey = 'API key must start with "sk-"';
+      }
+    } else if (formData.apiKey.trim() && !formData.apiKey.startsWith('sk-')) {
+      // In edit mode, if API key is provided, it must be valid
+      errors.apiKey = 'API key must start with "sk-"';
     }
   } else if (step === 2) {
-    if (!formData.name.trim()) {
-      errors.name = 'Bot name is required';
+    if (!formData.assistantName.trim()) {
+      errors.assistantName = 'Bot name is required';
     }
-    if (!formData.llmModel.trim()) {
-      errors.llmModel = 'Model is required';
+    if (!formData.aiModel) {
+      errors.aiModel = 'AI model is required';
     }
   } else if (step === 3) {
     if (!formData.instructions.trim()) {
@@ -51,7 +50,7 @@ export function validateStep(
  * Validate API key format
  */
 export function validateApiKeyFormat(apiKey: string): boolean {
-  return apiKey.trim().length > 0;
+  return apiKey.trim().startsWith('sk-');
 }
 
 /**
@@ -64,21 +63,19 @@ export function validateFormForSubmit(
   const errors: ValidationErrors = {};
 
   if (!isEditMode) {
-    if (!formData.provider) {
-      errors.provider = 'Provider is required to create a bot';
-    }
-
-    if (!formData.providerApiKey.trim()) {
-      errors.providerApiKey = 'Provider API key is required to create a bot';
+    if (!formData.apiKey.trim()) {
+      errors.apiKey = 'API key is required to create a bot';
+    } else if (!validateApiKeyFormat(formData.apiKey)) {
+      errors.apiKey = 'API key must start with "sk-"';
     }
   }
 
-  if (!formData.name.trim()) {
-    errors.name = 'Bot name is required';
+  if (!formData.assistantName.trim()) {
+    errors.assistantName = 'Bot name is required';
   }
 
-  if (!formData.llmModel.trim()) {
-    errors.llmModel = 'Model is required';
+  if (!formData.aiModel) {
+    errors.aiModel = 'AI model is required';
   }
 
   if (!formData.instructions.trim()) {

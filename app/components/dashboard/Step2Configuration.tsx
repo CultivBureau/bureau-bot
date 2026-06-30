@@ -1,112 +1,121 @@
 'use client';
 
 import { memo } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Input } from '../landing/ui/input';
 import { Label } from '../landing/ui/label';
 import { cn } from '../landing/ui/utils';
 import type { BotFormData } from './NewBotModal';
 import type { GPTModel } from '../../types/bot';
-import { getModelOptionsForProvider } from '../../constants/llm';
 
 interface Step2ConfigurationProps {
   formData: BotFormData;
   errors: Partial<Record<keyof BotFormData | '_general', string>>;
-  providerModels: GPTModel[];
+  gptModels: GPTModel[];
   loadingOptions: boolean;
+  showModelDropdown: boolean;
+  modelDropdownRef: React.RefObject<HTMLDivElement | null>;
   onInputChange: (field: keyof BotFormData, value: string) => void;
+  onToggleModelDropdown: () => void;
 }
 
 export const Step2Configuration = memo(function Step2Configuration({
   formData,
   errors,
-  providerModels,
+  gptModels,
   loadingOptions,
+  showModelDropdown,
+  modelDropdownRef,
   onInputChange,
+  onToggleModelDropdown,
 }: Step2ConfigurationProps) {
-  const modelOptions = getModelOptionsForProvider(formData.provider, providerModels);
-
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h3 className="text-2xl font-semibold text-card-foreground">Configure Your Bot</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Set the bot name, provider model, and any provider resource details.
+          Fill in the basic details for your new AI bot
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">
+          <Label htmlFor="assistantName">
             Bot Name <span className="text-destructive">*</span>
           </Label>
           <Input
-            id="name"
-            value={formData.name}
+            id="assistantName"
             placeholder="My Bot"
-            onChange={(e) => onInputChange('name', e.target.value)}
-            className={cn('text-foreground', errors.name && 'border-destructive')}
-            aria-invalid={!!errors.name}
+            onChange={(e) => onInputChange('assistantName', e.target.value)}
+            className={cn('text-foreground', errors.assistantName && 'border-destructive')}
+            aria-invalid={!!errors.assistantName}
           />
-          {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+          {errors.assistantName && (
+            <p className="text-xs text-destructive">{errors.assistantName}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="llmModel">
-            Model <span className="text-destructive">*</span>
+          <Label htmlFor="aiModel">
+            AI Model <span className="text-destructive">*</span>
           </Label>
-          <select
-            id="llmModel"
-            value={formData.llmModel}
-            onChange={(e) => onInputChange('llmModel', e.target.value)}
-            className={cn(
-              'flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground',
-              'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-              errors.llmModel && 'border-destructive'
+          <div className="relative" ref={modelDropdownRef}>
+            <button
+              type="button"
+              onClick={onToggleModelDropdown}
+              className={cn(
+                'flex h-9 w-full items-center justify-between rounded-full border border-input bg-input-background px-3 py-1 text-sm text-foreground transition',
+                'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+                errors.aiModel && 'border-destructive',
+                showModelDropdown && 'ring-2 ring-ring'
+              )}
+            >
+              <span className={cn(formData.aiModel ? 'text-foreground' : 'text-muted-foreground')}>
+                {loadingOptions
+                  ? 'Loading...'
+                  : gptModels.find((m) => m.value === formData.aiModel)?.label ||
+                    'Select AI model'}
+              </span>
+              <ChevronDown
+                className={cn(
+                  'h-4 w-4 text-muted-foreground transition-transform',
+                  showModelDropdown && 'rotate-180'
+                )}
+              />
+            </button>
+            {showModelDropdown && (
+              <div className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-border bg-card shadow-lg">
+                {loadingOptions ? (
+                  <div className="px-4 py-2 text-sm text-muted-foreground">Loading...</div>
+                ) : (
+                  gptModels.map((model) => (
+                    <button
+                      key={model.value}
+                      type="button"
+                      onClick={() => {
+                        onInputChange('aiModel', model.value);
+                        onToggleModelDropdown();
+                      }}
+                      className={cn(
+                        'w-full px-4 py-2 text-left text-sm text-card-foreground transition hover:bg-secondary',
+                        formData.aiModel === model.value &&
+                          'bg-secondary text-secondary-foreground'
+                      )}
+                    >
+                      {model.label}
+                    </button>
+                  ))
+                )}
+              </div>
             )}
-            aria-invalid={!!errors.llmModel}
-            disabled={loadingOptions && formData.provider === 'openai'}
-          >
-            {modelOptions.length > 0 ? (
-              modelOptions.map((model) => (
-                <option key={model.value} value={model.value}>
-                  {model.label}
-                </option>
-              ))
-            ) : (
-              <option value={formData.llmModel}>
-                {loadingOptions ? 'Loading models...' : formData.llmModel || 'Select a model'}
-              </option>
-            )}
-          </select>
-            <p className="text-xs text-muted-foreground">
-              {formData.provider === 'mistral'
-                ? 'Mistral models are provided locally for now.'
-                : 'OpenAI models are loaded from the backend model list.'}
-            </p>
-          {errors.llmModel && <p className="text-xs text-destructive">{errors.llmModel}</p>}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            ({gptModels.length} {gptModels.length === 1 ? 'model' : 'models'} available)
+          </p>
+          {errors.aiModel && <p className="text-xs text-destructive">{errors.aiModel}</p>}
         </div>
-
-        {formData.provider === 'openai' ? (
-          <div className="space-y-2">
-            <Label htmlFor="providerResourceId">Provider Resource ID</Label>
-            <Input
-              id="providerResourceId"
-              value={formData.providerResourceId}
-              placeholder="assistant_..."
-              onChange={(e) => onInputChange('providerResourceId', e.target.value)}
-              className="text-foreground"
-            />
-            <p className="text-xs text-muted-foreground">
-              Keep this for OpenAI resource-backed configurations.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-            Mistral runs as a direct chat provider, so assistant-style resource provisioning is
-            not shown here.
-          </div>
-        )}
       </div>
     </div>
   );
 });
+

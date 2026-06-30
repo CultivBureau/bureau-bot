@@ -233,62 +233,6 @@ export function OverviewContent() {
         latestResponses={latestResponses}
         latestCompletions={latestCompletions}
       />
-
-      <div className="rounded-2xl border border-border bg-card/70 backdrop-blur-sm p-6 shadow-sm">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-card-foreground">Runtime metadata</h2>
-          <p className="text-sm text-muted-foreground">
-            Provider-aware details for the active bot session.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 text-sm">
-          <div className="rounded-xl border border-border bg-background/60 p-4">
-            <div className="text-muted-foreground">Provider</div>
-            <div className="mt-1 font-medium text-card-foreground">{bot.llm_provider || 'openai'}</div>
-          </div>
-          <div className="rounded-xl border border-border bg-background/60 p-4">
-            <div className="text-muted-foreground">Model</div>
-            <div className="mt-1 font-medium text-card-foreground">{bot.llm_model || bot.gpt_model}</div>
-          </div>
-          <div className="rounded-xl border border-border bg-background/60 p-4">
-            <div className="text-muted-foreground">Provider resource ID</div>
-            <div className="mt-1 font-medium text-card-foreground break-all">
-              {bot.provider_resource_id || bot.assistant_id || 'Not set'}
-            </div>
-          </div>
-          <div className="rounded-xl border border-border bg-background/60 p-4">
-            <div className="text-muted-foreground">Provider key fingerprint</div>
-            <div className="mt-1 font-medium text-card-foreground break-all">
-              {bot.provider_key_fingerprint || 'Not available'}
-            </div>
-          </div>
-          <div className="rounded-xl border border-border bg-background/60 p-4">
-            <div className="text-muted-foreground">Provider conversation ID</div>
-            <div className="mt-1 font-medium text-card-foreground break-all">
-              {bot.provider_conversation_id || 'Not available'}
-            </div>
-          </div>
-          <div className="rounded-xl border border-border bg-background/60 p-4">
-            <div className="text-muted-foreground">Thread binding</div>
-            <div className="mt-1 font-medium text-card-foreground break-all">
-              {bot.thread_binding_reason || 'Not available'}
-            </div>
-          </div>
-        </div>
-        {bot.thread_binding_reason === 'mistral_direct_chat' && (
-          <p className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-            This bot is using direct-chat conversation semantics, not OpenAI thread semantics.
-          </p>
-        )}
-        {bot.provider_runtime_metadata && (
-          <pre className="mt-4 overflow-x-auto rounded-xl border border-border bg-background/70 p-4 text-xs text-muted-foreground">
-            {typeof bot.provider_runtime_metadata === 'string'
-              ? bot.provider_runtime_metadata
-              : JSON.stringify(bot.provider_runtime_metadata, null, 2)}
-          </pre>
-        )}
-      </div>
-
       <OverviewCharts series={series} currency={summary.currency} />
     </div>
   );

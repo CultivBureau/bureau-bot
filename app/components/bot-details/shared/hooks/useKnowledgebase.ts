@@ -118,7 +118,7 @@ export function useKnowledgebase(botId: string | null) {
           formData.append('file', newItem.file);
 
           await knowledgeBaseService.uploadFile(formData);
-          setSuccess('File uploaded successfully to the provider and knowledge base!');
+          setSuccess('File uploaded successfully to OpenAI and knowledge base!');
           fetchItems();
           setNewItem({ title: '', content: '', file: null });
           setShowUploadForm(false);

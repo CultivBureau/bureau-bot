@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Upload, Loader2, File as FileIcon } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, File as FileIcon } from 'lucide-react';
 import { KnowledgeBaseSourceType } from '../shared/hooks/useKnowledgebase';
 
 interface KnowledgebaseUploadFormProps {
@@ -76,7 +76,7 @@ export function KnowledgebaseUploadForm({
             Upload knowledge
           </h3>
           <p className="text-sm text-muted-foreground">
-            Store PDFs or raw text inside the bot's knowledge base.
+            Store PDFs or raw text inside the assistant's vector store.
           </p>
         </div>
         <div className="flex gap-2">
@@ -177,7 +177,7 @@ export function KnowledgebaseUploadForm({
             onChange={(e) => onContentChange(e.target.value)}
             rows={6}
             className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Paste the knowledge base article..."
+            placeholder="Paste the knowledge base article…"
           />
         </div>
       )}
@@ -197,7 +197,7 @@ export function KnowledgebaseUploadForm({
           {uploading ? (
             <span className="inline-flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              {isEditing ? 'Updating...' : 'Uploading...'}
+              {isEditing ? 'Updating…' : 'Uploading…'}
             </span>
           ) : (
             isEditing ? 'Update knowledge base' : 'Add to knowledge base'
@@ -207,3 +207,4 @@ export function KnowledgebaseUploadForm({
     </section>
   );
 }
+

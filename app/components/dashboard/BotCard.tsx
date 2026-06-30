@@ -27,6 +27,7 @@ export function BotCard({ bot, onEdit, onToggleActive }: BotCardProps) {
         aria-label={`Open ${bot.name}`}
       />
 
+      {/* Menu Button */}
       <button
         onClick={(e) => {
           e.preventDefault();
@@ -39,6 +40,7 @@ export function BotCard({ bot, onEdit, onToggleActive }: BotCardProps) {
         <MoreVertical className="h-4 w-4" />
       </button>
 
+      {/* Dropdown Menu */}
       {openMenu && (
         <div className="absolute right-5 top-16 z-30 w-40 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
           {onEdit && (
@@ -76,7 +78,9 @@ export function BotCard({ bot, onEdit, onToggleActive }: BotCardProps) {
         </div>
       )}
 
+      {/* Centered Content */}
       <div className="flex flex-col items-center text-center space-y-4">
+        {/* Circular Bot Image */}
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15 overflow-hidden">
           <Image
             src="/Floating-Robot.png"
@@ -87,15 +91,14 @@ export function BotCard({ bot, onEdit, onToggleActive }: BotCardProps) {
           />
         </div>
 
+        {/* Bot Name */}
         <div className="flex flex-col items-center gap-1">
           <h3 className="text-xl font-semibold text-card-foreground">
             {bot.name}
           </h3>
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-            {bot.llm_provider}
-          </span>
         </div>
 
+        {/* Status Badge */}
         <div className="flex items-center gap-2">
           <span
             className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusClasses}`}
@@ -117,11 +120,12 @@ export function BotCard({ bot, onEdit, onToggleActive }: BotCardProps) {
         </div>
       </div>
 
+      {/* Bot Details */}
       <dl className="mt-6 space-y-2 text-sm text-center">
         <div className="flex flex-col items-center gap-1">
           <dt className="text-muted-foreground">Model</dt>
           <dd className="font-medium text-card-foreground">
-            {bot.llm_model ?? bot.gpt_model ?? '—'}
+            {bot.gpt_model ?? '—'}
           </dd>
         </div>
         {typeof bot.usage_count === 'number' && (
@@ -142,3 +146,4 @@ export function BotCard({ bot, onEdit, onToggleActive }: BotCardProps) {
     </div>
   );
 }
+

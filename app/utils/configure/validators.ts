@@ -38,7 +38,7 @@ export function prepareFieldValue(
     return typeof value === 'number' ? value : Number(value) || 0;
   }
 
-  if (field === 'webhook_url' || field === 'provider_resource_id' || field === 'encrypted_provider_api_key') {
+  if (field === 'webhook_url') {
     return value === '' ? null : (value as string | null);
   }
 

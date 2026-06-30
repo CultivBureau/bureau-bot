@@ -14,6 +14,7 @@ export const ProgressIndicator = memo(function ProgressIndicator({
 }: ProgressIndicatorProps) {
   return (
     <>
+      {/* Progress Indicator */}
       <div className="flex items-center justify-center gap-2 border-b border-border px-6 py-4">
         {[1, 2, 3].map((step) => (
           <div key={step} className="flex items-center">
@@ -43,6 +44,7 @@ export const ProgressIndicator = memo(function ProgressIndicator({
         ))}
       </div>
 
+      {/* Step Labels */}
       <div className="flex items-center justify-center gap-12 px-6 pb-4">
         <span
           className={cn(
@@ -50,7 +52,7 @@ export const ProgressIndicator = memo(function ProgressIndicator({
             currentStep === 1 ? 'text-primary' : 'text-muted-foreground'
           )}
         >
-          Provider & Key
+          API Key
         </span>
         <span
           className={cn(
@@ -72,3 +74,4 @@ export const ProgressIndicator = memo(function ProgressIndicator({
     </>
   );
 });
+

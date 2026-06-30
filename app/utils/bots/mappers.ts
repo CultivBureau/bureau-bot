@@ -4,16 +4,10 @@ import type { Bot, BotData } from '../../types/bot';
  * Map Bot from API to BotData for UI
  */
 export function mapBotToBotData(bot: Bot): BotData {
-  const llmProvider = bot.llm_provider || 'openai';
-  const llmModel = bot.llm_model || bot.gpt_model || '';
-
   return {
     id: bot.id,
     name: bot.name,
-    llm_provider: llmProvider,
-    llm_model: llmModel,
-    gpt_model: llmModel,
-    provider_resource_id: bot.provider_resource_id ?? bot.assistant_id ?? null,
+    gpt_model: bot.gpt_model,
     is_active: bot.is_active,
     created_on: bot.created_on,
     updated_on: bot.updated_on,

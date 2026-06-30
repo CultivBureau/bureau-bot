@@ -5,14 +5,12 @@ import type {
   GPTModelsResponse,
   ValidateOpenAIKeyRequest,
   ValidateOpenAIKeyResponse,
-  ValidateProviderKeyRequest,
   CreateBotRequest,
   UpdateBotRequest,
   RestoreBotRequest,
   Bot,
   BotsListResponse,
   GetBotsParams,
-  LLMProvider,
 } from '../types/bot';
 
 class BotService {
@@ -120,19 +118,6 @@ class BotService {
     return response.gpt_models;
   }
 
-  async getProviderModels(provider: LLMProvider): Promise<GPTModel[]> {
-    if (provider === 'mistral') {
-      return [
-        { value: 'mistral-large-latest', label: 'Mistral Large Latest' },
-        { value: 'mistral-small-latest', label: 'Mistral Small Latest' },
-        { value: 'open-mistral-7b', label: 'Open Mistral 7B' },
-        { value: 'open-mixtral-8x7b', label: 'Open Mixtral 8x7B' },
-      ];
-    }
-
-    return this.getGPTModels();
-  }
-
   async validateOpenAIKey(key: string): Promise<ValidateOpenAIKeyResponse> {
     const requestData: ValidateOpenAIKeyRequest = {
       openaikey: key,
@@ -141,28 +126,6 @@ class BotService {
     return this.request<ValidateOpenAIKeyResponse>('/api/Bots/validate-openai-key/', {
       method: 'POST',
       body: JSON.stringify(requestData),
-    });
-  }
-
-  async validateProviderKey(
-    provider: LLMProvider,
-    key: string
-  ): Promise<ValidateOpenAIKeyResponse> {
-    const requestData: ValidateProviderKeyRequest = {
-      llm_provider: provider,
-      encrypted_provider_api_key: key,
-    };
-
-    return this.request<ValidateOpenAIKeyResponse>('/api/Bots/validate-provider-key/', {
-      method: 'POST',
-      body: JSON.stringify(requestData),
-    });
-  }
-
-  async validateAssistant(botId: string): Promise<ValidateOpenAIKeyResponse> {
-    return this.request<ValidateOpenAIKeyResponse>('/api/Bots/validate-assistant/', {
-      method: 'POST',
-      body: JSON.stringify({ bot_id: botId }),
     });
   }
 

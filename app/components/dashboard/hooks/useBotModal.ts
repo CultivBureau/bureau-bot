@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { botService } from '../../../services/bot';
 import { validateStep, validateFormForSubmit } from '../../../utils/bots/validators';
 import { formatUserFriendlyError } from '../../../utils/bots/errorHandlers';
-import type { Bot, UpdateBotRequest, GPTModel } from '../../../types/bot';
+import type { Bot } from '../../../types/bot';
 import type { BotFormData } from '../NewBotModal';
-import { DEFAULT_PROVIDER, getDefaultModelForProvider, normalizeProvider } from '../../../constants/llm';
 
 interface UseBotModalOptions {
   isOpen: boolean;
@@ -17,55 +16,47 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
   const isEditMode = !!bot;
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<BotFormData>({
-    provider: DEFAULT_PROVIDER,
-    providerApiKey: '',
-    name: 'AI Assistant',
-    llmModel: '',
-    providerResourceId: '',
-    instructions: 'You are a helpful support bot. Please provide accurate and helpful responses to user queries.',
+    apiKey: '',
+    assistantName: 'AI Assistant',
+    aiModel: '',
+    instructions: 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
     webhookUrl: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof BotFormData | '_general', string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [openAiModels, setOpenAiModels] = useState<GPTModel[]>([]);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [gptModels, setGptModels] = useState<any[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize form data when bot prop changes (for edit mode)
   useEffect(() => {
     if (isOpen && bot) {
-      const provider = normalizeProvider(bot.llm_provider);
-      const model = bot.llm_model || bot.gpt_model || getDefaultModelForProvider(provider);
-
       setFormData({
-        provider,
-        providerApiKey: '',
-        name: bot.name || 'AI Assistant',
-        llmModel: model,
-        providerResourceId: bot.provider_resource_id || bot.assistant_id || '',
-        instructions: bot.instructions || 'You are a helpful support bot. Please provide accurate and helpful responses to user queries.',
+        apiKey: '',
+        assistantName: bot.name || 'AI Assistant',
+        aiModel: bot.gpt_model || '',
+        instructions: bot.instructions || 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
         webhookUrl: bot.webhook_url || '',
       });
     }
   }, [isOpen, bot]);
 
-  // Fetch OpenAI models when modal opens
+  // Fetch GPT models when modal opens
   useEffect(() => {
     if (isOpen) {
       const fetchOptions = async () => {
         setLoadingOptions(true);
         try {
           const models = await botService.getGPTModels();
-          setOpenAiModels(models);
+          setGptModels(models);
           
           if (!bot) {
             setFormData((prev) => {
               const updated = { ...prev };
-              if (updated.provider === 'openai' && models.length > 0 && !updated.llmModel) {
-                updated.llmModel = models[0].value;
-              }
-              if (updated.provider === 'mistral' && !updated.llmModel) {
-                updated.llmModel = getDefaultModelForProvider('mistral');
+              if (models.length > 0 && !updated.aiModel) {
+                updated.aiModel = models[0].value;
               }
               return updated;
             });
@@ -89,17 +80,36 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
     if (!isOpen) {
       setCurrentStep(1);
       setFormData({
-        provider: DEFAULT_PROVIDER,
-        providerApiKey: '',
-        name: 'AI Assistant',
-        llmModel: '',
-        providerResourceId: '',
-        instructions: 'You are a helpful support bot. Please provide accurate and helpful responses to user queries.',
+        apiKey: '',
+        assistantName: 'AI Assistant',
+        aiModel: '',
+        instructions: 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
         webhookUrl: '',
       });
       setErrors({});
+      setShowModelDropdown(false);
     }
   }, [isOpen]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modelDropdownRef.current &&
+        !modelDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowModelDropdown(false);
+      }
+    };
+
+    if (showModelDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showModelDropdown]);
 
   const validateCurrentStep = useCallback((): boolean => {
     const validationErrors = validateStep(currentStep, formData, isEditMode);
@@ -110,14 +120,14 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
   const handleNext = useCallback(async () => {
     if (!validateCurrentStep()) return;
 
-    if (currentStep === 1 && (!isEditMode || formData.providerApiKey.trim())) {
+    if (currentStep === 1 && (!isEditMode || formData.apiKey.trim())) {
       setIsValidating(true);
       try {
-        const validation = await botService.validateProviderKey(formData.provider, formData.providerApiKey.trim());
+        const validation = await botService.validateOpenAIKey(formData.apiKey);
         if (!validation.valid) {
           setErrors((prev) => ({
             ...prev,
-            providerApiKey: 'Invalid provider API key. Please check and try again.',
+            apiKey: 'Invalid API key. Please check and try again.',
           }));
           setIsValidating(false);
           return;
@@ -126,7 +136,7 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
         const errorMessage = error instanceof Error ? error.message : 'Failed to validate API key';
         setErrors((prev) => ({
           ...prev,
-          providerApiKey: errorMessage,
+          apiKey: errorMessage,
         }));
         setIsValidating(false);
         return;
@@ -149,7 +159,7 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
     const validation = validateFormForSubmit(formData, isEditMode);
     if (!validation.valid) {
       setErrors(validation.errors);
-      if (validation.errors.providerApiKey) {
+      if (validation.errors.apiKey) {
         setCurrentStep(1);
       }
       return;
@@ -158,17 +168,13 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
     setIsSubmitting(true);
     try {
       if (isEditMode && bot) {
-        const updateData: Partial<UpdateBotRequest> = {};
+        const updateData: Record<string, string | null> = {};
         
-        if (formData.provider !== normalizeProvider(bot.llm_provider)) {
-          updateData.llm_provider = formData.provider;
+        if (formData.assistantName !== bot.name) {
+          updateData.name = formData.assistantName;
         }
-        if (formData.name !== bot.name) {
-          updateData.name = formData.name;
-        }
-        if (formData.llmModel && formData.llmModel !== (bot.llm_model || bot.gpt_model)) {
-          updateData.llm_model = formData.llmModel;
-          updateData.gpt_model = formData.llmModel;
+        if (formData.aiModel && formData.aiModel !== bot.gpt_model) {
+          updateData.gpt_model = formData.aiModel;
         }
         if (formData.instructions && formData.instructions !== bot.instructions) {
           updateData.instructions = formData.instructions;
@@ -177,13 +183,8 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
         if (formData.webhookUrl.trim() !== currentWebhookUrl) {
           updateData.webhook_url = formData.webhookUrl.trim() || null;
         }
-        if (formData.providerResourceId.trim() !== (bot.provider_resource_id || bot.assistant_id || '')) {
-          updateData.provider_resource_id = formData.providerResourceId.trim() || null;
-          updateData.assistant_id = formData.providerResourceId.trim() || null;
-        }
-        if (formData.providerApiKey.trim()) {
-          updateData.encrypted_provider_api_key = formData.providerApiKey.trim();
-          updateData.openai_api_key = formData.providerApiKey.trim();
+        if (formData.apiKey.trim()) {
+          updateData.openai_api_key = formData.apiKey.trim();
         }
 
         if (Object.keys(updateData).length > 0) {
@@ -191,21 +192,16 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
         }
       } else {
         const botData = {
-          name: formData.name.trim(),
-          llm_provider: formData.provider,
-          llm_model: formData.llmModel,
-          encrypted_provider_api_key: formData.providerApiKey.trim(),
-          provider_resource_id: formData.providerResourceId.trim() || null,
-          gpt_model: formData.llmModel,
-          openai_api_key: formData.providerApiKey.trim(),
-          assistant_id: formData.providerResourceId.trim() || null,
+          name: formData.assistantName.trim(),
+          gpt_model: formData.aiModel,
+          openai_api_key: formData.apiKey.trim(),
           instructions: formData.instructions.trim(),
           webhook_url: formData.webhookUrl.trim() || null,
         };
 
-        if (!botData.encrypted_provider_api_key || botData.encrypted_provider_api_key.length < 1) {
+        if (!botData.openai_api_key || botData.openai_api_key.length < 1) {
           setErrors({
-            _general: 'Provider API key is required and must be at least 1 character long.',
+            _general: 'OpenAI API key is required and must be at least 1 character long.',
           });
           setCurrentStep(1);
           setIsSubmitting(false);
@@ -220,12 +216,10 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
       }
       
       setFormData({
-        provider: DEFAULT_PROVIDER,
-        providerApiKey: '',
-        name: 'AI Assistant',
-        llmModel: '',
-        providerResourceId: '',
-        instructions: 'You are a helpful support bot. Please provide accurate and helpful responses to user queries.',
+        apiKey: '',
+        assistantName: 'AI Assistant',
+        aiModel: '',
+        instructions: 'You are a helpful AI assistant. Please provide accurate and helpful responses to user queries.',
         webhookUrl: '',
       });
       setCurrentStep(1);
@@ -248,36 +242,11 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
   }, [formData, isEditMode, bot, onSubmit, onClose]);
 
   const handleInputChange = useCallback((field: keyof BotFormData, value: string) => {
-    setFormData((prev) => {
-      const next = { ...prev, [field]: value } as BotFormData;
-
-      if (field === 'provider') {
-        const provider = value === 'mistral' ? 'mistral' : 'openai';
-        next.llmModel = getDefaultModelForProvider(provider);
-        if (provider === 'mistral') {
-          next.providerResourceId = '';
-        }
-      }
-
-      if (field === 'provider' && value === 'openai' && !next.llmModel && openAiModels.length > 0) {
-        next.llmModel = openAiModels[0].value;
-      }
-
-      return next;
-    });
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  }, [errors, openAiModels]);
-
-  const providerModels = formData.provider === 'mistral'
-    ? [
-        { value: 'mistral-large-latest', label: 'Mistral Large Latest' },
-        { value: 'mistral-small-latest', label: 'Mistral Small Latest' },
-        { value: 'open-mistral-7b', label: 'Open Mistral 7B' },
-        { value: 'open-mixtral-8x7b', label: 'Open Mixtral 8x7B' },
-      ]
-    : openAiModels;
+  }, [errors]);
 
   return {
     isEditMode,
@@ -286,8 +255,11 @@ export function useBotModal({ isOpen, bot, onClose, onSubmit }: UseBotModalOptio
     errors,
     isSubmitting,
     isValidating,
-    providerModels,
+    showModelDropdown,
+    setShowModelDropdown,
+    gptModels,
     loadingOptions,
+    modelDropdownRef,
     handleNext,
     handleBack,
     handleSubmit,

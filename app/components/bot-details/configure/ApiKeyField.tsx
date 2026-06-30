@@ -4,7 +4,6 @@ import { Key, Edit, Check, X } from 'lucide-react';
 import { Button } from '../../landing/ui/button';
 import { Input } from '../../landing/ui/input';
 import { cn } from '../../landing/ui/utils';
-import type { LLMProvider } from '../../../types/bot';
 
 interface ApiKeyFieldProps {
   value: string;
@@ -16,7 +15,6 @@ interface ApiKeyFieldProps {
   onChange: (value: string) => void;
   saving?: boolean;
   disabled?: boolean;
-  provider: LLMProvider;
 }
 
 export function ApiKeyField({
@@ -29,13 +27,12 @@ export function ApiKeyField({
   onChange,
   saving = false,
   disabled = false,
-  provider,
 }: ApiKeyFieldProps) {
 
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-card-foreground">
-        {provider === 'openai' ? 'OpenAI API Key' : 'Provider API Key'}
+        OpenAI API Key
       </label>
       <div className="flex items-center gap-2 min-w-0">
         <Key className="h-5 w-5 text-muted-foreground flex-shrink-0" />
@@ -46,7 +43,7 @@ export function ApiKeyField({
                 type="text"
                 value={editValue}
                 onChange={(e) => onChange(e.target.value)}
-                placeholder={provider === 'mistral' ? 'Paste provider key' : 'sk-...'}
+                placeholder="sk-..."
                 className="min-w-0"
                 disabled={saving}
               />
